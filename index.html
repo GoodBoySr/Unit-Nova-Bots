@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Nova Bots</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Montserrat:wght@600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS for the background and text */
+        body {
+            font-family: 'Inter', sans-serif; /* Default font for the body */
+            margin: 0;
+            overflow: auto; /* Hide overflow to prevent scrollbars from stars */
+            min-height: 100vh; width: 100vw; /* Full viewport height */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Align content to the top */
+            align-items: flex-start; /* Align content to the left */
+            position: relative; /* For absolute positioning of text and stars */
+            background: linear-gradient(135deg, #6A0DAD, #8A2BE2, #9370DB); /* Purple gradient background */
+        }
+
+        .nova-text {
+            position: absolute;
+            top: 1.5rem; /* Equivalent to Tailwind's top-6 */
+            left: 1.5rem; /* Equivalent to Tailwind's left-6 */
+            z-index: 10; /* Ensure text is above the background and stars */
+            color: white;
+            /* Applying a cool font to the main title */
+            font-family: 'Montserrat', sans-serif;
+            /* Enhanced glow effect */
+            text-shadow:
+                0 0 10px rgba(255, 255, 255, 0.7), /* Soft white glow */
+                0 0 20px rgba(255, 255, 255, 0.5), /* Medium white glow */
+                0 0 30px rgba(255, 255, 255, 0.3); /* Wider, subtle white glow */
+        }
+
+        /* Stars container */
+        .stars-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allow clicks to pass through */
+            z-index: 1; /* Below text, above background */
+        }
+
+        /* Star styling */
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%; /* Make them round */
+            opacity: 0; /* Start invisible for blinking effect */
+            animation: blink-and-move linear infinite;
+            /* Added glow effect to stars */
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.8),
+                        0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Keyframes for blinking and moving */
+        @keyframes blink-and-move {
+            0% {
+                transform: translateX(100vw); /* Start off-screen right */
+                opacity: 0; /* Start completely invisible */
+            }
+            20% {
+                opacity: 0.8; /* Fade in to visible */
+            }
+            80% {
+                opacity: 0.8; /* Stay visible */
+            }
+            100% {
+                transform: translateX(-100vw); /* Move off-screen left */
+                opacity: 0; /* Fade out to invisible */
+            }
+        }
+
+        /* Styles for the translucent box text and button text */
+        .translucent-box-text {
+            font-family: 'Poppins', sans-serif; /* Applying a cool font to the box text */
+        }
+
+        .button-text {
+            font-family: 'Poppins', sans-serif; /* Applying a cool font to the button text */
+        }
+
+        /* Input field styling */
+        .input-field {
+            background-color: rgba(255, 255, 255, 0.2); /* Slightly more opaque for readability */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-family: 'Inter', sans-serif;
+            outline: none; /* Remove default focus outline */
+            transition: border-color 0.3s ease-in-out;
+        }
+
+        .input-field:focus {
+            border-color: #9370DB; /* Highlight on focus */
+        }
+
+        /* Placeholder color */
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Error message styling */
+        .error-message {
+            color: #ffcccc; /* Light red for error */
+            font-size: 0.875rem; /* Smaller font size */
+            font-family: 'Poppins', sans-serif;
+            margin-top: 0.25rem;
+            display: none; /* Hidden by default */
+            font-weight: bold; /* Make error messages stand out more */
+        }
+
+        /* Password toggle styling */
+        .password-toggle {
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+            transition: color 0.3s ease-in-out;
+            margin-left: 0.5rem; /* Space between input and toggle */
+            flex-shrink: 0; /* Prevent it from shrinking */
+            display: flex; /* Ensure SVG is properly centered if needed */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-toggle:hover {
+            color: white;
+        }
+
+        /* Custom message box styling (for the new overlay) */
+        .custom-message-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000; /* Above all other content */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .custom-message-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-message-content {
+            background-color: rgba(255, 255, 255, 0.15); /* Translucent white */
+            backdrop-filter: blur(8px);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .custom-message-content .message-text {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .custom-message-content .close-button {
+            background-color: #8A2BE2; /* Purple */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .custom-message-content .close-button:hover {
+            background-color: #9370DB;
+        }
+
+
+        /* Submit Button specific styling */
+        .submit-button-glow {
+            /* Purple background */
+            background-color: #8A2BE2; /* A vibrant purple */
+            /* Glowing effect */
+            box-shadow:
+                0 0 5px rgba(138, 43, 226, 0.7), /* Soft purple glow */
+                0 0 15px rgba(138, 43, 226, 0.5), /* Medium purple glow */
+                0 0 25px rgba(138, 43, 226, 0.3); /* Wider purple glow */
+        }
+
+        /* Navigation buttons container styling */
+        .nav-buttons-container {
+            position: absolute;
+            top: 1.5rem; /* Align with nova-text's top */
+            right: 1.5rem; /* Place in the top right corner */
+            display: flex;
+            gap: 1rem; /* Space between buttons */
+            z-index: 10; /* Ensure it's above other elements */
+        }
+
+        .nav-button {
+            color: white;
+            font-weight: bold;
+            text-decoration: underline;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            padding: 0.5rem 1.5rem; /* Increased padding for better click area */
+            transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out; /* Add text-shadow to transition */
+        }
+
+        .nav-button:hover {
+            color: #DDA0DD; /* Lighter purple on hover */
+        }
+
+        /* Glow effect for navigation buttons */
+        .nav-button.glow {
+            text-shadow:
+                0 0 5px rgba(255, 255, 255, 0.7),
+                0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Darken effect for navigation buttons */
+        .nav-button.darken {
+            color: rgba(255, 255, 255, 0.5); /* Make text semi-transparent */
+            text-shadow: none; /* Remove glow */
+        }
+
+        /* Modal for password input */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000; /* Above all other content */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: rgba(255, 255, 255, 0.15); /* Translucent white */
+            backdrop-filter: blur(8px);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal-input {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+        }
+
+        .modal-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .modal-button {
+            background-color: #8A2BE2;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .modal-button:hover {
+            background-color: #9370DB;
+        }
+
+        .modal-error {
+            color: #ffcccc;
+            font-size: 0.9rem;
+        }
+
+        /* Admin Panel specific styles */
+        .admin-panel-content {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 800px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            display: flex; /* Use flexbox for content alignment */
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .accounts-section {
+            width: 100%;
+            margin-top: 1.5rem;
+            text-align: left;
+            background-color: rgba(255, 255, 255, 0.05); /* Slightly darker translucent */
+            border-radius: 0.5rem;
+            padding: 1rem;
+            max-height: 400px; /* Limit height for scrolling */
+            overflow-y: auto; /* Enable scrolling for the list */
+        }
+
+        .accounts-section h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        /* Responsive adjustments for account items in admin panel */
+        .account-item {
+            background-color: rgba(255, 255, 255, 0.08);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column; /* Stack vertically by default for mobile */
+            align-items: flex-start; /* Align text to the left */
+            gap: 0.5rem; /* Space between items */
+        }
+
+        .account-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .account-item strong {
+            color: #DDA0DD;
+        }
+
+        .account-info {
+            flex-grow: 1; /* Allow info to take available space */
+            min-width: 150px; /* Ensure info doesn't get too squished */
+        }
+
+        .account-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0; /* Prevent actions from shrinking */
+            width: 100%; /* Take full width on mobile */
+            justify-content: space-around; /* Distribute buttons evenly */
+            margin-top: 0.5rem; /* Space between info and buttons */
+        }
+
+        /* Revert to horizontal layout for larger screens */
+        @media (min-width: 640px) { /* Tailwind's sm breakpoint */
+            .account-item {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .account-actions {
+                width: auto;
+                justify-content: flex-end;
+                margin-top: 0;
+            }
+        }
+
+        .action-button {
+            background-color: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.4rem 0.6rem;
+            border-radius: 0.3rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-button.check {
+            color: #4CAF50; /* Green check */
+            border-color: #4CAF50;
+        }
+        .action-button.check:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .action-button.remove {
+            color: #DC2626; /* Red X */
+            border-color: #DC2626;
+        }
+        .action-button.remove:hover {
+            background-color: #DC2626;
+            color: white;
+        }
+        
+        .action-button.chat { /* New chat button style */
+            color: #ADD8E6; /* Light blue */
+            border-color: #ADD8E6;
+        }
+        .action-button.chat:hover {
+            background-color: #ADD8E6;
+            color: white;
+        }
+
+        .logout-button {
+            background-color: #DC2626; /* Red color for logout */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease-in-out;
+            margin-top: 1rem;
+        }
+
+        .logout-button:hover {
+            background-color: #B91C1C;
+        }
+
+        /* Chat Page Specific Styles */
+        .chat-page-content {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            padding: 1.5rem; /* Default padding for mobile */
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 600px;
+            height: 80vh; /* Make chat area take most of the height */
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Push input to bottom */
+        }
+
+        @media (min-width: 640px) { /* Tailwind's sm breakpoint */
+            .chat-page-content {
+                padding: 2rem; /* Restore larger padding for larger screens */
+            }
+        }
+
+        .chat-header {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 1rem;
+            text-align: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-messages-container {
+            flex-grow: 1; /* Take all available space */
+            overflow-y: auto; /* Enable scrolling for messages */
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column; /* Messages stack vertically */
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .chat-input-field {
+            flex-grow: 1;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            resize: none; /* Prevent manual resizing */
+            min-height: 40px; /* Ensure a minimum height */
+            height: auto; /* Allow height to adjust based on content */
+        }
+
+        .chat-input-field::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .chat-send-button {
+            background-color: #8A2BE2;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease-in-out;
+            flex-shrink: 0; /* Prevent button from shrinking */
+        }
+
+        .chat-send-button:hover {
+            background-color: #9370DB;
+        }
+
+        /* Individual message styling */
+        
+.message-item {
+    background-color: transparent;
+    margin-bottom: 0.5rem;
+    max-width: 70%;
+    font-size: 1rem;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.message-item.sent {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+.message-item .bubble {
+    background-color: rgba(255, 255, 255, 0.15);
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.8rem;
+    word-wrap: break-word;
+}
+.message-item.sent .bubble {
+    background-color: rgba(138, 43, 226, 0.3);
+}
+.message-timestamp {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 0.2rem;
+    display: block;
+}
+
+
+        .message-timestamp {
+            font-size: 0.75rem; /* Smaller font for timestamp */
+            color: rgba(255, 255, 255, 0.7); /* Slightly dimmed color */
+            margin-top: 0.2rem;
+            display: block; /* Ensure it's on its own line */
+        }
+
+        .close-chat-button {
+            background-color: #DC2626; /* Red color for close */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease-in-out;
+            margin-top: 1rem; /* Space from chat input */
+            align-self: center; /* Center the button */
+        }
+
+        .close-chat-button:hover {
+            background-color: #B91C1C;
+        }
+
+        /* New Chat Overlay for "Chat with Admin" */
+        .chat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000; /* Above all other content */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .chat-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .chat-overlay-content {
+            background-color: rgba(255, 255, 255, 0.15); /* Translucent white */
+            backdrop-filter: blur(8px);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        /* Big Animated Chat Button */
+        .big-chat-button-container {
+            position: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1500; /* Below overlays, above main content */
+            transition: all 1s ease-in-out; /* Smooth transition for size and position */
+            opacity: 1;
+        }
+
+        .big-chat-button-initial {
+            top: 0;
+            left: 0;
+            width: 100vw;
+            min-height: 100vh; width: 100vw;
+            font-size: 5rem; /* Very large text */
+            background-color: #8A2BE2; /* Purple background */
+            border-radius: 0; /* No rounded corners initially */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+        }
+
+        .big-chat-button-final {
+            top: 1.5rem; /* Target top for nav bar */
+            right: 1.5rem; /* Target right for nav bar */
+            width: 120px; /* Approximate width of nav button */
+            height: 40px; /* Approximate height of nav button */
+            font-size: 1rem; /* Normal font size */
+            background-color: #8A2BE2;
+            border-radius: 0.5rem; /* Normal rounded corners */
+            opacity: 1;
+            transform: translate(0, 0) scale(1); /* Ensure no residual transform */
+        }
+
+        /* Green Glow for userChatButton */
+        @keyframes greenGlow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(144, 238, 144, 0.5), /* Light green glow */
+                            0 0 10px rgba(144, 238, 144, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 10px rgba(144, 238, 144, 0.8),
+                            0 0 20px rgba(144, 238, 144, 0.6);
+            }
+        }
+
+        .green-glow {
+            animation: greenGlow 2s infinite alternate; /* Apply blinking green glow */
+        }
+
+        /* YouTube Video Overlay Styles */
+        .youtube-video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* Darker overlay for video */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000; /* Highest z-index */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+        }
+
+        .youtube-video-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .youtube-video-container {
+            position: relative;
+            width: 95%; /* Adjusted width for better mobile fit */
+            max-width: 800px; /* Keep max-width for larger screens */
+            padding-bottom: 45%; /* 16:9 aspect ratio (height is 9/16 of width) */
+            height: 0;
+            overflow: auto;
+            background-color: black;
+            border-radius: 1rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .youtube-video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .youtube-video-close-button {
+            background-color: #DC2626; /* Red close button */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+            margin-top: 1.5rem;
+        }
+
+        .youtube-video-close-button:hover {
+            background-color: #B91C1C;
+        }
+
+        /* Powered by text styling */
+        .powered-by-text {
+            color: rgba(255, 255, 255, 0.7); /* Slightly dimmed white */
+            font-size: 0.875rem; /* Small font size */
+            font-family: 'Poppins', sans-serif;
+            margin-top: 1rem; /* Space from elements above */
+            text-align: center;
+        }
+
+        /* Responsive padding for main content areas */
+        #mainContent, #adminPanelContent, #chatPageContent {
+            padding: 1.5rem; /* Default padding for smaller screens */
+        }
+
+        @media (min-width: 640px) { /* Tailwind's sm breakpoint */
+            #mainContent, #adminPanelContent, #chatPageContent {
+                padding: 2rem; /* Restore larger padding for larger screens */
+            }
+        }
+    </style>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+    html, body {
+        overflow-x: hidden;
+    }
+</style>
+
+</head>
+<body>
+    <div class="nova-text text-4xl font-bold p-4 rounded-lg">
+        Unit Nova Bots
+    </div>
+
+    <div class="nav-buttons-container">
+        <button class="nav-button" id="mainButton">Main</button>
+        <button class="nav-button" id="adminButton">Admin</button>
+        <button class="nav-button hidden" id="userChatButton">Chat</button> </div>
+
+    
+<audio autoplay loop id="bgMusic">
+    <source src="https://cdn.pixabay.com/audio/2022/10/13/audio_d5a56c2d7e.mp3" type="audio/mpeg">
+</audio>
+
+<div class="stars-container" id="starsContainer"></div>
+
+    <div class="relative w-screen min-h-screen flex items-center justify-center p-4">
+        <div id="mainContent" class="bg-white/10 backdrop-blur-sm p-8 rounded-lg shadow-xl flex flex-col items-center justify-center space-y-4">
+            <p class="text-white text-lg text-center translucent-box-text">Welcome to Unit Nova</p>
+
+            <button class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out button-text" onclick="window.open('https://www.roblox.com/createaccount', '_blank');">
+                Create an Alt account
+            </button>
+
+            <div class="flex flex-col items-center w-full max-w-xs">
+                <input type="text" id="altUsername" placeholder="Alt Username" class="input-field w-full">
+                <span id="usernameError" class="error-message"></span>
+            </div>
+
+            <div class="flex flex-col items-center w-full max-w-xs">
+                <div class="flex items-center w-full">
+                    <input type="password" id="altPassword" placeholder="Alt Password" class="input-field flex-grow">
+                    <span class="password-toggle" id="togglePassword">
+                        <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 hidden">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                        <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.981 12H12m0 0l-3.981 3.981M12 12l3.981-3.981M21.964 12.322a1.012 1.012 0 0 0 0-.639C20.577 7.51 16.64 4.5 12 4.5c-4.638 0-8.573 3.007-9.963 7.178-.07.207-.07.431 0 .639C3.423 16.49 7.36 19.5 12 19.5c4.638 0 8.573-3.007 9.963-7.178Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                    </span>
+                </div>
+                <span id="passwordError" class="error-message"></span>
+            </div>
+
+            <button id="submitButton" class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out button-text submit-button-glow">
+                Submit
+            </button>
+
+            <p class="powered-by-text">Powered by Roblox Bots</p>
+        </div>
+
+        <div id="adminPanelContent" class="admin-panel-content hidden">
+            <h1 class="text-5xl font-bold mb-4">Admin Panel</h1>
+
+            <div class="accounts-section">
+                <h2>Submitted Alt Accounts</h2>
+                <div id="submittedAccountsList">
+                    <p class="text-gray-400" id="noSubmittedAccountsMessage">No submitted accounts yet.</p>
+                </div>
+            </div>
+
+            <div class="accounts-section mt-8">
+                <h2>Accepted Alt Accounts</h2>
+                <div id="acceptedAccountsList">
+                    <p class="text-gray-400" id="noAcceptedAccountsMessage">No accepted accounts yet.</p>
+                </div>
+            </div>
+            
+            <button id="logoutAdminButton" class="logout-button">Logout Admin</button>
+        </div>
+
+        <div id="chatPageContent" class="chat-page-content hidden">
+            <h1 class="chat-header" id="chatHeader"></h1>
+            
+            <div class="chat-messages-container" id="chatMessagesContainer">
+                <p class="text-gray-400 text-center">No messages yet. Start chatting!</p>
+            </div>
+
+            <div class="chat-input-container">
+                <textarea id="chatInput" placeholder="Type your message..." class="chat-input-field" rows="1"></textarea>
+                <button id="sendButton" class="chat-send-button">Send</button>
+            </div>
+            <button id="closeChatButton" class="close-chat-button">Close</button> </div>
+    </div>
+
+    <div id="chatWithAdminOverlay" class="chat-overlay">
+        <div class="chat-overlay-content">
+            <p class="message-text">Chat with Admin</p>
+            <button id="chatWithAdminOverlayOkayButton" class="close-button">Okay</button>
+        </div>
+    </div>
+
+    <div id="adminPasswordModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold">Admin Access</h3>
+            <input type="password" id="adminPasswordInput" placeholder="Enter Admin Password" class="modal-input">
+            <span id="adminPasswordError" class="modal-error hidden">Incorrect password.</span>
+            <div class="flex justify-center space-x-4">
+                <button id="confirmAdminPassword" class="modal-button">Confirm</button>
+                <button id="cancelAdminPassword" class="modal-button bg-gray-600 hover:bg-gray-700">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="customMessageOverlay" class="custom-message-overlay">
+        <div id="customMessageContent" class="custom-message-content">
+            <p id="customMessageText" class="message-text"></p>
+            <button id="customMessageCloseButton" class="close-button">Close</button>
+        </div>
+    </div>
+
+    <div id="youtubeVideoOverlay" class="youtube-video-overlay">
+        <div class="youtube-video-container">
+            <iframe id="youtubeVideoIframe" src="https://www.youtube.com/embed/UMo5hDaWeEA?autoplay=1&controls=0&loop=1&mute=1&playlist=UMo5hDaWeEA" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+        <button id="youtubeVideoCloseButton" class="youtube-video-close-button">Close Video</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const starsContainer = document.getElementById('starsContainer');
+            const numberOfStars = 60; // Adjust as needed for density
+
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+
+                // Random size for stars (now 2px to 5px, bigger than before)
+                const size = Math.random() * 3 + 2; // 2 to 5 pixels
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+
+                // Random starting position (off-screen right)
+                const startX = 100 + Math.random() * 100; // Start further right
+                star.style.left = `${startX}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+
+                // Random animation duration (now 5 to 10 seconds, slower than before)
+                const duration = Math.random() * 5 + 5; // 5 to 10 seconds
+                star.style.animationDuration = `${duration}s`;
+
+                // Random animation delay to stagger appearance
+                const delay = Math.random() * 10; // 0 to 10 seconds delay (longer for slower animation)
+                star.style.animationDelay = `${delay}s`;
+
+                starsContainer.appendChild(star);
+            }
+
+            // Input fields and error messages
+            const altUsernameInput = document.getElementById('altUsername');
+            const usernameError = document.getElementById('usernameError');
+            const altPasswordInput = document.getElementById('altPassword');
+            const passwordError = document.getElementById('passwordError');
+            const togglePassword = document.getElementById('togglePassword');
+            const eyeOpenIcon = document.getElementById('eyeOpen');
+            const eyeClosedIcon = document.getElementById('eyeClosed');
+            const submitButton = document.getElementById('submitButton');
+
+            // Admin Modal elements
+            const mainButton = document.getElementById('mainButton');
+            const adminButton = document.getElementById('adminButton');
+            const adminPasswordModal = document.getElementById('adminPasswordModal');
+            const adminPasswordInput = document.getElementById('adminPasswordInput');
+            const adminPasswordError = document.getElementById('adminPasswordError');
+            const confirmAdminPasswordButton = document.getElementById('confirmAdminPassword');
+            const cancelAdminPasswordButton = document.getElementById('cancelAdminPassword');
+            const ADMIN_PASSWORD = "AdMIn321"; // The required admin password
+
+            // Content sections
+            const mainContent = document.getElementById('mainContent');
+            const adminPanelContent = document.getElementById('adminPanelContent');
+            const chatPageContent = document.getElementById('chatPageContent'); // NEW: Chat page content
+            const submittedAccountsListDiv = document.getElementById('submittedAccountsList');
+            const acceptedAccountsListDiv = document.getElementById('acceptedAccountsList');
+            const noSubmittedAccountsMessage = document.getElementById('noSubmittedAccountsMessage');
+            const noAcceptedAccountsMessage = document.getElementById('noAcceptedAccountsMessage');
+            const logoutAdminButton = document.getElementById('logoutAdminButton'); // Logout button
+
+            // Custom Message Overlay elements
+            const customMessageOverlay = document.getElementById('customMessageOverlay');
+            const customMessageContent = document.getElementById('customMessageContent'); // Get the content div
+            const customMessageText = document.getElementById('customMessageText');
+            const customMessageCloseButton = document.getElementById('customMessageCloseButton');
+
+            // Chat Page specific elements (NEW)
+            const userChatButton = document.getElementById('userChatButton');
+            const chatHeader = document.getElementById('chatHeader');
+            const chatMessagesContainer = document.getElementById('chatMessagesContainer');
+            const chatInput = document.getElementById('chatInput');
+            const sendButton = document.getElementById('sendButton');
+            const closeChatButton = document.getElementById('closeChatButton'); // NEW: Close Chat Button
+
+            // New Chat with Admin Overlay elements (NEW)
+            const chatWithAdminOverlay = document.getElementById('chatWithAdminOverlay');
+            const chatWithAdminOverlayOkayButton = document.getElementById('chatWithAdminOverlayOkayButton');
+
+            // YouTube Video Overlay elements (NEW)
+            const youtubeVideoOverlay = document.getElementById('youtubeVideoOverlay');
+            const youtubeVideoIframe = document.getElementById('youtubeVideoIframe');
+            const youtubeVideoCloseButton = document.getElementById('youtubeVideoCloseButton');
+
+            // Global variable to store current chat partner's ID (for admin-user chat)
+            let currentChatPartnerId = null; 
+            // Global variable to determine if the current user is an admin or regular user
+            let currentUserIsAdmin = false;
+
+            // --- Debugging: Log retrieved elements ---
+            console.log("Elements retrieved on DOMContentLoaded:");
+            console.log("altUsernameInput:", altUsernameInput);
+            console.log("altPasswordInput:", altPasswordInput);
+            console.log("togglePassword:", togglePassword);
+            console.log("eyeOpenIcon:", eyeOpenIcon);
+            console.log("eyeClosedIcon:", eyeClosedIcon);
+            console.log("submitButton:", submitButton);
+            console.log("mainButton:", mainButton);
+            console.log("adminButton:", adminButton);
+            console.log("userChatButton:", userChatButton); // Debug new chat button
+            console.log("chatPageContent:", chatPageContent); // Debug chat page
+            console.log("closeChatButton:", closeChatButton); // Debug close chat button
+            console.log("chatWithAdminOverlay:", chatWithAdminOverlay); // Debug new overlay
+            console.log("chatWithAdminOverlayOkayButton:", chatWithAdminOverlayOkayButton); // Debug new overlay button
+            console.log("youtubeVideoOverlay:", youtubeVideoOverlay); // Debug YouTube overlay
+            console.log("youtubeVideoIframe:", youtubeVideoIframe); // Debug YouTube iframe
+            console.log("youtubeVideoCloseButton:", youtubeVideoCloseButton); // Debug YouTube close button
+            // --- End Debugging ---
+
+
+            // Function to validate input for spaces and minimum length
+            const validateInput = (inputElement, errorElement, fieldName) => {
+                let isValid = true;
+                if (errorElement) {
+                    errorElement.style.display = 'none'; // Hide previous error
+                }
+                const inputValue = inputElement.value.trim();
+
+                if (inputValue.includes(' ')) {
+                    if (errorElement) {
+                        errorElement.textContent = `Invalid ${fieldName} - no spaces allowed`;
+                        errorElement.style.display = 'block';
+                    }
+                    isValid = false;
+                } else if (inputValue.length > 0 && inputValue.length < 2) {
+                    if (errorElement) {
+                        errorElement.textContent = `${fieldName} must be at least 2 characters`;
+                        errorElement.style.display = 'block';
+                    }
+                    isValid = false;
+                }
+                return isValid;
+            };
+
+            // Function to update the visibility of the submit button
+            const updateSubmitButtonState = () => {
+                const isUsernameValid = altUsernameInput && altUsernameInput.value.trim().length >= 2 && !altUsernameInput.value.trim().includes(' ');
+                const isPasswordValid = altPasswordInput && altPasswordInput.value.trim().length >= 2 && !altPasswordInput.value.trim().includes(' ');
+
+                if (submitButton) {
+                    if (isUsernameValid && isPasswordValid) {
+                        submitButton.classList.remove('hidden');
+                    } else {
+                        submitButton.classList.add('hidden');
+                    }
+                }
+            };
+
+            // Add event listeners to input fields for real-time validation and button state update
+            if (altUsernameInput && usernameError) {
+                altUsernameInput.addEventListener('input', () => {
+                    validateInput(altUsernameInput, usernameError, 'Username');
+                    updateSubmitButtonState();
+                });
+            }
+
+            if (altPasswordInput && passwordError) {
+                altPasswordInput.addEventListener('input', () => {
+                    validateInput(altPasswordInput, passwordError, 'Password');
+                    updateSubmitButtonState();
+                });
+            }
+
+            // Function to update navigation button styles and content visibility
+            const navigateToPage = (pageName, chatUserId = null) => {
+                mainContent.classList.add('hidden');
+                adminPanelContent.classList.add('hidden');
+                chatPageContent.classList.add('hidden'); // Hide chat page by default
+
+                mainButton.classList.remove('hidden', 'glow', 'darken');
+                adminButton.classList.remove('hidden', 'glow', 'darken');
+                userChatButton.classList.remove('hidden', 'glow', 'darken'); // Manage chat button visibility separately
+
+                if (pageName === 'main') {
+                    mainContent.classList.remove('hidden');
+                    mainButton.classList.add('hidden');
+                    adminButton.classList.add('glow');
+                    userChatButton.classList.add('glow'); // userChatButton should always glow when visible
+                } else if (pageName === 'admin') {
+                    adminPanelContent.classList.remove('hidden');
+                    adminButton.classList.add('hidden');
+                    mainButton.classList.add('glow');
+                    userChatButton.classList.add('darken'); // userChatButton is dimmed if admin is active
+                    loadAccounts(); // Ensure accounts are loaded when navigating to admin
+                } else if (pageName === 'chat') { // NEW: Chat page navigation
+                    chatPageContent.classList.remove('hidden');
+                    mainButton.classList.add('hidden'); // Hide Main button when in chat
+                    adminButton.classList.add('darken');
+                    userChatButton.classList.add('darken'); // Dim chat button if in chat
+                    
+                    // Set chat header based on context
+                    if (currentUserIsAdmin) { // If admin is chatting
+                        const acceptedAccounts = JSON.parse(localStorage.getItem('acceptedAccounts') || '[]');
+                        const chatUserAccount = acceptedAccounts.find(acc => acc.id === chatUserId);
+                        chatHeader.textContent = `Chatting with ${chatUserAccount ? chatUserAccount.username : 'User'}`;
+                    } else { // If regular user is chatting
+                        chatHeader.textContent = 'Chatting with Admin';
+                    }
+                    currentChatPartnerId = chatUserId; // Store the ID of the person we are chatting with
+                    displayMessages(); // Load and display messages for the current chat
+                }
+                checkAndShowUserChatButton(); // Re-evaluate chat button visibility after navigation
+            };
+
+            // Function to display a custom message overlay (now with optional callback)
+            const showCustomOverlayMessage = (message, isError = false, onCloseCallback = null) => {
+                if (customMessageText && customMessageContent && customMessageOverlay && customMessageCloseButton) {
+                    customMessageText.textContent = message;
+                    customMessageContent.style.backgroundColor = isError ? 'rgba(220, 38, 38, 0.9)' : 'rgba(76, 175, 80, 0.9)';
+                    customMessageOverlay.classList.add('show');
+
+                    // Remove any existing listener to prevent multiple calls
+                    customMessageCloseButton.removeEventListener('click', customMessageCloseButton.__currentListener);
+
+                    const listener = () => {
+                        customMessageOverlay.classList.remove('show');
+                        if (onCloseCallback && typeof onCloseCallback === 'function') {
+                            onCloseCallback();
+                        }
+                    };
+                    customMessageCloseButton.addEventListener('click', listener);
+                    customMessageCloseButton.__currentListener = listener; // Store reference to the current listener
+                }
+            };
+
+            // Function to show the "Chat with Admin" specific overlay
+            const showChatWithAdminOverlay = (onCloseCallback = null) => {
+                if (chatWithAdminOverlay && chatWithAdminOverlayOkayButton) {
+                    chatWithAdminOverlay.classList.add('show');
+                    chatWithAdminOverlayOkayButton.removeEventListener('click', chatWithAdminOverlayOkayButton.__currentListener);
+
+                    const listener = () => {
+                        chatWithAdminOverlay.classList.remove('show');
+                        if (onCloseCallback && typeof onCloseCallback === 'function') {
+                            onCloseCallback();
+                        }
+                    };
+                    chatWithAdminOverlayOkayButton.addEventListener('click', listener);
+                    chatWithAdminOverlayOkayButton.__currentListener = listener;
+                }
+            };
+
+            // Function to animate the big chat button
+            const animateChatButton = () => {
+                if (!userChatButton) {
+                    console.error("userChatButton not found for animation.");
+                    return;
+                }
+
+                // Create a temporary large button element
+                const tempButton = document.createElement('div');
+                tempButton.textContent = 'Chat';
+                tempButton.classList.add('big-chat-button-container', 'big-chat-button-initial');
+                document.body.appendChild(tempButton);
+
+                // Force reflow to ensure initial styles are applied before transition
+                tempButton.offsetWidth; 
+
+                // Get the final position and size of the userChatButton
+                const userChatButtonRect = userChatButton.getBoundingClientRect();
+                const finalTop = userChatButtonRect.top;
+                const finalLeft = userChatButtonRect.left;
+                const finalWidth = userChatButtonRect.width;
+                const finalHeight = userChatButtonRect.height;
+
+                // Apply final styles and trigger transition
+                tempButton.style.position = 'fixed'; // Ensure it's fixed for positioning
+                tempButton.style.top = `${finalTop}px`;
+                tempButton.style.left = `${finalLeft}px`;
+                tempButton.style.width = `${finalWidth}px`;
+                tempButton.style.height = `${finalHeight}px`;
+                tempButton.style.fontSize = '1rem'; // Match normal button font size
+                tempButton.style.borderRadius = '0.5rem'; // Match normal button border-radius
+                tempButton.style.backgroundColor = '#8A2BE2'; // Match normal button color
+                tempButton.style.color = 'white';
+                tempButton.style.textDecoration = 'underline'; // Match nav button style
+                tempButton.style.fontFamily = 'Poppins, sans-serif'; // Match nav button font
+
+                // Use a small timeout to ensure the transition is applied after the initial state
+                setTimeout(() => {
+                    tempButton.classList.remove('big-chat-button-initial');
+                    tempButton.classList.add('big-chat-button-final');
+                }, 50); // Small delay to ensure CSS transition is triggered
+
+                // Listen for the end of the transition
+                tempButton.addEventListener('transitionend', () => {
+                    tempButton.remove(); // Remove the temporary button
+                    userChatButton.classList.remove('hidden'); // Show the actual chat button
+                    userChatButton.classList.add('green-glow'); // Apply the green glow
+                }, { once: true }); // Ensure listener is removed after it fires
+            };
+
+
+            // Submit button click handler
+            if (submitButton && altUsernameInput && altPasswordInput) {
+                submitButton.addEventListener('click', () => {
+                    const isUsernameValid = validateInput(altUsernameInput, usernameError, 'Username');
+                    const isPasswordValid = validateInput(altPasswordInput, passwordError, 'Password');
+
+                    if (isUsernameValid && isPasswordValid) {
+                        let submittedAccounts = [];
+                        try {
+                            submittedAccounts = JSON.parse(localStorage.getItem('submittedAccounts') || '[]');
+                        } catch (e) {
+                            console.error("Error parsing submitted accounts from localStorage:", e);
+                            submittedAccounts = []; // Reset to empty array on error
+                        }
+                        
+                        const newAccount = {
+                            id: crypto.randomUUID(), // Assign a unique ID
+                            username: altUsernameInput.value.trim(), // Store trimmed value
+                            password: altPasswordInput.value.trim(), // Store trimmed value
+                            timestamp: new Date().toISOString()
+                        };
+                        submittedAccounts.push(newAccount);
+                        
+                        localStorage.setItem('submittedAccounts', JSON.stringify(submittedAccounts));
+                        localStorage.setItem('currentUserAltId', newAccount.id); // Store the ID of the newly submitted account
+                        console.log("Submitting account:", newAccount); // Debug log
+                        console.log("Submitted accounts after save:", JSON.parse(localStorage.getItem('submittedAccounts'))); // Debug log
+
+                        showCustomOverlayMessage('Account Submitted');
+
+                        altUsernameInput.value = '';
+                        altPasswordInput.value = '';
+                        altPasswordInput.setAttribute('type', 'password');
+                        if (eyeOpenIcon && eyeClosedIcon) {
+                            eyeOpenIcon.classList.add('hidden');
+                            eyeClosedIcon.classList.remove('hidden');
+                        }
+
+                        updateSubmitButtonState();
+                        checkAndShowUserChatButton(); // Check chat button visibility after submission
+                    }
+                });
+            }
+
+            // Admin button click handler
+            if (adminButton && adminPasswordInput && adminPasswordError && adminPasswordModal) {
+                adminButton.addEventListener('click', () => {
+                    if (localStorage.getItem('isAdminLoggedIn') === 'true') {
+                        currentUserIsAdmin = true; // Mark as admin
+                        navigateToPage('admin');
+                    } else {
+                        adminPasswordInput.value = '';
+                        adminPasswordError.classList.add('hidden');
+                        adminPasswordModal.classList.add('show');
+                        adminPasswordInput.focus();
+                    }
+                });
+            }
+
+            // Confirm Admin Password button handler
+            if (confirmAdminPasswordButton && adminPasswordInput && adminPasswordError && adminPasswordModal) {
+                confirmAdminPasswordButton.addEventListener('click', () => {
+                    if (adminPasswordInput.value === ADMIN_PASSWORD) {
+                        localStorage.setItem('isAdminLoggedIn', 'true');
+                        currentUserIsAdmin = true; // Mark as admin
+                        adminPasswordModal.classList.remove('show');
+                        navigateToPage('admin');
+                    } else {
+                        adminPasswordError.classList.remove('hidden');
+                    }
+                });
+            }
+
+            // Cancel Admin Password button handler
+            if (cancelAdminPasswordButton && adminPasswordModal) {
+                cancelAdminPasswordButton.addEventListener('click', () => {
+                    adminPasswordModal.classList.remove('show');
+                });
+            }
+
+            // Logout Admin button handler
+            if (logoutAdminButton) {
+                logoutAdminButton.addEventListener('click', () => {
+                    localStorage.removeItem('isAdminLoggedIn');
+                    currentUserIsAdmin = false; // Unmark as admin
+                    showCustomOverlayMessage('Admin session logged out.');
+                    navigateToPage('main');
+                });
+            }
+
+            // Function to load and display accounts from localStorage
+            const loadAccounts = () => {
+                console.log("Loading accounts for Admin Panel..."); // Debug log
+                let submittedAccounts = [];
+                let acceptedAccounts = [];
+                try {
+                    submittedAccounts = JSON.parse(localStorage.getItem('submittedAccounts') || '[]');
+                    acceptedAccounts = JSON.parse(localStorage.getItem('acceptedAccounts') || '[]');
+                } catch (e) {
+                    console.error("Error parsing accounts from localStorage:", e);
+                    submittedAccounts = []; // Reset to empty array on error
+                    acceptedAccounts = []; // Reset to empty array on error
+                }
+
+                console.log("Submitted accounts retrieved:", submittedAccounts); // Debug log
+                console.log("Accepted accounts retrieved:", acceptedAccounts); // Debug log
+
+                if (submittedAccountsListDiv) {
+                    submittedAccountsListDiv.innerHTML = ''; // Clear previous content
+                }
+                if (acceptedAccountsListDiv) {
+                    acceptedAccountsListDiv.innerHTML = ''; // Clear previous content
+                }
+
+
+                if (submittedAccounts.length > 0) {
+                    if (noSubmittedAccountsMessage) noSubmittedAccountsMessage.classList.add('hidden');
+                    // Sort submitted accounts by timestamp (oldest first)
+                    submittedAccounts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                    submittedAccounts.forEach(account => {
+                        const accountItem = document.createElement('div');
+                        accountItem.classList.add('account-item');
+                        accountItem.innerHTML = `
+                            <div class="account-info">
+                                <p><strong>Username:</strong> ${account.username}</p>
+                                <p><strong>Password:</strong> ${account.password}</p>
+                                <p class="text-sm text-gray-300"><strong>Submitted:</strong> ${new Date(account.timestamp).toLocaleDateString()} ${new Date(account.timestamp).toLocaleTimeString()}</p>
+                            </div>
+                            <div class="account-actions">
+                                <button class="action-button check" data-id="${account.id}">✓</button>
+                                <button class="action-button remove" data-id="${account.id}">X</button>
+                            </div>
+                        `;
+                        if (submittedAccountsListDiv) submittedAccountsListDiv.appendChild(accountItem);
+                    });
+                } else {
+                    if (noSubmittedAccountsMessage) noSubmittedAccountsMessage.classList.remove('hidden');
+                }
+
+                if (acceptedAccounts.length > 0) {
+                    if (noAcceptedAccountsMessage) noAcceptedAccountsMessage.classList.add('hidden');
+                    // Sort accepted accounts by timestamp (oldest first)
+                    acceptedAccounts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                    acceptedAccounts.forEach(account => {
+                        const accountItem = document.createElement('div');
+                        accountItem.classList.add('account-item');
+                        accountItem.innerHTML = `
+                            <div class="account-info">
+                                <p><strong>Username:</strong> ${account.username}</p>
+                                <p><strong>Password:</strong> ${account.password}</p>
+                                <p class="text-sm text-gray-300"><strong>Accepted:</strong> ${new Date(account.timestamp).toLocaleDateString()} ${new Date(account.timestamp).toLocaleTimeString()}</p>
+                            </div>
+                            <div class="account-actions">
+                                <button class="action-button chat" data-id="${account.id}">Chat</button> </div>
+                        `;
+                        if (acceptedAccountsListDiv) acceptedAccountsListDiv.appendChild(accountItem);
+                    });
+                } else {
+                    if (noAcceptedAccountsMessage) noAcceptedAccountsMessage.classList.remove('hidden');
+                }
+
+                // Add event listeners for action buttons after rendering
+                document.querySelectorAll('.action-button.check').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const accountId = event.target.dataset.id;
+                        handleAccountAction(accountId, 'accept');
+                    });
+                });
+
+                document.querySelectorAll('.action-button.remove').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const accountId = event.target.dataset.id;
+                        handleAccountAction(accountId, 'remove');
+                    });
+                });
+
+                // NEW: Add event listeners for Admin Chat buttons
+                document.querySelectorAll('.action-button.chat').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const userIdToChatWith = event.target.dataset.id;
+                        navigateToPage('chat', userIdToChatWith); // Navigate to chat with specific user ID
+                    });
+                });
+            };
+
+            // Handle account actions (accept or remove)
+            const handleAccountAction = (accountId, action) => {
+                let submittedAccounts = [];
+                let acceptedAccounts = [];
+                let userMessages = [];
+
+                try {
+                    submittedAccounts = JSON.parse(localStorage.getItem('submittedAccounts') || '[]');
+                    acceptedAccounts = JSON.parse(localStorage.getItem('acceptedAccounts') || '[]');
+                    userMessages = JSON.parse(localStorage.getItem('userMessages') || '[]');
+                } catch (e) {
+                    console.error("Error parsing accounts/messages from localStorage during action:", e);
+                    submittedAccounts = [];
+                    acceptedAccounts = [];
+                    userMessages = [];
+                }
+
+                const accountIndex = submittedAccounts.findIndex(acc => acc.id === accountId);
+
+                if (accountIndex !== -1) {
+                    const account = submittedAccounts[accountIndex];
+                    if (action === 'accept') {
+                        acceptedAccounts.push(account);
+                        submittedAccounts.splice(accountIndex, 1); // Remove from submitted
+                        userMessages.push({ accountId: account.id, status: 'accepted' });
+                        
+                        // Trigger the sequence of overlays and animations
+                        showCustomOverlayMessage(`Account ${account.username} Accepted!`, false, () => {
+                            showChatWithAdminOverlay(() => {
+                                animateChatButton(); // Start the big button animation after "Chat with Admin" is dismissed
+                            });
+                        });
+
+                    } else if (action === 'remove') {
+                        submittedAccounts.splice(accountIndex, 1); // Remove from submitted
+                        userMessages.push({ accountId: account.id, status: 'denied' });
+                        showCustomOverlayMessage(`Account ${account.username} Denied/Removed!`, true);
+                    }
+                    console.log(`Action '${action}' on account ${accountId}. Submitted accounts before save:`, submittedAccounts); // Debug log
+                    console.log(`Action '${action}' on account ${accountId}. Accepted accounts before save:`, acceptedAccounts); // Debug log
+
+                    localStorage.setItem('submittedAccounts', JSON.stringify(submittedAccounts));
+                    localStorage.setItem('acceptedAccounts', JSON.stringify(acceptedAccounts));
+                    localStorage.setItem('userMessages', JSON.stringify(userMessages));
+                    
+                    console.log(`Submitted accounts after action save:`, JSON.parse(localStorage.getItem('submittedAccounts'))); // Debug log
+                    console.log(`Accepted accounts after action save:`, JSON.parse(localStorage.getItem('acceptedAccounts'))); // Debug log
+
+                    loadAccounts(); // Re-render lists
+                    checkAndShowUserChatButton(); // Update chat button visibility
+                }
+            };
+
+            // Function to display user-specific messages on the main page
+            const displayUserMessages = () => {
+                let userMessages = [];
+                try {
+                    userMessages = JSON.parse(localStorage.getItem('userMessages') || '[]');
+                } catch (e) {
+                    console.error("Error parsing user messages from localStorage:", e);
+                    userMessages = [];
+                }
+
+                if (userMessages.length > 0) {
+                    userMessages.forEach(msg => {
+                        if (msg.status === 'accepted') {
+                            showCustomOverlayMessage(`Your account was Accepted!`, false, () => {
+                                showChatWithAdminOverlay(() => {
+                                    animateChatButton();
+                                });
+                            });
+                        } else if (msg.status === 'denied') {
+                            showCustomOverlayMessage(`Your account was Denied/Removed!`, true);
+                        }
+                    });
+                    localStorage.removeItem('userMessages'); // Clear messages after displaying
+                }
+            };
+
+            // NEW FUNCTION: Check if the user's chat button should be shown
+            const checkAndShowUserChatButton = () => {
+                const currentUserAltId = localStorage.getItem('currentUserAltId');
+                let acceptedAccounts = [];
+                try {
+                    acceptedAccounts = JSON.parse(localStorage.getItem('acceptedAccounts') || '[]');
+                } catch (e) {
+                    console.error("Error parsing accepted accounts for chat button check:", e);
+                    acceptedAccounts = [];
+                }
+                const isAccepted = acceptedAccounts.some(account => account.id === currentUserAltId);
+
+                if (userChatButton) {
+                    if (currentUserAltId && isAccepted && !currentUserIsAdmin) { // Show only if user submitted, accepted, and not currently an admin
+                        userChatButton.classList.remove('hidden');
+                    } else {
+                        userChatButton.classList.add('hidden');
+                    }
+                }
+            };
+
+            // Toggle password visibility
+            if (togglePassword && altPasswordInput && eyeOpenIcon && eyeClosedIcon) {
+                togglePassword.addEventListener('click', () => {
+                    const type = altPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    altPasswordInput.setAttribute('type', type);
+
+                    if (type === 'text') {
+                        eyeOpenIcon.classList.remove('hidden');
+                        eyeClosedIcon.classList.add('hidden');
+                    } else {
+                        eyeOpenIcon.classList.add('hidden');
+                        eyeClosedIcon.classList.remove('hidden');
+                    }
+                });
+
+                // Set initial state of eye icons based on default password type
+                if (altPasswordInput.getAttribute('type') === 'password') {
+                    eyeOpenIcon.classList.add('hidden');
+                    eyeClosedIcon.classList.remove('hidden');
+                } else {
+                    eyeOpenIcon.classList.remove('hidden');
+                    eyeClosedIcon.classList.add('hidden');
+                }
+            }
+
+            // Event listener for the Main button
+            if (mainButton) {
+                mainButton.addEventListener('click', () => {
+                    currentUserIsAdmin = false; // Ensure admin status is reset when going to main
+                    navigateToPage('main');
+                });
+            }
+
+            // NEW: Event listener for the User Chat button
+            if (userChatButton) {
+                userChatButton.addEventListener('click', () => {
+                    userChatButton.classList.remove('green-glow'); // Remove glow when clicked
+                    // When user clicks chat, they chat with 'admin' (a fixed ID or concept)
+                    navigateToPage('chat', 'admin'); 
+                });
+            }
+
+            // NEW CHAT FUNCTIONALITY
+            // Function to get the localStorage key for the current chat
+            const getChatStorageKey = () => {
+                if (currentUserIsAdmin) {
+                    // Admin is chatting with a specific user
+                    return `chat_${currentChatPartnerId}_admin`;
+                } else {
+                    // User is chatting with admin
+                    const currentUserAltId = localStorage.getItem('currentUserAltId');
+                    return `chat_${currentUserAltId}_admin`;
+                }
+            };
+
+            // Function to load and display messages
+            const displayMessages = () => {
+                if (!chatMessagesContainer) {
+                    console.error("chatMessagesContainer not found.");
+                    return;
+                }
+                chatMessagesContainer.innerHTML = ''; // Clear previous messages
+                const chatKey = getChatStorageKey();
+                let messages = [];
+                try {
+                    messages = JSON.parse(localStorage.getItem(chatKey) || '[]');
+                } catch (e) {
+                    console.error(`Error parsing messages for key ${chatKey}:`, e);
+                    messages = [];
+                }
+
+                if (messages.length === 0) {
+                    chatMessagesContainer.innerHTML = '<p class="text-gray-400 text-center">No messages yet. Start chatting!</p>';
+                    return;
+                }
+
+                messages.forEach(msg => {
+                    const messageItem = document.createElement('div');
+                    messageItem.classList.add('message-item');
+                    // Determine if the message was sent by the current user (admin or patient)
+                    const isSent = (currentUserIsAdmin && msg.sender === 'admin') || (!currentUserIsAdmin && msg.sender === 'user');
+                    messageItem.classList.add(isSent ? 'sent' : 'received');
+                    messageItem.innerHTML = `
+                        <div class="bubble">${msg.message}</div>
+                        <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
+                    `;
+                    chatMessagesContainer.appendChild(messageItem);
+                });
+
+                // Scroll to the bottom of the chat
+                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+            };
+
+            // Function to send a message
+            const sendMessage = () => {
+                if (!chatInput || !chatMessagesContainer) {
+                    console.error("Chat input or container not found.");
+                    return;
+                }
+                const messageText = chatInput.value.trim();
+                if (messageText === '') return; // Don't send empty messages
+
+                const chatKey = getChatStorageKey();
+                let messages = [];
+                try {
+                    messages = JSON.parse(localStorage.getItem(chatKey) || '[]');
+                } catch (e) {
+                    console.error(`Error parsing messages for key ${chatKey} before sending:`, e);
+                    messages = [];
+                }
+
+                const senderRole = currentUserIsAdmin ? 'admin' : 'user';
+                const newMessage = {
+                    sender: senderRole,
+                    message: messageText,
+                    timestamp: new Date().toISOString()
+                };
+                messages.push(newMessage);
+                localStorage.setItem(chatKey, JSON.stringify(messages));
+
+                chatInput.value = ''; // Clear input
+                displayMessages(); // Re-display messages
+            };
+
+            // Event listener for send button
+            if (sendButton) {
+                sendButton.addEventListener('click', sendMessage);
+            }
+
+            // Event listener for Enter key in chat input
+            if (chatInput) {
+                chatInput.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) { // Send on Enter, allow Shift+Enter for new line
+                        event.preventDefault(); // Prevent new line
+                        sendMessage();
+                    }
+                });
+            }
+
+            // Event listener for Close Chat button
+            if (closeChatButton) {
+                closeChatButton.addEventListener('click', () => {
+                    if (currentUserIsAdmin) {
+                        navigateToPage('admin'); // Admin goes back to admin panel
+                    } else {
+                        navigateToPage('main'); // User goes back to main page
+                    }
+                });
+            }
+            // END NEW CHAT FUNCTIONALITY
+
+            // NEW: YouTube Video Overlay Functions and Logic
+            const showYouTubeVideoOverlay = () => {
+                if (youtubeVideoOverlay) {
+                    youtubeVideoOverlay.classList.add('show');
+                    // Ensure the video starts playing if autoplay is allowed
+                    if (youtubeVideoIframe && youtubeVideoIframe.src) {
+                        // Reloading src to ensure autoplay attempt on show
+                        youtubeVideoIframe.src = youtubeVideoIframe.src; 
+                    }
+                }
+            };
+
+            const hideYouTubeVideoOverlay = () => {
+                if (youtubeVideoOverlay) {
+                    youtubeVideoOverlay.classList.remove('show');
+                    // Stop the video when hidden
+                    if (youtubeVideoIframe) {
+                        youtubeVideoIframe.src = ""; // Stop video playback
+                    }
+                }
+            };
+
+            if (youtubeVideoCloseButton) {
+                youtubeVideoCloseButton.addEventListener('click', () => {
+                    hideYouTubeVideoOverlay();
+                    localStorage.setItem('firstVisitDone', 'true'); // Mark first visit as done
+                });
+            }
+
+            // Initial state: show main page and check for user messages
+            navigateToPage('main');
+            updateSubmitButtonState(); // Ensure submit button state is correct on load
+            checkAndShowUserChatButton(); // Initial check for chat button visibility
+
+            // Check if it's the first visit
+            if (localStorage.getItem('firstVisitDone') !== 'true') {
+                showYouTubeVideoOverlay();
+            }
+        });
+    </script>
+
+<canvas id="explosionCanvas" style="position:fixed;pointer-events:none;top:0;left:0;width:100%;height:100%;z-index:999;"></canvas>
+<audio id="clickSound">
+    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c6a7da2525.mp3" type="audio/mpeg">
+</audio>
+<script>
+// Bug-fix checker
+window.addEventListener('load', () => {
+    try {
+        if (!document.querySelector('#mainContent')) throw new Error("Missing main content");
+        if (!document.querySelector('#adminPanelContent')) throw new Error("Missing admin panel");
+        console.log("All checks passed.");
+    } catch (e) {
+        alert("Attempting to auto-fix layout...");
+        if (!document.querySelector('#mainContent')) {
+            let fixDiv = document.createElement('div');
+            fixDiv.id = "mainContent";
+            document.body.appendChild(fixDiv);
+        }
+    }
+});
+
+// Particle explosion effect
+const canvas = document.getElementById("explosionCanvas");
+const ctx = canvas.getContext("2d");
+let particles = [];
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+function createExplosion(x, y, color) {
+    for (let i = 0; i < 20; i++) {
+        particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 0.5) * 10,
+            life: 30,
+            color
+        });
+    }
+}
+
+function drawParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+    });
+    requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// Button click effects
+const clickSound = document.getElementById("clickSound");
+document.querySelectorAll("button").forEach(button => {
+    button.addEventListener("click", e => {
+        const rect = button.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        const bgColor = getComputedStyle(button).backgroundColor;
+        createExplosion(x, y, bgColor);
+        if (clickSound) {
+            clickSound.currentTime = 0;
+            clickSound.play();
+        }
+    });
+});
+</script>
+
+
+<!-- Overlay for Account Decision -->
+<div id="accountDecisionOverlay" class="custom-message-overlay">
+  <div class="custom-message-content">
+    <p id="accountDecisionText" class="message-text"></p>
+    <button id="accountDecisionOkay" class="close-button">Okay</button>
+  </div>
+</div>
+
+<!-- Notification Bubble -->
+<div id="notificationBubble" style="position: fixed; top: 1rem; right: 1rem; background: rgba(0,0,0,0.7); color: white; padding: 1rem 1.5rem; border-radius: 0.75rem; display: none; z-index: 9999; font-family: Poppins, sans-serif; font-weight: bold;"></div>
+
+<script>
+function showNotification(message, duration = 3000) {
+    const bubble = document.getElementById('notificationBubble');
+    if (bubble) {
+        bubble.textContent = message;
+        bubble.style.display = 'block';
+        setTimeout(() => {
+            bubble.style.display = 'none';
+        }, duration);
+    }
+}
+
+// Show account decision overlay to user
+function showAccountDecision(status) {
+    const overlay = document.getElementById('accountDecisionOverlay');
+    const text = document.getElementById('accountDecisionText');
+    const button = document.getElementById('accountDecisionOkay');
+
+    if (status === "accepted") {
+        text.textContent = "Your account was Accepted!";
+        button.onclick = () => {
+            overlay.classList.remove('show');
+            navigateToPage('chat', 'admin');
+        };
+    } else {
+        text.textContent = "Your account was Denied or Removed.";
+        button.onclick = () => overlay.classList.remove('show');
+    }
+
+    overlay.classList.add('show');
+}
+
+// Automatically show decision overlay if flagged
+document.addEventListener('DOMContentLoaded', () => {
+    const status = localStorage.getItem('accountDecisionStatus');
+    if (status) {
+        showAccountDecision(status);
+        localStorage.removeItem('accountDecisionStatus');
+    }
+});
+
+// Hook into admin decision to set localStorage for user notification
+const originalHandleAccountAction = handleAccountAction;
+handleAccountAction = function(accountId, action) {
+    const currentUserAltId = localStorage.getItem('currentUserAltId');
+    if (currentUserAltId === accountId) {
+        localStorage.setItem('accountDecisionStatus', action === 'accept' ? 'accepted' : 'denied');
+    }
+    originalHandleAccountAction(accountId, action);
+    showNotification(`Account ${action === 'accept' ? 'Accepted' : 'Denied'}.`);
+};
+</script>
+
+</body>
+</html>
