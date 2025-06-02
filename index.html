@@ -769,6 +769,73 @@
     }
 </style>
 
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+const firebaseConfig = {'apiKey': 'AIzaSyAYRMxh2aHlucRQMfR10Tieprlf6c-yzK0', 'authDomain': 'unit-nova.firebaseapp.com', 'databaseURL': 'https://unit-nova-default-rtdb.firebaseio.com', 'projectId': 'unit-nova', 'storageBucket': 'unit-nova.firebasestorage.app', 'messagingSenderId': '793607464517', 'appId': '1:793607464517:web:219bcf1b628a9a39cea52c', 'measurementId': 'G-70WKN701P2'};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.addEventListener('DOMContentLoaded', () => {
+  const altUsernameInput = document.getElementById("altUsername");
+  const altPasswordInput = document.getElementById("altPassword");
+  const submitButton = document.getElementById("submitButton");
+  const submittedAccountsListDiv = document.getElementById("submittedAccountsList");
+
+  // Submit account
+  submitButton?.addEventListener("click", () => {
+    const username = altUsernameInput?.value.trim();
+    const password = altPasswordInput?.value.trim();
+    if (username.length >= 2 && password.length >= 2 && !username.includes(" ") && !password.includes(" ")) {
+      const data = { username, password, timestamp: new Date().toISOString() };
+      push(ref(db, "accounts"), data);
+      altUsernameInput.value = "";
+      altPasswordInput.value = "";
+      alert("Account submitted!");
+    } else {
+      alert("Please enter valid username and password.");
+    }
+  });
+
+  // Real-time chat
+  const sendButton = document.getElementById("sendButton");
+  const chatInput = document.getElementById("chatInput");
+  const chatMessagesContainer = document.getElementById("chatMessagesContainer");
+
+  sendButton?.addEventListener("click", () => {
+    const msg = chatInput?.value.trim();
+    if (msg) {
+      const message = {
+        sender: "user",
+        message: msg,
+        timestamp: new Date().toISOString()
+      };
+      push(ref(db, "chat"), message);
+      chatInput.value = "";
+    }
+  });
+
+  const chatRef = ref(db, "chat");
+  onChildAdded(chatRef, (snapshot) => {
+    const msg = snapshot.val();
+    const messageItem = document.createElement("div");
+    messageItem.classList.add("message-item");
+    if (msg.sender === "user") {
+      messageItem.classList.add("sent");
+    }
+    messageItem.innerHTML = `
+      <div class="bubble">\${msg.message}</div>
+      <span class="message-timestamp">\${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - \${new Date(msg.timestamp).toLocaleDateString()}</span>
+    `;
+    chatMessagesContainer?.appendChild(messageItem);
+    chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+  });
+});
+</script>
+
 </head>
 <body>
     <div class="nova-text text-4xl font-bold p-4 rounded-lg">
