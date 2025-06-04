@@ -107,16 +107,6 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
-        /* Error message styling */
-        .error-message {
-            color: #ffcccc; /* Light red for error */
-            font-size: 0.875rem; /* Smaller font size */
-            font-family: 'Poppins', sans-serif;
-            margin-top: 0.25rem;
-            display: none; /* Hidden by default */
-            font-weight: bold; /* Make error messages stand out more */
-        }
-
         /* Password toggle styling */
         .password-toggle {
             cursor: pointer;
@@ -682,65 +672,6 @@
             animation: greenGlow 2s infinite alternate; /* Apply blinking green glow */
         }
 
-        /* YouTube Video Overlay Styles */
-        .youtube-video-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); /* Darker overlay for video */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 3000; /* Highest z-index */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
-        }
-
-        .youtube-video-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .youtube-video-container {
-            position: relative;
-            width: 95%; /* Adjusted width for better mobile fit */
-            max-width: 800px; /* Keep max-width for larger screens */
-            padding-bottom: 45%; /* 16:9 aspect ratio (height is 9/16 of width) */
-            height: 0;
-            overflow: auto;
-            background-color: black;
-            border-radius: 1rem;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .youtube-video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
-
-        .youtube-video-close-button {
-            background-color: #DC2626; /* Red close button */
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease-in-out;
-            margin-top: 1.5rem;
-        }
-
-        .youtube-video-close-button:hover {
-            background-color: #B91C1C;
-        }
-
         /* Powered by text styling */
         .powered-by-text {
             color: rgba(255, 255, 255, 0.7); /* Slightly dimmed white */
@@ -760,6 +691,16 @@
                 padding: 2rem; /* Restore larger padding for larger screens */
             }
         }
+
+        /* Floating animation for the tutorial button */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 2s ease-in-out infinite;
+        }
     </style>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -768,73 +709,6 @@
         overflow-x: hidden;
     }
 </style>
-
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
-
-const firebaseConfig = {'apiKey': 'AIzaSyAYRMxh2aHlucRQMfR10Tieprlf6c-yzK0', 'authDomain': 'unit-nova.firebaseapp.com', 'databaseURL': 'https://unit-nova-default-rtdb.firebaseio.com', 'projectId': 'unit-nova', 'storageBucket': 'unit-nova.firebasestorage.app', 'messagingSenderId': '793607464517', 'appId': '1:793607464517:web:219bcf1b628a9a39cea52c', 'measurementId': 'G-70WKN701P2'};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-window.addEventListener('DOMContentLoaded', () => {
-  const altUsernameInput = document.getElementById("altUsername");
-  const altPasswordInput = document.getElementById("altPassword");
-  const submitButton = document.getElementById("submitButton");
-  const submittedAccountsListDiv = document.getElementById("submittedAccountsList");
-
-  // Submit account
-  submitButton?.addEventListener("click", () => {
-    const username = altUsernameInput?.value.trim();
-    const password = altPasswordInput?.value.trim();
-    if (username.length >= 2 && password.length >= 2 && !username.includes(" ") && !password.includes(" ")) {
-      const data = { username, password, timestamp: new Date().toISOString() };
-      push(ref(db, "accounts"), data);
-      altUsernameInput.value = "";
-      altPasswordInput.value = "";
-      alert("Account submitted!");
-    } else {
-      alert("Please enter valid username and password.");
-    }
-  });
-
-  // Real-time chat
-  const sendButton = document.getElementById("sendButton");
-  const chatInput = document.getElementById("chatInput");
-  const chatMessagesContainer = document.getElementById("chatMessagesContainer");
-
-  sendButton?.addEventListener("click", () => {
-    const msg = chatInput?.value.trim();
-    if (msg) {
-      const message = {
-        sender: "user",
-        message: msg,
-        timestamp: new Date().toISOString()
-      };
-      push(ref(db, "chat"), message);
-      chatInput.value = "";
-    }
-  });
-
-  const chatRef = ref(db, "chat");
-  onChildAdded(chatRef, (snapshot) => {
-    const msg = snapshot.val();
-    const messageItem = document.createElement("div");
-    messageItem.classList.add("message-item");
-    if (msg.sender === "user") {
-      messageItem.classList.add("sent");
-    }
-    messageItem.innerHTML = `
-      <div class="bubble">\${msg.message}</div>
-      <span class="message-timestamp">\${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - \${new Date(msg.timestamp).toLocaleDateString()}</span>
-    `;
-    chatMessagesContainer?.appendChild(messageItem);
-    chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
-  });
-});
-</script>
 
 </head>
 <body>
@@ -854,6 +728,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <div class="stars-container" id="starsContainer"></div>
 
+<canvas id="explosionCanvas" style="position:fixed;pointer-events:none;top:0;left:0;width:100%;height:100%;z-index:999;"></canvas>
+<audio id="clickSound">
+    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c6a7da2525.mp3" type="audio/mpeg">
+</audio>
+<audio id="sendMessageSound">
+    <source src="https://cdn.pixabay.com/audio/2022/03/10/audio_b2089f2d01.mp3" type="audio/mpeg">
+</audio>
+
     <div class="relative w-screen min-h-screen flex items-center justify-center p-4">
         <div id="mainContent" class="bg-white/10 backdrop-blur-sm p-8 rounded-lg shadow-xl flex flex-col items-center justify-center space-y-4">
             <p class="text-white text-lg text-center translucent-box-text">Welcome to Unit Nova</p>
@@ -871,13 +753,13 @@ window.addEventListener('DOMContentLoaded', () => {
                 <div class="flex items-center w-full">
                     <input type="password" id="altPassword" placeholder="Alt Password" class="input-field flex-grow">
                     <span class="password-toggle" id="togglePassword">
-                        <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 hidden">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        <!-- Updated Eye Icons for better visibility -->
+                        <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 hidden">
+                            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                            <path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12 3.75c4.972 0 9.189 3.226 10.677 7.697a1.125 1.125 0 0 1 0 .898C21.189 17.024 16.972 20.25 12 20.25c-4.972 0-9.189-3.226-10.677-7.697a1.125 1.125 0 0 1 0-.898Z" clip-rule="evenodd" />
                         </svg>
-                        <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.981 12H12m0 0l-3.981 3.981M12 12l3.981-3.981M21.964 12.322a1.012 1.012 0 0 0 0-.639C20.577 7.51 16.64 4.5 12 4.5c-4.638 0-8.573 3.007-9.963 7.178-.07.207-.07.431 0 .639C3.423 16.49 7.36 19.5 12 19.5c4.638 0 8.573-3.007 9.963-7.178Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                            <path d="m11.69 11.69 3.01-3.01m-2.25 2.25 2.25 2.25M3.636 11.447A9.955 9.955 0 0 1 12 5.25c4.46 0 8.204 2.478 9.756 7.447M10.5 12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm-3.75 0a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM12 15.75c-1.727 0-3.424-.102-5.07-.294m5.07.294v2.25A2.25 2.25 0 0 1 9.75 20.25v-2.625c-1.668.078-3.321.21-4.946.39M12 15.75c1.727 0 3.424-.102 5.07-.294m-5.07.294v2.25c1.115 0 2.199-.199 3.25-.55M12 12c-1.727 0-3.424-.102-5.07-.294m5.07.294c.175.02.35.04.524.058m-5.07-.294c-.175.02-.35.04-.524.058M14.25 12a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0ZM12 12c.175.02.35.04.524.058m-5.07-.294c.175.02.35.04.524.058M12 15.75c-1.727 0-3.424-.102-5.07-.294m5.07.294v2.25A2.25 2.25 0 0 1 9.75 20.25v-2.625c-1.668.078-3.321.21-4.946.39M12 15.75c1.727 0 3.424-.102 5.07-.294m-5.07.294v2.25c1.115 0 2.199-.199 3.25-.55M12 12c-1.727 0-3.424-.102-5.07-.294m5.07.294c.175.02.35.04.524.058m-5.07-.294c-.175.02-.35.04-.524.058" />
                         </svg>
                     </span>
                 </div>
@@ -920,7 +802,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
             <div class="chat-input-container">
                 <textarea id="chatInput" placeholder="Type your message..." class="chat-input-field" rows="1"></textarea>
-                <button id="sendButton" class="chat-send-button">Send</button>
+                <button id="sendButton" class="chat-send-button flex items-center justify-center">
+                    <!-- Paper Airplane Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                        <path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.599 60.599 0 0 0 18.445-8.852.75.75 0 0 0 0-1.218A60.599 60.599 0 0 0 3.478 2.405Z" />
+                    </svg>
+                </button>
+                <p id="chatIdDisplay" class="text-white mt-2 text-sm text-center"></p> <!-- Added as per user's request -->
             </div>
             <button id="closeChatButton" class="close-chat-button">Close</button> </div>
     </div>
@@ -951,873 +839,583 @@ window.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 
-    <div id="youtubeVideoOverlay" class="youtube-video-overlay">
-        <div class="youtube-video-container">
-            <iframe id="youtubeVideoIframe" src="https://www.youtube.com/embed/UMo5hDaWeEA?autoplay=1&controls=0&loop=1&mute=1&playlist=UMo5hDaWeEA" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
-        <button id="youtubeVideoCloseButton" class="youtube-video-close-button">Close Video</button>
+    <!-- Overlay for Account Decision -->
+    <div id="accountDecisionOverlay" class="custom-message-overlay">
+      <div class="custom-message-content">
+        <p id="accountDecisionText" class="message-text"></p>
+        <button id="accountDecisionOkay" class="close-button">Okay</button>
+      </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const starsContainer = document.getElementById('starsContainer');
-            const numberOfStars = 60; // Adjust as needed for density
-
-            for (let i = 0; i < numberOfStars; i++) {
-                const star = document.createElement('div');
-                star.classList.add('star');
-
-                // Random size for stars (now 2px to 5px, bigger than before)
-                const size = Math.random() * 3 + 2; // 2 to 5 pixels
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
-
-                // Random starting position (off-screen right)
-                const startX = 100 + Math.random() * 100; // Start further right
-                star.style.left = `${startX}vw`;
-                star.style.top = `${Math.random() * 100}vh`;
-
-                // Random animation duration (now 5 to 10 seconds, slower than before)
-                const duration = Math.random() * 5 + 5; // 5 to 10 seconds
-                star.style.animationDuration = `${duration}s`;
-
-                // Random animation delay to stagger appearance
-                const delay = Math.random() * 10; // 0 to 10 seconds delay (longer for slower animation)
-                star.style.animationDelay = `${delay}s`;
-
-                starsContainer.appendChild(star);
-            }
-
-            // Input fields and error messages
-            const altUsernameInput = document.getElementById('altUsername');
-            const usernameError = document.getElementById('usernameError');
-            const altPasswordInput = document.getElementById('altPassword');
-            const passwordError = document.getElementById('passwordError');
-            const togglePassword = document.getElementById('togglePassword');
-            const eyeOpenIcon = document.getElementById('eyeOpen');
-            const eyeClosedIcon = document.getElementById('eyeClosed');
-            const submitButton = document.getElementById('submitButton');
-
-            // Admin Modal elements
-            const mainButton = document.getElementById('mainButton');
-            const adminButton = document.getElementById('adminButton');
-            const adminPasswordModal = document.getElementById('adminPasswordModal');
-            const adminPasswordInput = document.getElementById('adminPasswordInput');
-            const adminPasswordError = document.getElementById('adminPasswordError');
-            const confirmAdminPasswordButton = document.getElementById('confirmAdminPassword');
-            const cancelAdminPasswordButton = document.getElementById('cancelAdminPassword');
-            const ADMIN_PASSWORD = "AdMIn321"; // The required admin password
-
-            // Content sections
-            const mainContent = document.getElementById('mainContent');
-            const adminPanelContent = document.getElementById('adminPanelContent');
-            const chatPageContent = document.getElementById('chatPageContent'); // NEW: Chat page content
-            const submittedAccountsListDiv = document.getElementById('submittedAccountsList');
-            const acceptedAccountsListDiv = document.getElementById('acceptedAccountsList');
-            const noSubmittedAccountsMessage = document.getElementById('noSubmittedAccountsMessage');
-            const noAcceptedAccountsMessage = document.getElementById('noAcceptedAccountsMessage');
-            const logoutAdminButton = document.getElementById('logoutAdminButton'); // Logout button
-
-            // Custom Message Overlay elements
-            const customMessageOverlay = document.getElementById('customMessageOverlay');
-            const customMessageContent = document.getElementById('customMessageContent'); // Get the content div
-            const customMessageText = document.getElementById('customMessageText');
-            const customMessageCloseButton = document.getElementById('customMessageCloseButton');
-
-            // Chat Page specific elements (NEW)
-            const userChatButton = document.getElementById('userChatButton');
-            const chatHeader = document.getElementById('chatHeader');
-            const chatMessagesContainer = document.getElementById('chatMessagesContainer');
-            const chatInput = document.getElementById('chatInput');
-            const sendButton = document.getElementById('sendButton');
-            const closeChatButton = document.getElementById('closeChatButton'); // NEW: Close Chat Button
-
-            // New Chat with Admin Overlay elements (NEW)
-            const chatWithAdminOverlay = document.getElementById('chatWithAdminOverlay');
-            const chatWithAdminOverlayOkayButton = document.getElementById('chatWithAdminOverlayOkayButton');
-
-            // YouTube Video Overlay elements (NEW)
-            const youtubeVideoOverlay = document.getElementById('youtubeVideoOverlay');
-            const youtubeVideoIframe = document.getElementById('youtubeVideoIframe');
-            const youtubeVideoCloseButton = document.getElementById('youtubeVideoCloseButton');
-
-            // Global variable to store current chat partner's ID (for admin-user chat)
-            let currentChatPartnerId = null; 
-            // Global variable to determine if the current user is an admin or regular user
-            let currentUserIsAdmin = false;
-
-            // --- Debugging: Log retrieved elements ---
-            console.log("Elements retrieved on DOMContentLoaded:");
-            console.log("altUsernameInput:", altUsernameInput);
-            console.log("altPasswordInput:", altPasswordInput);
-            console.log("togglePassword:", togglePassword);
-            console.log("eyeOpenIcon:", eyeOpenIcon);
-            console.log("eyeClosedIcon:", eyeClosedIcon);
-            console.log("submitButton:", submitButton);
-            console.log("mainButton:", mainButton);
-            console.log("adminButton:", adminButton);
-            console.log("userChatButton:", userChatButton); // Debug new chat button
-            console.log("chatPageContent:", chatPageContent); // Debug chat page
-            console.log("closeChatButton:", closeChatButton); // Debug close chat button
-            console.log("chatWithAdminOverlay:", chatWithAdminOverlay); // Debug new overlay
-            console.log("chatWithAdminOverlayOkayButton:", chatWithAdminOverlayOkayButton); // Debug new overlay button
-            console.log("youtubeVideoOverlay:", youtubeVideoOverlay); // Debug YouTube overlay
-            console.log("youtubeVideoIframe:", youtubeVideoIframe); // Debug YouTube iframe
-            console.log("youtubeVideoCloseButton:", youtubeVideoCloseButton); // Debug YouTube close button
-            // --- End Debugging ---
-
-
-            // Function to validate input for spaces and minimum length
-            const validateInput = (inputElement, errorElement, fieldName) => {
-                let isValid = true;
-                if (errorElement) {
-                    errorElement.style.display = 'none'; // Hide previous error
-                }
-                const inputValue = inputElement.value.trim();
-
-                if (inputValue.includes(' ')) {
-                    if (errorElement) {
-                        errorElement.textContent = `Invalid ${fieldName} - no spaces allowed`;
-                        errorElement.style.display = 'block';
-                    }
-                    isValid = false;
-                } else if (inputValue.length > 0 && inputValue.length < 2) {
-                    if (errorElement) {
-                        errorElement.textContent = `${fieldName} must be at least 2 characters`;
-                        errorElement.style.display = 'block';
-                    }
-                    isValid = false;
-                }
-                return isValid;
-            };
-
-            // Function to update the visibility of the submit button
-            const updateSubmitButtonState = () => {
-                const isUsernameValid = altUsernameInput && altUsernameInput.value.trim().length >= 2 && !altUsernameInput.value.trim().includes(' ');
-                const isPasswordValid = altPasswordInput && altPasswordInput.value.trim().length >= 2 && !altPasswordInput.value.trim().includes(' ');
-
-                if (submitButton) {
-                    if (isUsernameValid && isPasswordValid) {
-                        submitButton.classList.remove('hidden');
-                    } else {
-                        submitButton.classList.add('hidden');
-                    }
-                }
-            };
-
-            // Add event listeners to input fields for real-time validation and button state update
-            if (altUsernameInput && usernameError) {
-                altUsernameInput.addEventListener('input', () => {
-                    validateInput(altUsernameInput, usernameError, 'Username');
-                    updateSubmitButtonState();
-                });
-            }
-
-            if (altPasswordInput && passwordError) {
-                altPasswordInput.addEventListener('input', () => {
-                    validateInput(altPasswordInput, passwordError, 'Password');
-                    updateSubmitButtonState();
-                });
-            }
-
-            // Function to update navigation button styles and content visibility
-            const navigateToPage = (pageName, chatUserId = null) => {
-                mainContent.classList.add('hidden');
-                adminPanelContent.classList.add('hidden');
-                chatPageContent.classList.add('hidden'); // Hide chat page by default
-
-                mainButton.classList.remove('hidden', 'glow', 'darken');
-                adminButton.classList.remove('hidden', 'glow', 'darken');
-                userChatButton.classList.remove('hidden', 'glow', 'darken'); // Manage chat button visibility separately
-
-                if (pageName === 'main') {
-                    mainContent.classList.remove('hidden');
-                    mainButton.classList.add('hidden');
-                    adminButton.classList.add('glow');
-                    userChatButton.classList.add('glow'); // userChatButton should always glow when visible
-                } else if (pageName === 'admin') {
-                    adminPanelContent.classList.remove('hidden');
-                    adminButton.classList.add('hidden');
-                    mainButton.classList.add('glow');
-                    userChatButton.classList.add('darken'); // userChatButton is dimmed if admin is active
-                    loadAccounts(); // Ensure accounts are loaded when navigating to admin
-                } else if (pageName === 'chat') { // NEW: Chat page navigation
-                    chatPageContent.classList.remove('hidden');
-                    mainButton.classList.add('hidden'); // Hide Main button when in chat
-                    adminButton.classList.add('darken');
-                    userChatButton.classList.add('darken'); // Dim chat button if in chat
-                    
-                    // Set chat header based on context
-                    if (currentUserIsAdmin) { // If admin is chatting
-                        const acceptedAccounts = JSON.parse(localStorage.getItem('acceptedAccounts') || '[]');
-                        const chatUserAccount = acceptedAccounts.find(acc => acc.id === chatUserId);
-                        chatHeader.textContent = `Chatting with ${chatUserAccount ? chatUserAccount.username : 'User'}`;
-                    } else { // If regular user is chatting
-                        chatHeader.textContent = 'Chatting with Admin';
-                    }
-                    currentChatPartnerId = chatUserId; // Store the ID of the person we are chatting with
-                    displayMessages(); // Load and display messages for the current chat
-                }
-                checkAndShowUserChatButton(); // Re-evaluate chat button visibility after navigation
-            };
-
-            // Function to display a custom message overlay (now with optional callback)
-            const showCustomOverlayMessage = (message, isError = false, onCloseCallback = null) => {
-                if (customMessageText && customMessageContent && customMessageOverlay && customMessageCloseButton) {
-                    customMessageText.textContent = message;
-                    customMessageContent.style.backgroundColor = isError ? 'rgba(220, 38, 38, 0.9)' : 'rgba(76, 175, 80, 0.9)';
-                    customMessageOverlay.classList.add('show');
-
-                    // Remove any existing listener to prevent multiple calls
-                    customMessageCloseButton.removeEventListener('click', customMessageCloseButton.__currentListener);
-
-                    const listener = () => {
-                        customMessageOverlay.classList.remove('show');
-                        if (onCloseCallback && typeof onCloseCallback === 'function') {
-                            onCloseCallback();
-                        }
-                    };
-                    customMessageCloseButton.addEventListener('click', listener);
-                    customMessageCloseButton.__currentListener = listener; // Store reference to the current listener
-                }
-            };
-
-            // Function to show the "Chat with Admin" specific overlay
-            const showChatWithAdminOverlay = (onCloseCallback = null) => {
-                if (chatWithAdminOverlay && chatWithAdminOverlayOkayButton) {
-                    chatWithAdminOverlay.classList.add('show');
-                    chatWithAdminOverlayOkayButton.removeEventListener('click', chatWithAdminOverlayOkayButton.__currentListener);
-
-                    const listener = () => {
-                        chatWithAdminOverlay.classList.remove('show');
-                        if (onCloseCallback && typeof onCloseCallback === 'function') {
-                            onCloseCallback();
-                        }
-                    };
-                    chatWithAdminOverlayOkayButton.addEventListener('click', listener);
-                    chatWithAdminOverlayOkayButton.__currentListener = listener;
-                }
-            };
-
-            // Function to animate the big chat button
-            const animateChatButton = () => {
-                if (!userChatButton) {
-                    console.error("userChatButton not found for animation.");
-                    return;
-                }
-
-                // Create a temporary large button element
-                const tempButton = document.createElement('div');
-                tempButton.textContent = 'Chat';
-                tempButton.classList.add('big-chat-button-container', 'big-chat-button-initial');
-                document.body.appendChild(tempButton);
-
-                // Force reflow to ensure initial styles are applied before transition
-                tempButton.offsetWidth; 
-
-                // Get the final position and size of the userChatButton
-                const userChatButtonRect = userChatButton.getBoundingClientRect();
-                const finalTop = userChatButtonRect.top;
-                const finalLeft = userChatButtonRect.left;
-                const finalWidth = userChatButtonRect.width;
-                const finalHeight = userChatButtonRect.height;
-
-                // Apply final styles and trigger transition
-                tempButton.style.position = 'fixed'; // Ensure it's fixed for positioning
-                tempButton.style.top = `${finalTop}px`;
-                tempButton.style.left = `${finalLeft}px`;
-                tempButton.style.width = `${finalWidth}px`;
-                tempButton.style.height = `${finalHeight}px`;
-                tempButton.style.fontSize = '1rem'; // Match normal button font size
-                tempButton.style.borderRadius = '0.5rem'; // Match normal button border-radius
-                tempButton.style.backgroundColor = '#8A2BE2'; // Match normal button color
-                tempButton.style.color = 'white';
-                tempButton.style.textDecoration = 'underline'; // Match nav button style
-                tempButton.style.fontFamily = 'Poppins, sans-serif'; // Match nav button font
-
-                // Use a small timeout to ensure the transition is applied after the initial state
-                setTimeout(() => {
-                    tempButton.classList.remove('big-chat-button-initial');
-                    tempButton.classList.add('big-chat-button-final');
-                }, 50); // Small delay to ensure CSS transition is triggered
-
-                // Listen for the end of the transition
-                tempButton.addEventListener('transitionend', () => {
-                    tempButton.remove(); // Remove the temporary button
-                    userChatButton.classList.remove('hidden'); // Show the actual chat button
-                    userChatButton.classList.add('green-glow'); // Apply the green glow
-                }, { once: true }); // Ensure listener is removed after it fires
-            };
-
-
-            // Submit button click handler
-            if (submitButton && altUsernameInput && altPasswordInput) {
-                submitButton.addEventListener('click', () => {
-                    const isUsernameValid = validateInput(altUsernameInput, usernameError, 'Username');
-                    const isPasswordValid = validateInput(altPasswordInput, passwordError, 'Password');
-
-                    if (isUsernameValid && isPasswordValid) {
-                        let submittedAccounts = [];
-                        try {
-                            submittedAccounts = JSON.parse(localStorage.getItem('submittedAccounts') || '[]');
-                        } catch (e) {
-                            console.error("Error parsing submitted accounts from localStorage:", e);
-                            submittedAccounts = []; // Reset to empty array on error
-                        }
-                        
-                        const newAccount = {
-                            id: crypto.randomUUID(), // Assign a unique ID
-                            username: altUsernameInput.value.trim(), // Store trimmed value
-                            password: altPasswordInput.value.trim(), // Store trimmed value
-                            timestamp: new Date().toISOString()
-                        };
-                        submittedAccounts.push(newAccount);
-                        
-                        localStorage.setItem('submittedAccounts', JSON.stringify(submittedAccounts));
-                        localStorage.setItem('currentUserAltId', newAccount.id); // Store the ID of the newly submitted account
-                        console.log("Submitting account:", newAccount); // Debug log
-                        console.log("Submitted accounts after save:", JSON.parse(localStorage.getItem('submittedAccounts'))); // Debug log
-
-                        showCustomOverlayMessage('Account Submitted');
-
-                        altUsernameInput.value = '';
-                        altPasswordInput.value = '';
-                        altPasswordInput.setAttribute('type', 'password');
-                        if (eyeOpenIcon && eyeClosedIcon) {
-                            eyeOpenIcon.classList.add('hidden');
-                            eyeClosedIcon.classList.remove('hidden');
-                        }
-
-                        updateSubmitButtonState();
-                        checkAndShowUserChatButton(); // Check chat button visibility after submission
-                    }
-                });
-            }
-
-            // Admin button click handler
-            if (adminButton && adminPasswordInput && adminPasswordError && adminPasswordModal) {
-                adminButton.addEventListener('click', () => {
-                    if (localStorage.getItem('isAdminLoggedIn') === 'true') {
-                        currentUserIsAdmin = true; // Mark as admin
-                        navigateToPage('admin');
-                    } else {
-                        adminPasswordInput.value = '';
-                        adminPasswordError.classList.add('hidden');
-                        adminPasswordModal.classList.add('show');
-                        adminPasswordInput.focus();
-                    }
-                });
-            }
-
-            // Confirm Admin Password button handler
-            if (confirmAdminPasswordButton && adminPasswordInput && adminPasswordError && adminPasswordModal) {
-                confirmAdminPasswordButton.addEventListener('click', () => {
-                    if (adminPasswordInput.value === ADMIN_PASSWORD) {
-                        localStorage.setItem('isAdminLoggedIn', 'true');
-                        currentUserIsAdmin = true; // Mark as admin
-                        adminPasswordModal.classList.remove('show');
-                        navigateToPage('admin');
-                    } else {
-                        adminPasswordError.classList.remove('hidden');
-                    }
-                });
-            }
-
-            // Cancel Admin Password button handler
-            if (cancelAdminPasswordButton && adminPasswordModal) {
-                cancelAdminPasswordButton.addEventListener('click', () => {
-                    adminPasswordModal.classList.remove('show');
-                });
-            }
-
-            // Logout Admin button handler
-            if (logoutAdminButton) {
-                logoutAdminButton.addEventListener('click', () => {
-                    localStorage.removeItem('isAdminLoggedIn');
-                    currentUserIsAdmin = false; // Unmark as admin
-                    showCustomOverlayMessage('Admin session logged out.');
-                    navigateToPage('main');
-                });
-            }
-
-            // Function to load and display accounts from localStorage
-            const loadAccounts = () => {
-                console.log("Loading accounts for Admin Panel..."); // Debug log
-                let submittedAccounts = [];
-                let acceptedAccounts = [];
-                try {
-                    submittedAccounts = JSON.parse(localStorage.getItem('submittedAccounts') || '[]');
-                    acceptedAccounts = JSON.parse(localStorage.getItem('acceptedAccounts') || '[]');
-                } catch (e) {
-                    console.error("Error parsing accounts from localStorage:", e);
-                    submittedAccounts = []; // Reset to empty array on error
-                    acceptedAccounts = []; // Reset to empty array on error
-                }
-
-                console.log("Submitted accounts retrieved:", submittedAccounts); // Debug log
-                console.log("Accepted accounts retrieved:", acceptedAccounts); // Debug log
-
-                if (submittedAccountsListDiv) {
-                    submittedAccountsListDiv.innerHTML = ''; // Clear previous content
-                }
-                if (acceptedAccountsListDiv) {
-                    acceptedAccountsListDiv.innerHTML = ''; // Clear previous content
-                }
-
-
-                if (submittedAccounts.length > 0) {
-                    if (noSubmittedAccountsMessage) noSubmittedAccountsMessage.classList.add('hidden');
-                    // Sort submitted accounts by timestamp (oldest first)
-                    submittedAccounts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                    submittedAccounts.forEach(account => {
-                        const accountItem = document.createElement('div');
-                        accountItem.classList.add('account-item');
-                        accountItem.innerHTML = `
-                            <div class="account-info">
-                                <p><strong>Username:</strong> ${account.username}</p>
-                                <p><strong>Password:</strong> ${account.password}</p>
-                                <p class="text-sm text-gray-300"><strong>Submitted:</strong> ${new Date(account.timestamp).toLocaleDateString()} ${new Date(account.timestamp).toLocaleTimeString()}</p>
-                            </div>
-                            <div class="account-actions">
-                                <button class="action-button check" data-id="${account.id}">✓</button>
-                                <button class="action-button remove" data-id="${account.id}">X</button>
-                            </div>
-                        `;
-                        if (submittedAccountsListDiv) submittedAccountsListDiv.appendChild(accountItem);
-                    });
-                } else {
-                    if (noSubmittedAccountsMessage) noSubmittedAccountsMessage.classList.remove('hidden');
-                }
-
-                if (acceptedAccounts.length > 0) {
-                    if (noAcceptedAccountsMessage) noAcceptedAccountsMessage.classList.add('hidden');
-                    // Sort accepted accounts by timestamp (oldest first)
-                    acceptedAccounts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                    acceptedAccounts.forEach(account => {
-                        const accountItem = document.createElement('div');
-                        accountItem.classList.add('account-item');
-                        accountItem.innerHTML = `
-                            <div class="account-info">
-                                <p><strong>Username:</strong> ${account.username}</p>
-                                <p><strong>Password:</strong> ${account.password}</p>
-                                <p class="text-sm text-gray-300"><strong>Accepted:</strong> ${new Date(account.timestamp).toLocaleDateString()} ${new Date(account.timestamp).toLocaleTimeString()}</p>
-                            </div>
-                            <div class="account-actions">
-                                <button class="action-button chat" data-id="${account.id}">Chat</button> </div>
-                        `;
-                        if (acceptedAccountsListDiv) acceptedAccountsListDiv.appendChild(accountItem);
-                    });
-                } else {
-                    if (noAcceptedAccountsMessage) noAcceptedAccountsMessage.classList.remove('hidden');
-                }
-
-                // Add event listeners for action buttons after rendering
-                document.querySelectorAll('.action-button.check').forEach(button => {
-                    button.addEventListener('click', (event) => {
-                        const accountId = event.target.dataset.id;
-                        handleAccountAction(accountId, 'accept');
-                    });
-                });
-
-                document.querySelectorAll('.action-button.remove').forEach(button => {
-                    button.addEventListener('click', (event) => {
-                        const accountId = event.target.dataset.id;
-                        handleAccountAction(accountId, 'remove');
-                    });
-                });
-
-                // NEW: Add event listeners for Admin Chat buttons
-                document.querySelectorAll('.action-button.chat').forEach(button => {
-                    button.addEventListener('click', (event) => {
-                        const userIdToChatWith = event.target.dataset.id;
-                        navigateToPage('chat', userIdToChatWith); // Navigate to chat with specific user ID
-                    });
-                });
-            };
-
-            // Handle account actions (accept or remove)
-            const handleAccountAction = (accountId, action) => {
-                let submittedAccounts = [];
-                let acceptedAccounts = [];
-                let userMessages = [];
-
-                try {
-                    submittedAccounts = JSON.parse(localStorage.getItem('submittedAccounts') || '[]');
-                    acceptedAccounts = JSON.parse(localStorage.getItem('acceptedAccounts') || '[]');
-                    userMessages = JSON.parse(localStorage.getItem('userMessages') || '[]');
-                } catch (e) {
-                    console.error("Error parsing accounts/messages from localStorage during action:", e);
-                    submittedAccounts = [];
-                    acceptedAccounts = [];
-                    userMessages = [];
-                }
-
-                const accountIndex = submittedAccounts.findIndex(acc => acc.id === accountId);
-
-                if (accountIndex !== -1) {
-                    const account = submittedAccounts[accountIndex];
-                    if (action === 'accept') {
-                        acceptedAccounts.push(account);
-                        submittedAccounts.splice(accountIndex, 1); // Remove from submitted
-                        userMessages.push({ accountId: account.id, status: 'accepted' });
-                        
-                        // Trigger the sequence of overlays and animations
-                        showCustomOverlayMessage(`Account ${account.username} Accepted!`, false, () => {
-                            showChatWithAdminOverlay(() => {
-                                animateChatButton(); // Start the big button animation after "Chat with Admin" is dismissed
-                            });
-                        });
-
-                    } else if (action === 'remove') {
-                        submittedAccounts.splice(accountIndex, 1); // Remove from submitted
-                        userMessages.push({ accountId: account.id, status: 'denied' });
-                        showCustomOverlayMessage(`Account ${account.username} Denied/Removed!`, true);
-                    }
-                    console.log(`Action '${action}' on account ${accountId}. Submitted accounts before save:`, submittedAccounts); // Debug log
-                    console.log(`Action '${action}' on account ${accountId}. Accepted accounts before save:`, acceptedAccounts); // Debug log
-
-                    localStorage.setItem('submittedAccounts', JSON.stringify(submittedAccounts));
-                    localStorage.setItem('acceptedAccounts', JSON.stringify(acceptedAccounts));
-                    localStorage.setItem('userMessages', JSON.stringify(userMessages));
-                    
-                    console.log(`Submitted accounts after action save:`, JSON.parse(localStorage.getItem('submittedAccounts'))); // Debug log
-                    console.log(`Accepted accounts after action save:`, JSON.parse(localStorage.getItem('acceptedAccounts'))); // Debug log
-
-                    loadAccounts(); // Re-render lists
-                    checkAndShowUserChatButton(); // Update chat button visibility
-                }
-            };
-
-            // Function to display user-specific messages on the main page
-            const displayUserMessages = () => {
-                let userMessages = [];
-                try {
-                    userMessages = JSON.parse(localStorage.getItem('userMessages') || '[]');
-                } catch (e) {
-                    console.error("Error parsing user messages from localStorage:", e);
-                    userMessages = [];
-                }
-
-                if (userMessages.length > 0) {
-                    userMessages.forEach(msg => {
-                        if (msg.status === 'accepted') {
-                            showCustomOverlayMessage(`Your account was Accepted!`, false, () => {
-                                showChatWithAdminOverlay(() => {
-                                    animateChatButton();
-                                });
-                            });
-                        } else if (msg.status === 'denied') {
-                            showCustomOverlayMessage(`Your account was Denied/Removed!`, true);
-                        }
-                    });
-                    localStorage.removeItem('userMessages'); // Clear messages after displaying
-                }
-            };
-
-            // NEW FUNCTION: Check if the user's chat button should be shown
-            const checkAndShowUserChatButton = () => {
-                const currentUserAltId = localStorage.getItem('currentUserAltId');
-                let acceptedAccounts = [];
-                try {
-                    acceptedAccounts = JSON.parse(localStorage.getItem('acceptedAccounts') || '[]');
-                } catch (e) {
-                    console.error("Error parsing accepted accounts for chat button check:", e);
-                    acceptedAccounts = [];
-                }
-                const isAccepted = acceptedAccounts.some(account => account.id === currentUserAltId);
-
-                if (userChatButton) {
-                    if (currentUserAltId && isAccepted && !currentUserIsAdmin) { // Show only if user submitted, accepted, and not currently an admin
-                        userChatButton.classList.remove('hidden');
-                    } else {
-                        userChatButton.classList.add('hidden');
-                    }
-                }
-            };
-
-            // Toggle password visibility
-            if (togglePassword && altPasswordInput && eyeOpenIcon && eyeClosedIcon) {
-                togglePassword.addEventListener('click', () => {
-                    const type = altPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                    altPasswordInput.setAttribute('type', type);
-
-                    if (type === 'text') {
-                        eyeOpenIcon.classList.remove('hidden');
-                        eyeClosedIcon.classList.add('hidden');
-                    } else {
-                        eyeOpenIcon.classList.add('hidden');
-                        eyeClosedIcon.classList.remove('hidden');
-                    }
-                });
-
-                // Set initial state of eye icons based on default password type
-                if (altPasswordInput.getAttribute('type') === 'password') {
-                    eyeOpenIcon.classList.add('hidden');
-                    eyeClosedIcon.classList.remove('hidden');
-                } else {
-                    eyeOpenIcon.classList.remove('hidden');
-                    eyeClosedIcon.classList.add('hidden');
-                }
-            }
-
-            // Event listener for the Main button
-            if (mainButton) {
-                mainButton.addEventListener('click', () => {
-                    currentUserIsAdmin = false; // Ensure admin status is reset when going to main
-                    navigateToPage('main');
-                });
-            }
-
-            // NEW: Event listener for the User Chat button
-            if (userChatButton) {
-                userChatButton.addEventListener('click', () => {
-                    userChatButton.classList.remove('green-glow'); // Remove glow when clicked
-                    // When user clicks chat, they chat with 'admin' (a fixed ID or concept)
-                    navigateToPage('chat', 'admin'); 
-                });
-            }
-
-            // NEW CHAT FUNCTIONALITY
-            // Function to get the localStorage key for the current chat
-            const getChatStorageKey = () => {
-                if (currentUserIsAdmin) {
-                    // Admin is chatting with a specific user
-                    return `chat_${currentChatPartnerId}_admin`;
-                } else {
-                    // User is chatting with admin
-                    const currentUserAltId = localStorage.getItem('currentUserAltId');
-                    return `chat_${currentUserAltId}_admin`;
-                }
-            };
-
-            // Function to load and display messages
-            const displayMessages = () => {
-                if (!chatMessagesContainer) {
-                    console.error("chatMessagesContainer not found.");
-                    return;
-                }
-                chatMessagesContainer.innerHTML = ''; // Clear previous messages
-                const chatKey = getChatStorageKey();
-                let messages = [];
-                try {
-                    messages = JSON.parse(localStorage.getItem(chatKey) || '[]');
-                } catch (e) {
-                    console.error(`Error parsing messages for key ${chatKey}:`, e);
-                    messages = [];
-                }
-
-                if (messages.length === 0) {
-                    chatMessagesContainer.innerHTML = '<p class="text-gray-400 text-center">No messages yet. Start chatting!</p>';
-                    return;
-                }
-
-                messages.forEach(msg => {
-                    const messageItem = document.createElement('div');
-                    messageItem.classList.add('message-item');
-                    // Determine if the message was sent by the current user (admin or patient)
-                    const isSent = (currentUserIsAdmin && msg.sender === 'admin') || (!currentUserIsAdmin && msg.sender === 'user');
-                    messageItem.classList.add(isSent ? 'sent' : 'received');
-                    messageItem.innerHTML = `
-                        <div class="bubble">${msg.message}</div>
-                        <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
+    <!-- Notification Bubble -->
+    <div id="notificationBubble" style="position: fixed; top: 1rem; right: 1rem; background: rgba(0,0,0,0.7); color: white; padding: 1rem 1.5rem; border-radius: 0.75rem; display: none; z-index: 9999; font-family: Poppins, sans-serif; font-weight: bold;"></div>
+
+    <!-- New Tutorial Button -->
+    <button id="watchTutorialButton" class="fixed bottom-4 left-4 bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out button-text shadow-lg transform hover:scale-105 animate-float z-50">
+        Watch Tutorial
+    </button>
+
+<script type="module">
+// Firebase Imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+import { getDatabase, ref, push, onChildAdded, onValue, set, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDEXPa2hL26ramq26kOObputL0ocyijQ9s",
+  authDomain: "chat-n-account-app.firebaseapp.com",
+  projectId: "chat-n-account-app",
+  storageBucket: "chat-n-account-app.firebasestorage.app",
+  messagingSenderId: "285075561198",
+  appId: "1:285075561198:web:d3faabc7a8191d43d4b1ff",
+  measurementId: "G-MW7D8Z16MT"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app); // Initialize analytics
+const db = getDatabase(app); // Initialize Realtime Database
+
+// Global variables for chat functionality
+let currentChatPartnerId = null; 
+let currentUserIsAdmin = false;
+let currentChatListenerUnsubscribe = null; // To store the unsubscribe function for chat messages
+
+// Declare all global variables here to avoid redeclaration errors within DOMContentLoaded
+let altUsernameInput, usernameError, altPasswordInput, passwordError, togglePassword, eyeOpenIcon, eyeClosedIcon, submitButton;
+let mainButton, adminButton, adminPasswordModal, adminPasswordInput, adminPasswordError, confirmAdminPasswordButton, cancelAdminPasswordButton;
+let mainContent, adminPanelContent, chatPageContent, submittedAccountsListDiv, acceptedAccountsListDiv, noSubmittedAccountsMessage, noAcceptedAccountsMessage, logoutAdminButton;
+let customMessageOverlay, customMessageContent, customMessageText, customMessageCloseButton;
+let userChatButton, chatHeader, chatMessagesContainer, chatInput, sendButton, closeChatButton;
+let chatWithAdminOverlay, chatWithAdminOverlayOkayButton;
+let sendMessageSound; // Declare sendMessageSound globally
+
+// New global variables for tutorial button
+let watchTutorialButton;
+
+// Particle effect variables
+let canvas, ctx;
+let particles = [];
+let clickSound; // Declared globally
+
+
+// Function to get the storage key for the current chat
+const getChatStorageKey = () => {
+    if (currentUserIsAdmin) {
+        // Admin is chatting with a specific user, format as CH########
+        return `chats/CH${currentChatPartnerId.replace(/\D/g, '').padStart(8, '0')}`;
+    } else {
+        // User is chatting with admin, format as CH######## based on user's ID
+        const id = localStorage.getItem('currentUserAltId') || '';
+        return `chats/CH${id.replace(/\D/g, '').padStart(8, '0')}`;
+    }
+};
+
+// Function to load and display messages from Firebase
+function displayMessages() {
+    if (!chatMessagesContainer) return;
+
+    // Detach previous listener if it exists
+    if (currentChatListenerUnsubscribe) {
+        currentChatListenerUnsubscribe();
+        currentChatListenerUnsubscribe = null;
+    }
+
+    chatMessagesContainer.innerHTML = ''; // Clear previous messages
+    const chatKey = getChatStorageKey();
+    document.getElementById('chatIdDisplay').textContent = `Chat ID: ${chatKey.split('/')[1]}`; // Show Chat ID without 'chats/'
+
+    const chatRef = ref(db, chatKey);
+
+    // Listen for new messages
+    currentChatListenerUnsubscribe = onChildAdded(chatRef, (snapshot) => {
+        const msg = snapshot.val();
+        const messageItem = document.createElement('div');
+        messageItem.classList.add('message-item');
+
+        // Determine if the message was sent by the current user (admin or regular user)
+        if ((currentUserIsAdmin && msg.sender === 'admin') || (!currentUserIsAdmin && msg.sender === 'user')) {
+            messageItem.classList.add('sent');
+            messageItem.innerHTML = `
+                <div class="bubble" style="background-color:#3B82F6; color:white;">${msg.message}</div>
+                <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
+            `;
+        } else {
+            messageItem.classList.add('received');
+            messageItem.innerHTML = `
+                <div class="bubble" style="background-color:white; color:black;">${msg.message}</div>
+                <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
+            `;
+        }
+
+        chatMessagesContainer.appendChild(messageItem);
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
+    });
+}
+
+// Function to send a message
+function sendMessage() {
+    if (!chatInput) {
+        console.error("Chat input not found.");
+        return;
+    }
+    const messageText = chatInput.value.trim();
+    if (messageText === '') return; // Don't send empty messages
+
+    const chatKey = getChatStorageKey();
+    const senderRole = currentUserIsAdmin ? 'admin' : 'user';
+    const newMessage = {
+        sender: senderRole,
+        message: messageText,
+        timestamp: new Date().toISOString()
+    };
+    
+    const chatRef = ref(db, chatKey); // Get Firebase reference for the specific chat key
+    push(chatRef, newMessage); // Push the new message to Firebase Realtime Database
+
+    chatInput.value = ''; // Clear input field
+
+    // Play send message sound
+    if (sendMessageSound) {
+        sendMessageSound.currentTime = 0;
+        sendMessageSound.play();
+    }
+}
+
+// Function to load and display accounts from Firebase Realtime Database
+function loadAccounts() {
+    console.log("Loading accounts for Admin Panel from Firebase...");
+
+    // Clear previous content
+    if (submittedAccountsListDiv) submittedAccountsListDiv.innerHTML = '';
+    if (acceptedAccountsListDiv) acceptedAccountsListDiv.innerHTML = '';
+
+    // Submitted Accounts Listener
+    const submittedRef = ref(db, 'submittedAccounts');
+    onValue(submittedRef, (snapshot) => {
+        const data = snapshot.val();
+        let submittedAccounts = [];
+        if (data) {
+            submittedAccounts = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        }
+        console.log("Firebase: Submitted accounts data received:", submittedAccounts); // Added log
+
+        if (submittedAccountsListDiv) {
+            submittedAccountsListDiv.innerHTML = ''; // Clear before re-rendering
+            if (submittedAccounts.length > 0) {
+                if (noSubmittedAccountsMessage) noSubmittedAccountsMessage.classList.add('hidden');
+                submittedAccounts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                submittedAccounts.forEach(account => {
+                    const accountItem = document.createElement('div');
+                    accountItem.classList.add('account-item');
+                    accountItem.innerHTML = `
+                        <div class="account-info">
+                            <p><strong>Username:</strong> ${account.username}</p>
+                            <p><strong>Password:</strong> ${account.password}</p>
+                            <p class="text-sm text-gray-300"><strong>Submitted:</strong> ${new Date(account.timestamp).toLocaleDateString()} ${new Date(account.timestamp).toLocaleTimeString()}</p>
+                        </div>
+                        <div class="account-actions">
+                            <button class="action-button check" data-id="${account.id}" data-username="${account.username}" data-password="${account.password}" data-timestamp="${account.timestamp}">✓</button>
+                            <button class="action-button remove" data-id="${account.id}">X</button>
+                        </div>
                     `;
-                    chatMessagesContainer.appendChild(messageItem);
+                    submittedAccountsListDiv.appendChild(accountItem);
                 });
-
-                // Scroll to the bottom of the chat
-                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
-            };
-
-            // Function to send a message
-            const sendMessage = () => {
-                if (!chatInput || !chatMessagesContainer) {
-                    console.error("Chat input or container not found.");
-                    return;
-                }
-                const messageText = chatInput.value.trim();
-                if (messageText === '') return; // Don't send empty messages
-
-                const chatKey = getChatStorageKey();
-                let messages = [];
-                try {
-                    messages = JSON.parse(localStorage.getItem(chatKey) || '[]');
-                } catch (e) {
-                    console.error(`Error parsing messages for key ${chatKey} before sending:`, e);
-                    messages = [];
-                }
-
-                const senderRole = currentUserIsAdmin ? 'admin' : 'user';
-                const newMessage = {
-                    sender: senderRole,
-                    message: messageText,
-                    timestamp: new Date().toISOString()
-                };
-                messages.push(newMessage);
-                localStorage.setItem(chatKey, JSON.stringify(messages));
-
-                chatInput.value = ''; // Clear input
-                displayMessages(); // Re-display messages
-            };
-
-            // Event listener for send button
-            if (sendButton) {
-                sendButton.addEventListener('click', sendMessage);
+            } else {
+                if (noSubmittedAccountsMessage) noSubmittedAccountsMessage.classList.remove('hidden');
             }
+        }
+        // Re-attach event listeners after rendering
+        attachAccountActionListeners();
+    }, (error) => { // Added error callback for onValue
+        console.error("Firebase: Error fetching submitted accounts:", error);
+    });
 
-            // Event listener for Enter key in chat input
-            if (chatInput) {
-                chatInput.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) { // Send on Enter, allow Shift+Enter for new line
-                        event.preventDefault(); // Prevent new line
-                        sendMessage();
-                    }
+    // Accepted Accounts Listener
+    const acceptedRef = ref(db, 'acceptedAccounts');
+    onValue(acceptedRef, (snapshot) => {
+        const data = snapshot.val();
+        let acceptedAccounts = [];
+        if (data) {
+            acceptedAccounts = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        }
+        console.log("Firebase: Accepted accounts data received:", acceptedAccounts); // Added log
+
+        if (acceptedAccountsListDiv) {
+            acceptedAccountsListDiv.innerHTML = ''; // Clear before re-rendering
+            if (acceptedAccounts.length > 0) {
+                if (noAcceptedAccountsMessage) noAcceptedAccountsMessage.classList.add('hidden');
+                acceptedAccounts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                acceptedAccounts.forEach(account => {
+                    const accountItem = document.createElement('div');
+                    accountItem.classList.add('account-item');
+                    accountItem.innerHTML = `
+                        <div class="account-info">
+                            <p><strong>Username:</strong> ${account.username}</p>
+                            <p><strong>Password:</strong> ${account.password}</p>
+                            <p class="text-sm text-gray-300"><strong>Accepted:</strong> ${new Date(account.timestamp).toLocaleDateString()} ${new Date(account.timestamp).toLocaleTimeString()}</p>
+                        </div>
+                        <div class="account-actions">
+                            <button class="action-button chat" data-id="${account.id}">Chat</button> </div>
+                    `;
+                    acceptedAccountsListDiv.appendChild(accountItem);
                 });
+            } else {
+                if (noAcceptedAccountsMessage) noAcceptedAccountsMessage.classList.remove('hidden');
             }
+        }
+        // Re-attach event listeners for chat buttons after rendering
+        attachAccountActionListeners();
+    }, (error) => { // Added error callback for onValue
+        console.error("Firebase: Error fetching accepted accounts:", error);
+    });
+}
 
-            // Event listener for Close Chat button
-            if (closeChatButton) {
-                closeChatButton.addEventListener('click', () => {
-                    if (currentUserIsAdmin) {
-                        navigateToPage('admin'); // Admin goes back to admin panel
-                    } else {
-                        navigateToPage('main'); // User goes back to main page
-                    }
-                });
-            }
-            // END NEW CHAT FUNCTIONALITY
+// Helper function to attach event listeners for account actions
+function attachAccountActionListeners() {
+    document.querySelectorAll('.action-button.check').forEach(button => {
+        // Remove existing listener to prevent duplicates
+        button.removeEventListener('click', handleCheckButtonClick);
+        button.addEventListener('click', handleCheckButtonClick);
+    });
 
-            // NEW: YouTube Video Overlay Functions and Logic
-            const showYouTubeVideoOverlay = () => {
-                if (youtubeVideoOverlay) {
-                    youtubeVideoOverlay.classList.add('show');
-                    // Ensure the video starts playing if autoplay is allowed
-                    if (youtubeVideoIframe && youtubeVideoIframe.src) {
-                        // Reloading src to ensure autoplay attempt on show
-                        youtubeVideoIframe.src = youtubeVideoIframe.src; 
-                    }
+    document.querySelectorAll('.action-button.remove').forEach(button => {
+        // Remove existing listener to prevent duplicates
+        button.removeEventListener('click', handleRemoveButtonClick);
+        button.addEventListener('click', handleRemoveButtonClick);
+    });
+
+    document.querySelectorAll('.action-button.chat').forEach(button => {
+        // Remove existing listener to prevent duplicates
+        button.removeEventListener('click', handleChatButtonClick);
+        button.addEventListener('click', handleChatButtonClick);
+    });
+}
+
+function handleCheckButtonClick(event) {
+    const accountId = event.target.dataset.id;
+    const username = event.target.dataset.username;
+    const password = event.target.dataset.password;
+    const timestamp = event.target.dataset.timestamp;
+    handleAccountAction(accountId, 'accept', { username, password, timestamp });
+}
+
+function handleRemoveButtonClick(event) {
+    const accountId = event.target.dataset.id;
+    handleAccountAction(accountId, 'remove');
+}
+
+function handleChatButtonClick(event) {
+    const userIdToChatWith = event.target.dataset.id;
+    navigateToPage('chat', userIdToChatWith);
+}
+
+
+// Handle account actions (accept or remove)
+function handleAccountAction(accountId, action, accountData = null) {
+    if (action === 'accept') {
+        // Remove from submittedAccounts in Firebase
+        remove(ref(db, `submittedAccounts/${accountId}`))
+            .then(() => {
+                console.log(`Account ${accountId} removed from submitted.`);
+                // Add to acceptedAccounts in Firebase
+                return set(ref(db, `acceptedAccounts/${accountId}`), accountData);
+            })
+            .then(() => {
+                console.log(`Account ${accountId} accepted and moved.`);
+                // Update user notification in localStorage
+                const currentUserAltId = localStorage.getItem('currentUserAltId');
+                if (currentUserAltId === accountId) {
+                    localStorage.setItem('accountDecisionStatus', 'accepted');
                 }
-            };
-
-            const hideYouTubeVideoOverlay = () => {
-                if (youtubeVideoOverlay) {
-                    youtubeVideoOverlay.classList.remove('show');
-                    // Stop the video when hidden
-                    if (youtubeVideoIframe) {
-                        youtubeVideoIframe.src = ""; // Stop video playback
-                    }
-                }
-            };
-
-            if (youtubeVideoCloseButton) {
-                youtubeVideoCloseButton.addEventListener('click', () => {
-                    hideYouTubeVideoOverlay();
-                    localStorage.setItem('firstVisitDone', 'true'); // Mark first visit as done
+                showNotification(`Account ${accountData.username} Accepted!`);
+                showCustomOverlayMessage(`Account ${accountData.username} Accepted!`, false, () => {
+                    showChatWithAdminOverlay(() => {
+                        animateChatButton();
+                    });
                 });
-            }
+                // loadAccounts() will be triggered by onValue listeners
+            })
+            .catch(error => {
+                console.error("Error accepting account:", error);
+                showCustomOverlayMessage(`Error accepting account: ${error.message}`, true);
+            });
+    } else if (action === 'remove') {
+        // Remove from submittedAccounts in Firebase
+        remove(ref(db, `submittedAccounts/${accountId}`))
+            .then(() => {
+                console.log(`Account ${accountId} removed.`);
+                // Update user notification in localStorage
+                const currentUserAltId = localStorage.getItem('currentUserAltId');
+                if (currentUserAltId === accountId) {
+                    localStorage.setItem('accountDecisionStatus', 'denied');
+                }
+                showNotification(`Account ${accountId} Denied/Removed.`);
+                showCustomOverlayMessage(`Account ${accountId} Denied/Removed!`, true);
+                // loadAccounts() will be triggered by onValue listeners
+            })
+            .catch(error => {
+                console.error("Error removing account:", error);
+                showCustomOverlayMessage(`Error removing account: ${error.message}`, true);
+            });
+    }
+}
 
-            // Initial state: show main page and check for user messages
-            navigateToPage('main');
-            updateSubmitButtonState(); // Ensure submit button state is correct on load
-            checkAndShowUserChatButton(); // Initial check for chat button visibility
+// Function to display user-specific messages on the main page
+function displayUserMessages() {
+    let userMessages = [];
+    try {
+        userMessages = JSON.parse(localStorage.getItem('userMessages') || '[]');
+    } catch (e) {
+        console.error("Error parsing user messages from localStorage:", e);
+        userMessages = [];
+    }
 
-            // Check if it's the first visit
-            if (localStorage.getItem('firstVisitDone') !== 'true') {
-                showYouTubeVideoOverlay();
+    if (userMessages.length > 0) {
+        userMessages.forEach(msg => {
+            if (msg.status === 'accepted') {
+                showCustomOverlayMessage(`Your account was Accepted!`, false, () => {
+                    showChatWithAdminOverlay(() => {
+                        animateChatButton();
+                    });
+                });
+            } else if (msg.status === 'denied') {
+                showCustomOverlayMessage(`Your account was Denied/Removed!`, true);
             }
         });
-    </script>
-
-<canvas id="explosionCanvas" style="position:fixed;pointer-events:none;top:0;left:0;width:100%;height:100%;z-index:999;"></canvas>
-<audio id="clickSound">
-    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c6a7da2525.mp3" type="audio/mpeg">
-</audio>
-<script>
-// Bug-fix checker
-window.addEventListener('load', () => {
-    try {
-        if (!document.querySelector('#mainContent')) throw new Error("Missing main content");
-        if (!document.querySelector('#adminPanelContent')) throw new Error("Missing admin panel");
-        console.log("All checks passed.");
-    } catch (e) {
-        alert("Attempting to auto-fix layout...");
-        if (!document.querySelector('#mainContent')) {
-            let fixDiv = document.createElement('div');
-            fixDiv.id = "mainContent";
-            document.body.appendChild(fixDiv);
-        }
+        localStorage.removeItem('userMessages'); // Clear messages after displaying
     }
-});
-
-// Particle explosion effect
-const canvas = document.getElementById("explosionCanvas");
-const ctx = canvas.getContext("2d");
-let particles = [];
-
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
 }
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+
+// Function to update navigation button styles and content visibility
+function navigateToPage(pageName, chatUserId = null) {
+    // Ensure elements are available before trying to access classList
+    if (!mainContent || !adminPanelContent || !chatPageContent || !mainButton || !adminButton || !userChatButton) {
+        console.error("Navigation elements not found. Cannot navigate.");
+        return;
+    }
+
+    mainContent.classList.add('hidden');
+    adminPanelContent.classList.add('hidden');
+    chatPageContent.classList.add('hidden'); // Hide chat page by default
+
+    mainButton.classList.remove('hidden', 'glow', 'darken');
+    adminButton.classList.remove('hidden', 'glow', 'darken');
+    userChatButton.classList.remove('hidden', 'glow', 'darken'); // Manage chat button visibility separately
+
+    // Detach chat listener when navigating away from chat page
+    if (pageName !== 'chat' && currentChatListenerUnsubscribe) {
+        currentChatListenerUnsubscribe();
+        currentChatListenerUnsubscribe = null;
+    }
+
+    if (pageName === 'main') {
+        mainContent.classList.remove('hidden');
+        mainButton.classList.add('hidden');
+        adminButton.classList.add('glow');
+        userChatButton.classList.add('glow'); // userChatButton should always glow when visible
+    } else if (pageName === 'admin') {
+        currentUserIsAdmin = true; // Ensure admin status is set
+        adminPanelContent.classList.remove('hidden');
+        adminButton.classList.add('hidden');
+        mainButton.classList.add('glow');
+        userChatButton.classList.add('darken'); // userChatButton is dimmed if admin is active
+        loadAccounts(); // Ensure accounts are loaded when navigating to admin
+    } else if (pageName === 'chat') { 
+        chatPageContent.classList.remove('hidden');
+        mainButton.classList.add('hidden'); // Hide Main button when in chat
+        adminButton.classList.add('darken');
+        userChatButton.classList.add('darken'); // Dim chat button if in chat
+        
+        // Set chat header based on context
+        if (currentUserIsAdmin) { // If admin is chatting
+            // Fetch username from accepted accounts in Firebase
+            onValue(ref(db, `acceptedAccounts/${chatUserId}`), (snapshot) => {
+                const chatUserAccount = snapshot.val();
+                chatHeader.textContent = `Chatting with ${chatUserAccount ? chatUserAccount.username : 'User'}`;
+            }, { onlyOnce: true }); // Only fetch once
+        } else { // If regular user is chatting
+            chatHeader.textContent = 'Chatting with Admin';
+        }
+        currentChatPartnerId = chatUserId; // Store the ID of the person we are chatting with
+        displayMessages(); // Load and display messages for the current chat
+    }
+    checkAndShowUserChatButton(); // Re-evaluate chat button visibility after navigation
+}
+
+// Function to display a custom message overlay (now with optional callback)
+function showCustomOverlayMessage(message, isError = false, onCloseCallback = null) {
+    if (customMessageText && customMessageContent && customMessageOverlay && customMessageCloseButton) {
+        customMessageText.textContent = message;
+        customMessageContent.style.backgroundColor = isError ? 'rgba(220, 38, 38, 0.9)' : 'rgba(76, 175, 80, 0.9)';
+        customMessageOverlay.classList.add('show');
+
+        // Remove any existing listener to prevent multiple calls
+        customMessageCloseButton.removeEventListener('click', customMessageCloseButton.__currentListener);
+
+        const listener = () => {
+            customMessageOverlay.classList.remove('show');
+            if (onCloseCallback && typeof onCloseCallback === 'function') {
+                onCloseCallback();
+            }
+        };
+        customMessageCloseButton.addEventListener('click', listener);
+        customMessageCloseButton.__currentListener = listener; // Store reference to the current listener
+    }
+}
+
+// Function to show the "Chat with Admin" specific overlay
+function showChatWithAdminOverlay(onCloseCallback = null) {
+    if (chatWithAdminOverlay && chatWithAdminOverlayOkayButton) {
+        chatWithAdminOverlay.classList.add('show');
+        chatWithAdminOverlayOkayButton.removeEventListener('click', chatWithAdminOverlayOkayButton.__currentListener);
+
+        const listener = () => {
+            chatWithAdminOverlay.classList.remove('show');
+            if (onCloseCallback && typeof onCloseCallback === 'function') {
+                onCloseCallback();
+            }
+        };
+        chatWithAdminOverlayOkayButton.addEventListener('click', listener);
+        chatWithAdminOverlayOkayButton.__currentListener = listener;
+    }
+}
+
+// Function to animate the big chat button
+function animateChatButton() {
+    if (!userChatButton) {
+        console.error("userChatButton not found for animation.");
+        return;
+    }
+
+    // Create a temporary large button element
+    const tempButton = document.createElement('div');
+    tempButton.textContent = 'Chat';
+    tempButton.classList.add('big-chat-button-container', 'big-chat-button-initial');
+    document.body.appendChild(tempButton);
+
+    // Force reflow to ensure initial styles are applied before transition
+    tempButton.offsetWidth; 
+
+    // Get the final position and size of the userChatButton
+    const userChatButtonRect = userChatButton.getBoundingClientRect();
+    const finalTop = userChatButtonRect.top;
+    const finalLeft = userChatButtonRect.left;
+    const finalWidth = userChatButtonRect.width;
+    const finalHeight = userChatButtonRect.height;
+
+    // Apply final styles and trigger transition
+    tempButton.style.position = 'fixed'; // Ensure it's fixed for positioning
+    tempButton.style.top = `${finalTop}px`;
+    tempButton.style.left = `${finalLeft}px`;
+    tempButton.style.width = `${finalWidth}px`;
+    tempButton.style.height = `${finalHeight}px`;
+    tempButton.style.fontSize = '1rem'; // Match normal button font size
+    tempButton.style.borderRadius = '0.5rem'; // Match normal button border-radius
+    tempButton.style.backgroundColor = '#8A2BE2'; // Match normal button color
+    tempButton.style.color = 'white';
+    tempButton.style.textDecoration = 'underline'; // Match nav button style
+    tempButton.style.fontFamily = 'Poppins, sans-serif'; // Match nav button font
+
+    // Use a small timeout to ensure the transition is applied after the initial state
+    setTimeout(() => {
+        tempButton.classList.remove('big-chat-button-initial');
+        tempButton.classList.add('big-chat-button-final');
+    }, 50); // Small delay to ensure CSS transition is triggered
+
+    // Listen for the end of the transition
+    tempButton.addEventListener('transitionend', () => {
+        tempButton.remove(); // Remove the temporary button
+        userChatButton.classList.remove('hidden'); // Show the actual chat button
+        userChatButton.classList.add('green-glow'); // Apply the green glow
+    }, { once: true }); // Ensure listener is removed after it fires
+}
+
+// Check if the user's chat button should be shown
+function checkAndShowUserChatButton() {
+    const currentUserAltId = localStorage.getItem('currentUserAltId');
+    // Fetch accepted accounts from Firebase to check if current user's account is accepted
+    onValue(ref(db, 'acceptedAccounts'), (snapshot) => {
+        const acceptedAccountsData = snapshot.val();
+        let isAccepted = false;
+        if (acceptedAccountsData && currentUserAltId) {
+            isAccepted = !!acceptedAccountsData[currentUserAltId];
+        }
+
+        if (userChatButton) {
+            if (currentUserAltId && isAccepted && !currentUserIsAdmin) { // Show only if user submitted, accepted, and not currently an.
+                userChatButton.classList.remove('hidden');
+            } else {
+                userChatButton.classList.add('hidden');
+            }
+        }
+    }, { onlyOnce: true }); // Only fetch once
+}
+
+// Functions for particle effects
+function resizeCanvas() {
+    if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+}
 
 function createExplosion(x, y, color) {
     for (let i = 0; i < 20; i++) {
-        particles.push({
-            x, y,
-            vx: (Math.random() - 0.5) * 10,
-            vy: (Math.random() - 0.5) * 10,
-            life: 30,
-            color
-        });
+        particles.push(new Particle(x, y, color));
     }
 }
 
-function drawParticles() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles = particles.filter(p => p.life > 0);
-    particles.forEach(p => {
+function Particle(x, y, color) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.radius = Math.random() * 2 + 1;
+    this.velocity = {
+        x: (Math.random() - 0.5) * 5,
+        y: (Math.random() - 0.5) * 5
+    };
+    this.alpha = 1;
+    this.friction = 0.99; // Added friction
+}
+
+Particle.prototype.draw = function() {
+    if (ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 5, 0, 2 * Math.PI);
-        ctx.fillStyle = p.color;
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color;
         ctx.fill();
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life--;
-    });
+        ctx.restore();
+    }
+};
+
+Particle.prototype.update = function() {
+    this.velocity.x *= this.friction; // Apply friction
+    this.velocity.y *= this.friction; // Apply friction
+    this.x += this.velocity.x;
+    this.y += this.velocity.y;
+    this.alpha -= 0.02;
+};
+
+function drawParticles() {
+    if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.update();
+            p.draw();
+            if (p.alpha <= 0.1) {
+                particles.splice(i, 1);
+            }
+        }
+    }
     requestAnimationFrame(drawParticles);
 }
-drawParticles();
-
-// Button click effects
-const clickSound = document.getElementById("clickSound");
-document.querySelectorAll("button").forEach(button => {
-    button.addEventListener("click", e => {
-        const rect = button.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-        const bgColor = getComputedStyle(button).backgroundColor;
-        createExplosion(x, y, bgColor);
-        if (clickSound) {
-            clickSound.currentTime = 0;
-            clickSound.play();
-        }
-    });
-});
-</script>
 
 
-<!-- Overlay for Account Decision -->
-<div id="accountDecisionOverlay" class="custom-message-overlay">
-  <div class="custom-message-content">
-    <p id="accountDecisionText" class="message-text"></p>
-    <button id="accountDecisionOkay" class="close-button">Okay</button>
-  </div>
-</div>
-
-<!-- Notification Bubble -->
-<div id="notificationBubble" style="position: fixed; top: 1rem; right: 1rem; background: rgba(0,0,0,0.7); color: white; padding: 1rem 1.5rem; border-radius: 0.75rem; display: none; z-index: 9999; font-family: Poppins, sans-serif; font-weight: bold;"></div>
-
-<script>
+// Functions for notifications and account decisions (made globally accessible)
 function showNotification(message, duration = 3000) {
     const bubble = document.getElementById('notificationBubble');
     if (bubble) {
@@ -1849,25 +1447,344 @@ function showAccountDecision(status) {
     overlay.classList.add('show');
 }
 
-// Automatically show decision overlay if flagged
-document.addEventListener('DOMContentLoaded', () => {
+
+window.addEventListener('DOMContentLoaded', () => {
+    // Assign elements to globally declared variables
+    altUsernameInput = document.getElementById('altUsername');
+    usernameError = document.getElementById('usernameError');
+    altPasswordInput = document.getElementById('altPassword');
+    passwordError = document.getElementById('passwordError');
+    togglePassword = document.getElementById('togglePassword');
+    eyeOpenIcon = document.getElementById('eyeOpen');
+    eyeClosedIcon = document.getElementById('eyeClosed');
+    submitButton = document.getElementById('submitButton');
+
+    mainButton = document.getElementById('mainButton');
+    adminButton = document.getElementById('adminButton');
+    adminPasswordModal = document.getElementById('adminPasswordModal');
+    adminPasswordInput = document.getElementById('adminPasswordInput');
+    adminPasswordError = document.getElementById('adminPasswordError');
+    confirmAdminPasswordButton = document.getElementById('confirmAdminPassword');
+    cancelAdminPasswordButton = document.getElementById('cancelAdminPassword');
+    const ADMIN_PASSWORD = "AdMIn321"; // The required admin password
+
+    mainContent = document.getElementById('mainContent');
+    adminPanelContent = document.getElementById('adminPanelContent');
+    chatPageContent = document.getElementById('chatPageContent'); 
+    submittedAccountsListDiv = document.getElementById('submittedAccountsList');
+    acceptedAccountsListDiv = document.getElementById('acceptedAccountsList');
+    noSubmittedAccountsMessage = document.getElementById('noSubmittedAccountsMessage');
+    noAcceptedAccountsMessage = document.getElementById('noAcceptedAccountsMessage');
+    logoutAdminButton = document.getElementById('logoutAdminButton'); 
+
+    customMessageOverlay = document.getElementById('customMessageOverlay');
+    customMessageContent = document.getElementById('customMessageContent'); 
+    customMessageText = document.getElementById('customMessageText');
+    customMessageCloseButton = document.getElementById('customMessageCloseButton');
+
+    userChatButton = document.getElementById('userChatButton');
+    chatHeader = document.getElementById('chatHeader');
+    chatMessagesContainer = document.getElementById('chatMessagesContainer'); 
+    chatInput = document.getElementById('chatInput');
+    sendButton = document.getElementById('sendButton');
+    closeChatButton = document.getElementById('closeChatButton'); 
+
+    chatWithAdminOverlay = document.getElementById('chatWithAdminOverlay');
+    chatWithAdminOverlayOkayButton = document.getElementById('chatWithAdminOverlayOkayButton');
+
+    // youtubeVideoOverlay, youtubeVideoIframe, youtubeVideoCloseButton are removed as per user request
+    sendMessageSound = document.getElementById('sendMessageSound'); // Get the send message sound element
+
+    // New tutorial button element
+    watchTutorialButton = document.getElementById('watchTutorialButton');
+
+    // Particle effect initialization
+    canvas = document.getElementById("explosionCanvas");
+    if (canvas) {
+        ctx = canvas.getContext("2d");
+        resizeCanvas(); // Initial resize
+        window.addEventListener("resize", resizeCanvas); // Listen for window resize
+        drawParticles(); // Start the animation loop
+    } else {
+        console.error("Explosion canvas not found.");
+    }
+
+    // Button click sound initialization
+    clickSound = document.getElementById("clickSound");
+    document.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", e => {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            const bgColor = getComputedStyle(button).backgroundColor;
+            createExplosion(x, y, bgColor);
+            if (clickSound) {
+                clickSound.currentTime = 0;
+                clickSound.play();
+            }
+        });
+    });
+
+
+    // --- Debugging: Log retrieved elements ---
+    console.log("Elements retrieved on DOMContentLoaded:");
+    console.log("altUsernameInput:", altUsernameInput);
+    console.log("altPasswordInput:", altPasswordInput);
+    console.log("togglePassword:", togglePassword);
+    console.log("eyeOpenIcon:", eyeOpenIcon);
+    console.log("eyeClosedIcon:", eyeClosedIcon);
+    console.log("submitButton:", submitButton);
+    console.log("mainButton:", mainButton);
+    console.log("adminButton:", adminButton);
+    console.log("userChatButton:", userChatButton); 
+    console.log("chatPageContent:", chatPageContent); 
+    console.log("closeChatButton:", closeChatButton); 
+    console.log("chatWithAdminOverlay:", chatWithAdminOverlay); 
+    console.log("chatWithAdminOverlayOkayButton:", chatWithAdminOverlayOkayButton); 
+    console.log("sendMessageSound:", sendMessageSound);
+    console.log("watchTutorialButton:", watchTutorialButton);
+    // --- End Debugging ---
+
+
+    // Function to validate input for spaces and minimum length
+    const validateInput = (inputElement, errorElement, fieldName) => {
+        let isValid = true;
+        if (errorElement) {
+            errorElement.style.display = 'none'; // Hide previous error
+        }
+        const inputValue = inputElement.value.trim();
+
+        if (inputValue.includes(' ')) {
+            if (errorElement) {
+                errorElement.textContent = `Invalid ${fieldName} - no spaces allowed`;
+                errorElement.style.display = 'block';
+            }
+            isValid = false;
+        } else if (inputValue.length > 0 && inputValue.length < 2) {
+            if (errorElement) {
+                errorElement.textContent = `${fieldName} must be at least 2 characters`;
+                errorElement.style.display = 'block';
+            }
+            isValid = false;
+        }
+        return isValid;
+    };
+
+    // Function to update the visibility of the submit button
+    const updateSubmitButtonState = () => {
+        const isUsernameValid = altUsernameInput && altUsernameInput.value.trim().length >= 2 && !altUsernameInput.value.trim().includes(' ');
+        const isPasswordValid = altPasswordInput && altPasswordInput.value.trim().length >= 2 && !altPasswordInput.value.trim().includes(' ');
+
+        if (submitButton) {
+            if (isUsernameValid && isPasswordValid) {
+                submitButton.classList.remove('hidden');
+            } else {
+                submitButton.classList.add('hidden');
+            }
+        }
+    };
+
+    // Add event listeners to input fields for real-time validation and button state update
+    if (altUsernameInput && usernameError) {
+        altUsernameInput.addEventListener('input', () => {
+            validateInput(altUsernameInput, usernameError, 'Username');
+            updateSubmitButtonState();
+        });
+    }
+
+    if (altPasswordInput && passwordError) {
+        altPasswordInput.addEventListener('input', () => {
+            validateInput(altPasswordInput, passwordError, 'Password');
+            updateSubmitButtonState();
+        });
+    }
+
+    // Submit button click handler
+    if (submitButton && altUsernameInput && altPasswordInput) {
+        submitButton.addEventListener('click', () => {
+            const isUsernameValid = validateInput(altUsernameInput, usernameError, 'Username');
+            const isPasswordValid = validateInput(altPasswordInput, passwordError, 'Password');
+
+            if (isUsernameValid && isPasswordValid) {
+                const newAccount = {
+                    username: altUsernameInput.value.trim(), // Store trimmed value
+                    password: altPasswordInput.value.trim(), // Store trimmed value
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Push to Firebase Realtime Database
+                const newAccountRef = push(ref(db, 'submittedAccounts'), newAccount);
+                const firebaseId = newAccountRef.key;
+                
+                localStorage.setItem('currentUserAltId', firebaseId); // Store the Firebase-generated ID
+                console.log("Submitting account to Firebase:", newAccount); // Debug log
+
+                showCustomOverlayMessage('Account Submitted');
+
+                altUsernameInput.value = '';
+                altPasswordInput.value = '';
+                altPasswordInput.setAttribute('type', 'password');
+                if (eyeOpenIcon && eyeClosedIcon) {
+                    eyeOpenIcon.classList.add('hidden');
+                    eyeClosedIcon.classList.remove('hidden');
+                }
+
+                updateSubmitButtonState();
+                checkAndShowUserChatButton(); // Check chat button visibility after submission
+            }
+        });
+    }
+
+    // Admin button click handler
+    if (adminButton && adminPasswordInput && adminPasswordError && adminPasswordModal) {
+        adminButton.addEventListener('click', () => {
+            if (localStorage.getItem('isAdminLoggedIn') === 'true') {
+                currentUserIsAdmin = true; // Mark as admin
+                navigateToPage('admin');
+            } else {
+                adminPasswordInput.value = '';
+                adminPasswordError.classList.add('hidden');
+                adminPasswordModal.classList.add('show');
+                adminPasswordInput.focus();
+            }
+        });
+    }
+
+    // Confirm Admin Password button handler
+    if (confirmAdminPasswordButton && adminPasswordInput && adminPasswordError && adminPasswordModal) {
+        confirmAdminPasswordButton.addEventListener('click', () => {
+            if (adminPasswordInput.value === ADMIN_PASSWORD) {
+                localStorage.setItem('isAdminLoggedIn', 'true');
+                currentUserIsAdmin = true; // Mark as admin
+                adminPasswordModal.classList.remove('show');
+                navigateToPage('admin');
+            } else {
+                adminPasswordError.classList.remove('hidden');
+            }
+        });
+    }
+
+    // Cancel Admin Password button handler
+    if (cancelAdminPasswordButton && adminPasswordModal) {
+        cancelAdminPasswordButton.addEventListener('click', () => {
+            adminPasswordModal.classList.remove('show');
+        });
+    }
+
+    // Logout Admin button handler
+    if (logoutAdminButton) {
+        logoutAdminButton.addEventListener('click', () => {
+            localStorage.removeItem('isAdminLoggedIn');
+            currentUserIsAdmin = false; // Unmark as admin
+            showCustomOverlayMessage('Admin session logged out.');
+            navigateToPage('main');
+        });
+    }
+
+    // Toggle password visibility
+    if (togglePassword && altPasswordInput && eyeOpenIcon && eyeClosedIcon) {
+        togglePassword.addEventListener('click', () => {
+            const type = altPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            altPasswordInput.setAttribute('type', type);
+
+            if (type === 'text') {
+                eyeOpenIcon.classList.remove('hidden');
+                eyeClosedIcon.classList.add('hidden');
+            } else {
+                eyeOpenIcon.classList.add('hidden');
+                eyeClosedIcon.classList.remove('hidden');
+            }
+        });
+
+        // Set initial state of eye icons based on default password type
+        if (altPasswordInput.getAttribute('type') === 'password') {
+            eyeOpenIcon.classList.add('hidden');
+            eyeClosedIcon.classList.remove('hidden');
+        } else {
+            eyeOpenIcon.classList.remove('hidden');
+            eyeClosedIcon.classList.add('hidden');
+        }
+    }
+
+    // Event listener for the Main button
+    if (mainButton) {
+        mainButton.addEventListener('click', () => {
+            currentUserIsAdmin = false; // Ensure admin status is reset when going to main
+            navigateToPage('main');
+        });
+    }
+
+    // Event listener for the User Chat button
+    if (userChatButton) {
+        userChatButton.addEventListener('click', () => {
+            userChatButton.classList.remove('green-glow'); // Remove glow when clicked
+            // When user clicks chat, they chat with 'admin' (a fixed ID or concept)
+            navigateToPage('chat', 'admin'); 
+        });
+    }
+
+    // Event listener for send button
+    if (sendButton) {
+        sendButton.addEventListener('click', sendMessage);
+    }
+
+    // Event listener for Enter key in chat input
+    if (chatInput) {
+        chatInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) { // Send on Enter, allow Shift+Enter for new line
+                event.preventDefault(); // Prevent new line
+                sendMessage();
+            }
+        });
+    }
+
+    // Event listener for Close Chat button
+    if (closeChatButton) {
+        closeChatButton.addEventListener('click', () => {
+            if (currentUserIsAdmin) {
+                navigateToPage('admin'); // Admin goes back to admin panel
+            } else {
+                navigateToPage('main'); // User goes back to main page
+            }
+        });
+    }
+    // END NEW CHAT FUNCTIONALITY
+
+    // Event listener for the new Watch Tutorial button
+    if (watchTutorialButton) {
+        watchTutorialButton.addEventListener('click', () => {
+            // Open YouTube video in a new tab
+            window.open('https://www.youtube.com/watch?v=UMo5hDaWeEA', '_blank');
+        });
+    }
+
+    // Initial state: show main page
+    navigateToPage('main');
+    updateSubmitButtonState(); // Ensure submit button state is correct on load
+    checkAndShowUserChatButton(); // Initial check for chat button visibility
+
+    // Automatically show decision overlay if flagged (Moved from second script block)
     const status = localStorage.getItem('accountDecisionStatus');
     if (status) {
         showAccountDecision(status);
         localStorage.removeItem('accountDecisionStatus');
     }
-});
 
-// Hook into admin decision to set localStorage for user notification
-const originalHandleAccountAction = handleAccountAction;
-handleAccountAction = function(accountId, action) {
-    const currentUserAltId = localStorage.getItem('currentUserAltId');
-    if (currentUserAltId === accountId) {
-        localStorage.setItem('accountDecisionStatus', action === 'accept' ? 'accepted' : 'denied');
-    }
-    originalHandleAccountAction(accountId, action);
-    showNotification(`Account ${action === 'accept' ? 'Accepted' : 'Denied'}.`);
-};
+    // Hook into admin decision to set localStorage for user notification
+    // This re-assigns the handleAccountAction function to add notification logic.
+    // Ensure this runs AFTER the original handleAccountAction is fully defined.
+    const originalHandleAccountAction = handleAccountAction; 
+    handleAccountAction = function(accountId, action, accountData = null) { // Capture accountData for notification
+        const currentUserAltId = localStorage.getItem('currentUserAltId');
+        if (currentUserAltId === accountId) {
+            localStorage.setItem('accountDecisionStatus', action === 'accept' ? 'accepted' : 'denied');
+        }
+        // Call the original function with all arguments
+        originalHandleAccountAction(accountId, action, accountData);
+        // Show notification after the action is processed
+        showNotification(`Account ${action === 'accept' ? 'Accepted' : 'Denied'}.`);
+    };
+});
 </script>
 
 </body>
