@@ -786,7 +786,7 @@
 </head>
 <body>
     <div class="nova-text text-4xl font-bold p-4 rounded-lg">
-        Unit Nova Bots
+        Unit Nova Bots <span id="altAccountDisplay" class="text-xl text-gray-300 font-normal ml-2"></span>
     </div>
 
     <div class="nav-buttons-container">
@@ -940,6 +940,25 @@
         <p id="accountAcceptedText" class="hidden">Your account was accepted, Discuss with Admin!</p>
     </div>
 
+    <!-- Roblox Info Button -->
+    <button id="robloxInfoButton" class="fixed bottom-4 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out button-text shadow-lg transform hover:scale-105 animate-float z-50">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" class="w-6 h-6 inline-block mr-2">
+            <!-- Roblox Logo SVG (simplified) -->
+            <path d="M490.5 401.9c-10.7-32-37.5-56.8-71.1-66.2-12.9-3.6-26.6-5.4-40.3-5.4H132.8c-13.7 0-27.4 1.8-40.3 5.4-33.6 9.4-60.4 34.2-71.1 66.2C10.7 433.9 0 464.3 0 496.2v15.8c0 2.2 1.8 4 4 4h504c2.2 0 4-1.8 4-4v-15.8c0-31.9-10.7-62.3-31.5-94.3zM448 192c0-88.4-71.6-160-160-160S128 103.6 128 192s71.6 160 160 160 160-71.6 160-160zM288 288c-53 0-96-43-96-96s43-96 96-96 96 43 96 96-43 96-96 96z"/>
+        </svg>
+        Roblox Info
+    </button>
+
+    <!-- Roblox Info Overlay -->
+    <div id="robloxInfoOverlay" class="custom-message-overlay">
+        <div class="custom-message-content">
+            <p id="robloxInfoText" class="message-text">
+                Unit Nova is a bot Maker and lets you make the bot do anything for you like jump there jump here walk over there if thats safe.
+            </p>
+            <button id="robloxInfoCloseButton" class="close-button">Okay</button>
+        </div>
+    </div>
+
 <script type="module">
 // Firebase Imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
@@ -986,6 +1005,10 @@ let accountAcceptedOverlay, accountAcceptedText;
 let canvas, ctx;
 let particles = [];
 let clickSound; // Declared globally
+
+// New Roblox Info elements
+let robloxInfoButton, robloxInfoOverlay, robloxInfoCloseButton;
+let altAccountDisplay; // Declare altAccountDisplay globally
 
 
 // Function to get the storage key for the current chat
@@ -1040,6 +1063,8 @@ function displayMessages() {
         chatMessagesContainer.appendChild(messageItem);
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
     });
+    // Note on timestamps: Timestamps are stored in ISO 8601 format (UTC) and converted to the user's local time for display.
+    // Any discrepancies might be due to incorrect system clock settings or timezone configurations on the user's device.
 }
 
 // Function to send a message
@@ -1204,7 +1229,9 @@ function handleRemoveButtonClick(event) {
 
 function handleChatButtonClick(event) {
     const userIdToChatWith = event.target.dataset.id;
-    navigateToPage('chat', userIdToChatWith);
+    // Force a refresh of chat messages when clicking a chat button
+    currentChatPartnerId = userIdToChatWith; // Set the chat partner ID
+    navigateToPage('chat', userIdToChatWith); // Navigate and trigger displayMessages
 }
 
 function handleDeleteUIButtonClick(event) {
@@ -1238,25 +1265,16 @@ function handleAccountAction(accountId, action, accountData = null) {
                 // Update user notification in localStorage
                 const currentUserAltId = localStorage.getItem('currentUserAltId');
                 if (currentUserAltId === accountId) {
+                    // This sets the flag for the *user* to see the decision on their next load
                     localStorage.setItem('accountDecisionStatus', 'accepted');
                 }
+                // Show a simple notification to the admin who performed the action
                 showNotification(`Account ${accountData.username} Accepted!`);
-                showCustomOverlayMessage(`Account ${accountData.username} Accepted!`, false, () => {
-                    // This callback now triggers the chat button animation and message
-                    animateChatButton();
-                    accountAcceptedOverlay.classList.add('show');
-                    accountAcceptedText.classList.remove('hidden');
-                    setTimeout(() => {
-                        accountAcceptedOverlay.classList.remove('show');
-                        accountAcceptedText.classList.add('hidden');
-                        navigateToPage('chat', 'admin'); // Navigate to chat after animation
-                    }, 2000); // Duration of the animation + message display
-                });
                 // loadAccounts() will be triggered by onValue listeners
             })
             .catch(error => {
                 console.error("Error accepting account:", error);
-                showCustomOverlayMessage(`Error accepting account: ${error.message}`, true);
+                showCustomOverlayMessage(`Error accepting account: ${error.message}`, true); // This is for admin
             });
     } else if (action === 'remove') {
         // Remove from submittedAccounts in Firebase
@@ -1268,13 +1286,13 @@ function handleAccountAction(accountId, action, accountData = null) {
                 if (currentUserAltId === accountId) {
                     localStorage.setItem('accountDecisionStatus', 'denied');
                 }
-                showNotification(`Account ${accountId} Denied/Removed.`);
-                showCustomOverlayMessage(`Account ${accountId} Denied/Removed!`, true);
+                showNotification(`Account ${accountId} Denied/Removed.`); // This is for admin
+                showCustomOverlayMessage(`Account ${accountId} Denied/Removed!`, true); // This is for admin
                 // loadAccounts() will be triggered by onValue listeners
             })
             .catch(error => {
                 console.error("Error removing account:", error);
-                showCustomOverlayMessage(`Error removing account: ${error.message}`, true);
+                showCustomOverlayMessage(`Error removing account: ${error.message}`, true); // This is for admin
             });
     }
 }
@@ -1326,6 +1344,13 @@ function navigateToPage(pageName, chatUserId = null) {
         currentChatListenerUnsubscribe();
         currentChatListenerUnsubscribe = null;
     }
+
+    // Ensure the accepted overlay is hidden if navigating away from the animation
+    if (accountAcceptedOverlay) {
+        accountAcceptedOverlay.classList.remove('show');
+        accountAcceptedText.classList.add('hidden');
+    }
+
 
     if (pageName === 'main') {
         mainContent.classList.remove('hidden');
@@ -1411,16 +1436,21 @@ function animateChatButton() {
     userChatButton.classList.remove('green-glow'); // Remove any existing glow
 
     // Store the final position and size of the userChatButton
-    const finalRect = userChatButton.getBoundingClientRect();
-    const finalTop = finalRect.top;
-    const finalLeft = finalRect.left;
-    const finalWidth = finalRect.width;
-    const finalHeight = finalRect.height;
+    // Get the current computed style to ensure accurate final dimensions
+    const computedStyle = window.getComputedStyle(userChatButton);
+    const finalWidth = parseFloat(computedStyle.width);
+    const finalHeight = parseFloat(computedStyle.height);
+    const finalTop = userChatButton.offsetTop;
+    const finalLeft = userChatButton.offsetLeft;
+
 
     // Set initial state for animation (large, centered)
     userChatButton.classList.add('user-chat-button-animating');
     userChatButton.style.top = `${window.innerHeight / 2}px`;
     userChatButton.style.left = `${window.innerWidth / 2}px`;
+    userChatButton.style.width = 'auto'; // Allow content to dictate width in initial state
+    userChatButton.style.height = 'auto'; // Allow content to dictate height in initial state
+
 
     // Force reflow to ensure initial styles are applied before transition
     userChatButton.offsetWidth;
@@ -1546,9 +1576,22 @@ function showAccountDecision(status) {
 
     if (status === "accepted") {
         text.textContent = "Your account was Accepted!";
+        overlay.classList.add('show'); // Show the generic decision overlay
+
+        // Immediately show the specific "Discuss with Admin!" overlay and animation
+        if (accountAcceptedOverlay && accountAcceptedText) {
+            accountAcceptedOverlay.classList.add('show');
+            accountAcceptedText.classList.remove('hidden');
+            animateChatButton(); // Trigger the chat button animation
+        }
+        
         button.onclick = () => {
-            overlay.classList.remove('show');
-            navigateToPage('chat', 'admin');
+            overlay.classList.remove('show'); // Hide generic decision overlay
+            if (accountAcceptedOverlay) {
+                accountAcceptedOverlay.classList.remove('show'); // Hide animation overlay
+                accountAcceptedText.classList.add('hidden');
+            }
+            navigateToPage('chat', 'admin'); // Navigate to chat after user clicks "Okay"
         };
     } else {
         text.textContent = "Your account was Denied or Removed.";
@@ -1615,6 +1658,12 @@ window.addEventListener('DOMContentLoaded', () => {
     accountAcceptedOverlay = document.getElementById('accountAcceptedOverlay');
     accountAcceptedText = document.getElementById('accountAcceptedText');
 
+    // Roblox Info elements
+    robloxInfoButton = document.getElementById('robloxInfoButton');
+    robloxInfoOverlay = document.getElementById('robloxInfoOverlay');
+    robloxInfoCloseButton = document.getElementById('robloxInfoCloseButton');
+    altAccountDisplay = document.getElementById('altAccountDisplay');
+
 
     // Particle effect initialization
     canvas = document.getElementById("explosionCanvas");
@@ -1665,6 +1714,10 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log("chatGreetingBox:", chatGreetingBox);
     console.log("accountAcceptedOverlay:", accountAcceptedOverlay);
     console.log("accountAcceptedText:", accountAcceptedText);
+    console.log("robloxInfoButton:", robloxInfoButton);
+    console.log("robloxInfoOverlay:", robloxInfoOverlay);
+    console.log("robloxInfoCloseButton:", robloxInfoCloseButton);
+    console.log("altAccountDisplay:", altAccountDisplay);
     // --- End Debugging ---
 
 
@@ -1753,6 +1806,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 updateSubmitButtonState();
                 checkAndShowUserChatButton(); // Check chat button visibility after submission
+                updateAltAccountDisplay(); // Update alt account display immediately after submission
             }
         });
     }
@@ -1840,7 +1894,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (userChatButton) {
         userChatButton.addEventListener('click', () => {
             userChatButton.classList.remove('green-glow'); // Remove glow when clicked
-            // When user clicks chat, they chat with 'admin' (a fixed ID or concept)
+            currentChatPartnerId = 'admin'; // Explicitly set chat partner to admin for user
             navigateToPage('chat', 'admin'); 
         });
     }
@@ -1913,10 +1967,51 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Roblox Info Button logic
+    if (robloxInfoButton && robloxInfoOverlay && robloxInfoCloseButton) {
+        robloxInfoButton.addEventListener('click', () => {
+            robloxInfoOverlay.classList.add('show');
+        });
+
+        robloxInfoCloseButton.addEventListener('click', () => {
+            robloxInfoOverlay.classList.remove('show');
+        });
+    }
+
+    // Alt Account Display Logic
+    const updateAltAccountDisplay = () => {
+        const currentUserAltId = localStorage.getItem('currentUserAltId');
+        if (!altAccountDisplay || !currentUserAltId) {
+            if (altAccountDisplay) altAccountDisplay.textContent = '';
+            return;
+        }
+
+        // Check accepted accounts first
+        const acceptedRef = ref(db, `acceptedAccounts/${currentUserAltId}`);
+        onValue(acceptedRef, (snapshot) => {
+            const account = snapshot.val();
+            if (account) {
+                altAccountDisplay.textContent = `Alt:(${account.username})`;
+            } else {
+                // If not in accepted, check submitted accounts
+                const submittedRef = ref(db, `submittedAccounts/${currentUserAltId}`);
+                onValue(submittedRef, (submittedSnapshot) => {
+                    const submittedAccount = submittedSnapshot.val();
+                    if (submittedAccount) {
+                        altAccountDisplay.textContent = `Alt:(${submittedAccount.username})`;
+                    } else {
+                        altAccountDisplay.textContent = ''; // Clear if not found in either
+                    }
+                }, { onlyOnce: true }); // Only need to check submitted once if not accepted
+            }
+        }); // This listener for accepted will keep it updated if status changes
+    };
+
     // Initial state: show main page
     navigateToPage('main');
     updateSubmitButtonState(); // Ensure submit button state is correct on load
     checkAndShowUserChatButton(); // Initial check for chat button visibility
+    updateAltAccountDisplay(); // Initial update of alt account display
 
     // Automatically show decision overlay if flagged (Moved from second script block)
     const status = localStorage.getItem('accountDecisionStatus');
@@ -1938,6 +2033,7 @@ window.addEventListener('DOMContentLoaded', () => {
         originalHandleAccountAction(accountId, action, accountData);
         // Show notification after the action is processed
         showNotification(`Account ${action === 'accept' ? 'Accepted' : 'Denied'}.`);
+        updateAltAccountDisplay(); // Update alt account display after an action that might change status
     };
 });
 </script>
