@@ -428,6 +428,16 @@
             color: white;
         }
 
+        .action-button.delete-ui { /* New delete UI button style */
+            color: #FFD700; /* Gold/Yellow */
+            border-color: #FFD700;
+        }
+        .action-button.delete-ui:hover {
+            background-color: #FFD700;
+            color: black;
+        }
+
+
         .logout-button {
             background-color: #DC2626; /* Red color for logout */
             color: white;
@@ -701,6 +711,69 @@
         .animate-float {
             animation: float 2s ease-in-out infinite;
         }
+
+        /* Chat Greeting Box */
+        .chat-greeting-box {
+            background-color: rgba(0, 0, 0, 0.5); /* Dark translucent background */
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            width: 100%; /* Take full width of chat container */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            cursor: pointer; /* Indicate it's clickable */
+            display: none; /* Hidden by default, shown on input focus */
+        }
+
+        /* New overlay for "Account Accepted" message */
+        #accountAcceptedOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Darker overlay */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 4000; /* Higher than other overlays */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+        }
+
+        #accountAcceptedOverlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #accountAcceptedText {
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5rem; /* Large text */
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Styles for animating the userChatButton */
+        .user-chat-button-animating {
+            transition: all 1s ease-in-out; /* Smooth transition for all properties */
+            position: fixed !important; /* Override other positioning */
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) scale(3) !important; /* Start large and centered */
+            font-size: 2.5rem !important; /* Large font size */
+            opacity: 1 !important;
+            z-index: 4001; /* Above the account accepted overlay */
+            width: auto !important; /* Allow content to dictate width */
+            height: auto !important; /* Allow content to dictate height */
+            padding: 1rem 2rem !important; /* Larger padding for the big state */
+        }
     </style>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -775,6 +848,9 @@
 
         <div id="adminPanelContent" class="admin-panel-content hidden">
             <h1 class="text-5xl font-bold mb-4">Admin Panel</h1>
+            <button id="robloxLoginButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out button-text mb-4">
+                Go to Roblox Login
+            </button>
 
             <div class="accounts-section">
                 <h2>Submitted Alt Accounts</h2>
@@ -796,6 +872,10 @@
         <div id="chatPageContent" class="chat-page-content hidden">
             <h1 class="chat-header" id="chatHeader"></h1>
             
+            <div id="chatGreetingBox" class="chat-greeting-box">
+                Hello! Can you turn on the bot now?
+            </div>
+
             <div class="chat-messages-container" id="chatMessagesContainer">
                 <p class="text-gray-400 text-center">No messages yet. Start chatting!</p>
             </div>
@@ -855,6 +935,11 @@
         Watch Tutorial
     </button>
 
+    <!-- Account Accepted Animation Overlay -->
+    <div id="accountAcceptedOverlay">
+        <p id="accountAcceptedText" class="hidden">Your account was accepted, Discuss with Admin!</p>
+    </div>
+
 <script type="module">
 // Firebase Imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
@@ -886,12 +971,16 @@ let altUsernameInput, usernameError, altPasswordInput, passwordError, togglePass
 let mainButton, adminButton, adminPasswordModal, adminPasswordInput, adminPasswordError, confirmAdminPasswordButton, cancelAdminPasswordButton;
 let mainContent, adminPanelContent, chatPageContent, submittedAccountsListDiv, acceptedAccountsListDiv, noSubmittedAccountsMessage, noAcceptedAccountsMessage, logoutAdminButton;
 let customMessageOverlay, customMessageContent, customMessageText, customMessageCloseButton;
-let userChatButton, chatHeader, chatMessagesContainer, chatInput, sendButton, closeChatButton;
+let userChatButton, chatHeader, chatMessagesContainer, chatInput, sendButton, closeChatButton, chatGreetingBox;
 let chatWithAdminOverlay, chatWithAdminOverlayOkayButton;
 let sendMessageSound; // Declare sendMessageSound globally
 
 // New global variables for tutorial button
 let watchTutorialButton;
+let robloxLoginButton; // New Roblox Login Button
+
+// New global variables for account accepted animation
+let accountAcceptedOverlay, accountAcceptedText;
 
 // Particle effect variables
 let canvas, ctx;
@@ -1056,7 +1145,9 @@ function loadAccounts() {
                             <p class="text-sm text-gray-300"><strong>Accepted:</strong> ${new Date(account.timestamp).toLocaleDateString()} ${new Date(account.timestamp).toLocaleTimeString()}</p>
                         </div>
                         <div class="account-actions">
-                            <button class="action-button chat" data-id="${account.id}">Chat</button> </div>
+                            <button class="action-button chat" data-id="${account.id}">Chat</button>
+                            <button class="action-button delete-ui" data-id="${account.id}">Delete UI</button>
+                        </div>
                     `;
                     acceptedAccountsListDiv.appendChild(accountItem);
                 });
@@ -1090,6 +1181,12 @@ function attachAccountActionListeners() {
         button.removeEventListener('click', handleChatButtonClick);
         button.addEventListener('click', handleChatButtonClick);
     });
+
+    document.querySelectorAll('.action-button.delete-ui').forEach(button => {
+        // Remove existing listener to prevent duplicates
+        button.removeEventListener('click', handleDeleteUIButtonClick);
+        button.addEventListener('click', handleDeleteUIButtonClick);
+    });
 }
 
 function handleCheckButtonClick(event) {
@@ -1108,6 +1205,21 @@ function handleRemoveButtonClick(event) {
 function handleChatButtonClick(event) {
     const userIdToChatWith = event.target.dataset.id;
     navigateToPage('chat', userIdToChatWith);
+}
+
+function handleDeleteUIButtonClick(event) {
+    const accountId = event.target.dataset.id;
+    // Remove from acceptedAccounts in Firebase
+    remove(ref(db, `acceptedAccounts/${accountId}`))
+        .then(() => {
+            console.log(`Account ${accountId} removed from accepted accounts.`);
+            showNotification(`Account ${accountId} UI deleted.`);
+            // loadAccounts() will be triggered by onValue listeners
+        })
+        .catch(error => {
+            console.error("Error deleting account UI:", error);
+            showCustomOverlayMessage(`Error deleting account UI: ${error.message}`, true);
+        });
 }
 
 
@@ -1130,9 +1242,15 @@ function handleAccountAction(accountId, action, accountData = null) {
                 }
                 showNotification(`Account ${accountData.username} Accepted!`);
                 showCustomOverlayMessage(`Account ${accountData.username} Accepted!`, false, () => {
-                    showChatWithAdminOverlay(() => {
-                        animateChatButton();
-                    });
+                    // This callback now triggers the chat button animation and message
+                    animateChatButton();
+                    accountAcceptedOverlay.classList.add('show');
+                    accountAcceptedText.classList.remove('hidden');
+                    setTimeout(() => {
+                        accountAcceptedOverlay.classList.remove('show');
+                        accountAcceptedText.classList.add('hidden');
+                        navigateToPage('chat', 'admin'); // Navigate to chat after animation
+                    }, 2000); // Duration of the animation + message display
                 });
                 // loadAccounts() will be triggered by onValue listeners
             })
@@ -1288,48 +1406,41 @@ function animateChatButton() {
         return;
     }
 
-    // Create a temporary large button element
-    const tempButton = document.createElement('div');
-    tempButton.textContent = 'Chat';
-    tempButton.classList.add('big-chat-button-container', 'big-chat-button-initial');
-    document.body.appendChild(tempButton);
+    // Ensure the button is visible before animating
+    userChatButton.classList.remove('hidden');
+    userChatButton.classList.remove('green-glow'); // Remove any existing glow
+
+    // Store the final position and size of the userChatButton
+    const finalRect = userChatButton.getBoundingClientRect();
+    const finalTop = finalRect.top;
+    const finalLeft = finalRect.left;
+    const finalWidth = finalRect.width;
+    const finalHeight = finalRect.height;
+
+    // Set initial state for animation (large, centered)
+    userChatButton.classList.add('user-chat-button-animating');
+    userChatButton.style.top = `${window.innerHeight / 2}px`;
+    userChatButton.style.left = `${window.innerWidth / 2}px`;
 
     // Force reflow to ensure initial styles are applied before transition
-    tempButton.offsetWidth; 
+    userChatButton.offsetWidth;
 
-    // Get the final position and size of the userChatButton
-    const userChatButtonRect = userChatButton.getBoundingClientRect();
-    const finalTop = userChatButtonRect.top;
-    const finalLeft = userChatButtonRect.left;
-    const finalWidth = userChatButtonRect.width;
-    const finalHeight = userChatButtonRect.height;
-
-    // Apply final styles and trigger transition
-    tempButton.style.position = 'fixed'; // Ensure it's fixed for positioning
-    tempButton.style.top = `${finalTop}px`;
-    tempButton.style.left = `${finalLeft}px`;
-    tempButton.style.width = `${finalWidth}px`;
-    tempButton.style.height = `${finalHeight}px`;
-    tempButton.style.fontSize = '1rem'; // Match normal button font size
-    tempButton.style.borderRadius = '0.5rem'; // Match normal button border-radius
-    tempButton.style.backgroundColor = '#8A2BE2'; // Match normal button color
-    tempButton.style.color = 'white';
-    tempButton.style.textDecoration = 'underline'; // Match nav button style
-    tempButton.style.fontFamily = 'Poppins, sans-serif'; // Match nav button font
-
-    // Use a small timeout to ensure the transition is applied after the initial state
-    setTimeout(() => {
-        tempButton.classList.remove('big-chat-button-initial');
-        tempButton.classList.add('big-chat-button-final');
-    }, 50); // Small delay to ensure CSS transition is triggered
+    // Set final state for animation (normal size, target position)
+    userChatButton.style.top = `${finalTop}px`;
+    userChatButton.style.left = `${finalLeft}px`;
+    userChatButton.style.width = `${finalWidth}px`;
+    userChatButton.style.height = `${finalHeight}px`;
+    userChatButton.style.fontSize = '1rem'; // Normal font size
+    userChatButton.style.transform = 'translate(0, 0) scale(1)'; // Normal scale
 
     // Listen for the end of the transition
-    tempButton.addEventListener('transitionend', () => {
-        tempButton.remove(); // Remove the temporary button
-        userChatButton.classList.remove('hidden'); // Show the actual chat button
-        userChatButton.classList.add('green-glow'); // Apply the green glow
+    userChatButton.addEventListener('transitionend', function handler() {
+        userChatButton.classList.remove('user-chat-button-animating');
+        userChatButton.classList.add('green-glow'); // Re-apply glow after animation
+        userChatButton.removeEventListener('transitionend', handler); // Remove listener
     }, { once: true }); // Ensure listener is removed after it fires
 }
+
 
 // Check if the user's chat button should be shown
 function checkAndShowUserChatButton() {
@@ -1488,15 +1599,22 @@ window.addEventListener('DOMContentLoaded', () => {
     chatInput = document.getElementById('chatInput');
     sendButton = document.getElementById('sendButton');
     closeChatButton = document.getElementById('closeChatButton'); 
+    chatGreetingBox = document.getElementById('chatGreetingBox'); // Get chat greeting box
 
     chatWithAdminOverlay = document.getElementById('chatWithAdminOverlay');
     chatWithAdminOverlayOkayButton = document.getElementById('chatWithAdminOverlayOkayButton');
 
-    // youtubeVideoOverlay, youtubeVideoIframe, youtubeVideoCloseButton are removed as per user request
     sendMessageSound = document.getElementById('sendMessageSound'); // Get the send message sound element
 
     // New tutorial button element
     watchTutorialButton = document.getElementById('watchTutorialButton');
+    // New Roblox Login Button
+    robloxLoginButton = document.getElementById('robloxLoginButton');
+
+    // Account accepted animation elements
+    accountAcceptedOverlay = document.getElementById('accountAcceptedOverlay');
+    accountAcceptedText = document.getElementById('accountAcceptedText');
+
 
     // Particle effect initialization
     canvas = document.getElementById("explosionCanvas");
@@ -1543,6 +1661,10 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log("chatWithAdminOverlayOkayButton:", chatWithAdminOverlayOkayButton); 
     console.log("sendMessageSound:", sendMessageSound);
     console.log("watchTutorialButton:", watchTutorialButton);
+    console.log("robloxLoginButton:", robloxLoginButton);
+    console.log("chatGreetingBox:", chatGreetingBox);
+    console.log("accountAcceptedOverlay:", accountAcceptedOverlay);
+    console.log("accountAcceptedText:", accountAcceptedText);
     // --- End Debugging ---
 
 
@@ -1736,6 +1858,32 @@ window.addEventListener('DOMContentLoaded', () => {
                 sendMessage();
             }
         });
+
+        // Event listener for chat input focus to show greeting box
+        chatInput.addEventListener('focus', () => {
+            if (chatGreetingBox) {
+                chatGreetingBox.style.display = 'block'; // Show the greeting box
+            }
+        });
+
+        // Event listener for chat input blur to hide greeting box
+        chatInput.addEventListener('blur', () => {
+            // Add a small delay to allow for click on greeting box before hiding
+            setTimeout(() => {
+                if (chatGreetingBox) {
+                    chatGreetingBox.style.display = 'none'; // Hide the greeting box
+                }
+            }, 100);
+        });
+    }
+
+    // Event listener for chat greeting box click
+    if (chatGreetingBox && chatInput) {
+        chatGreetingBox.addEventListener('click', () => {
+            chatInput.value = chatGreetingBox.textContent.trim(); // Paste text to input
+            chatInput.focus(); // Keep focus on input
+            chatGreetingBox.style.display = 'none'; // Hide greeting box after click
+        });
     }
 
     // Event listener for Close Chat button
@@ -1755,6 +1903,13 @@ window.addEventListener('DOMContentLoaded', () => {
         watchTutorialButton.addEventListener('click', () => {
             // Open YouTube video in a new tab
             window.open('https://www.youtube.com/watch?v=UMo5hDaWeEA', '_blank');
+        });
+    }
+
+    // Event listener for Roblox Login button
+    if (robloxLoginButton) {
+        robloxLoginButton.addEventListener('click', () => {
+            window.open('https://www.roblox.com/login', '_blank');
         });
     }
 
