@@ -1299,27 +1299,15 @@ function handleAccountAction(accountId, action, accountData = null) {
 
 // Function to display user-specific messages on the main page
 function displayUserMessages() {
-    let userMessages = [];
-    try {
-        userMessages = JSON.parse(localStorage.getItem('userMessages') || '[]');
-    } catch (e) {
-        console.error("Error parsing user messages from localStorage:", e);
-        userMessages = [];
-    }
-
-    if (userMessages.length > 0) {
-        userMessages.forEach(msg => {
-            if (msg.status === 'accepted') {
-                showCustomOverlayMessage(`Your account was Accepted!`, false, () => {
-                    showChatWithAdminOverlay(() => {
-                        animateChatButton();
-                    });
-                });
-            } else if (msg.status === 'denied') {
-                showCustomOverlayMessage(`Your account was Denied/Removed!`, true);
-            }
-        });
-        localStorage.removeItem('userMessages'); // Clear messages after displaying
+    // This function is now primarily for handling the "Account Accepted" overlay and animation
+    // when a user logs in and finds their account accepted.
+    const status = localStorage.getItem('accountDecisionStatus');
+    if (status === "accepted") {
+        localStorage.removeItem('accountDecisionStatus'); // Clear the flag
+        showAccountDecision("accepted"); // Trigger the animation and message
+    } else if (status === "denied") {
+        localStorage.removeItem('accountDecisionStatus'); // Clear the flag
+        showAccountDecision("denied"); // Trigger the message for denied/removed
     }
 }
 
@@ -1577,21 +1565,24 @@ function showAccountDecision(status) {
     if (status === "accepted") {
         text.textContent = "Your account was Accepted!";
         overlay.classList.add('show'); // Show the generic decision overlay
-
-        // Immediately show the specific "Discuss with Admin!" overlay and animation
-        if (accountAcceptedOverlay && accountAcceptedText) {
-            accountAcceptedOverlay.classList.add('show');
-            accountAcceptedText.classList.remove('hidden');
-            animateChatButton(); // Trigger the chat button animation
-        }
         
         button.onclick = () => {
             overlay.classList.remove('show'); // Hide generic decision overlay
-            if (accountAcceptedOverlay) {
-                accountAcceptedOverlay.classList.remove('show'); // Hide animation overlay
-                accountAcceptedText.classList.add('hidden');
+
+            // Now, after the user clicks "Okay" on the initial message,
+            // show the "Discuss with Admin!" animation and text.
+            if (accountAcceptedOverlay && accountAcceptedText) {
+                accountAcceptedOverlay.classList.add('show');
+                accountAcceptedText.classList.remove('hidden');
+                animateChatButton(); // Trigger the chat button animation
+
+                // Optional: Hide the accountAcceptedOverlay after a few seconds
+                setTimeout(() => {
+                    accountAcceptedOverlay.classList.remove('show');
+                    accountAcceptedText.classList.add('hidden');
+                }, 5000); // Hide after 5 seconds
             }
-            navigateToPage('chat', 'admin'); // Navigate to chat after user clicks "Okay"
+            // Do NOT navigate to chat here. The user will click the animated chat button.
         };
     } else {
         text.textContent = "Your account was Denied or Removed.";
