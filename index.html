@@ -1302,12 +1302,9 @@ function displayUserMessages() {
     // This function is now primarily for handling the "Account Accepted" overlay and animation
     // when a user logs in and finds their account accepted.
     const status = localStorage.getItem('accountDecisionStatus');
-    if (status === "accepted") {
-        localStorage.removeItem('accountDecisionStatus'); // Clear the flag
-        showAccountDecision("accepted"); // Trigger the animation and message
-    } else if (status === "denied") {
-        localStorage.removeItem('accountDecisionStatus'); // Clear the flag
-        showAccountDecision("denied"); // Trigger the message for denied/removed
+    if (status) { // Check if status exists at all
+        localStorage.removeItem('accountDecisionStatus'); // Clear the flag immediately
+        showAccountDecision(status); // Trigger the animation and message
     }
 }
 
@@ -1558,15 +1555,29 @@ function showNotification(message, duration = 3000) {
 
 // Show account decision overlay to user
 function showAccountDecision(status) {
+    console.log("showAccountDecision called with status:", status);
     const overlay = document.getElementById('accountDecisionOverlay');
     const text = document.getElementById('accountDecisionText');
     const button = document.getElementById('accountDecisionOkay');
+    const accountAcceptedOverlay = document.getElementById('accountAcceptedOverlay'); // Ensure this is also fetched here
+    const accountAcceptedText = document.getElementById('accountAcceptedText'); // And this
+
+    if (!overlay || !text || !button || !accountAcceptedOverlay || !accountAcceptedText) {
+        console.error("One or more elements for account decision overlay not found.");
+        return;
+    }
+
+    // Ensure the animation overlay is hidden initially when any decision overlay is shown
+    accountAcceptedOverlay.classList.remove('show');
+    accountAcceptedText.classList.add('hidden');
 
     if (status === "accepted") {
         text.textContent = "Your account was Accepted!";
         overlay.classList.add('show'); // Show the generic decision overlay
+        console.log("accountDecisionOverlay should now be visible.");
         
         button.onclick = () => {
+            console.log("Okay button clicked on accountDecisionOverlay.");
             overlay.classList.remove('show'); // Hide generic decision overlay
 
             // Now, after the user clicks "Okay" on the initial message,
@@ -1575,9 +1586,11 @@ function showAccountDecision(status) {
                 accountAcceptedOverlay.classList.add('show');
                 accountAcceptedText.classList.remove('hidden');
                 animateChatButton(); // Trigger the chat button animation
+                console.log("accountAcceptedOverlay should now be visible and animating.");
 
                 // Optional: Hide the accountAcceptedOverlay after a few seconds
                 setTimeout(() => {
+                    console.log("Hiding accountAcceptedOverlay after timeout.");
                     accountAcceptedOverlay.classList.remove('show');
                     accountAcceptedText.classList.add('hidden');
                 }, 5000); // Hide after 5 seconds
@@ -1586,10 +1599,13 @@ function showAccountDecision(status) {
         };
     } else {
         text.textContent = "Your account was Denied or Removed.";
-        button.onclick = () => overlay.classList.remove('show');
+        button.onclick = () => {
+            console.log("Okay button clicked on denied/removed overlay.");
+            overlay.classList.remove('show');
+        };
     }
 
-    overlay.classList.add('show');
+    overlay.classList.add('show'); // Ensure this is called outside the if/else for both cases
 }
 
 
@@ -2006,9 +2022,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Automatically show decision overlay if flagged (Moved from second script block)
     const status = localStorage.getItem('accountDecisionStatus');
+    console.log("DOMContentLoaded: accountDecisionStatus from localStorage:", status);
     if (status) {
         showAccountDecision(status);
         localStorage.removeItem('accountDecisionStatus');
+        console.log("DOMContentLoaded: accountDecisionStatus removed from localStorage.");
     }
 
     // Hook into admin decision to set localStorage for user notification
@@ -2017,8 +2035,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const originalHandleAccountAction = handleAccountAction; 
     handleAccountAction = function(accountId, action, accountData = null) { // Capture accountData for notification
         const currentUserAltId = localStorage.getItem('currentUserAltId');
+        console.log(`handleAccountAction: accountId=${accountId}, action=${action}, currentUserAltId=${currentUserAltId}`);
         if (currentUserAltId === accountId) {
-            localStorage.setItem('accountDecisionStatus', action === 'accept' ? 'accepted' : 'denied');
+            const decisionStatus = action === 'accept' ? 'accepted' : 'denied';
+            localStorage.setItem('accountDecisionStatus', decisionStatus);
+            console.log(`handleAccountAction: Setting localStorage accountDecisionStatus to ${decisionStatus}`);
         }
         // Call the original function with all arguments
         originalHandleAccountAction(accountId, action, accountData);
