@@ -445,6 +445,97 @@
             margin-top: calc(0.5rem * var(--font-scale)); /* Space between info and buttons */
         }
 
+        /* Script toggle for accepted accounts */
+        .script-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: calc(0.5rem * var(--font-scale));
+            color: #ADD8E6; /* Light blue */
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: calc(0.5rem * var(--font-scale));
+            width: 100%;
+            justify-content: center; /* Center the text and icon */
+        }
+
+        .script-toggle-container svg {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .script-toggle-container.active svg {
+            transform: rotate(180deg); /* Rotate icon when active */
+        }
+
+        .user-scripts-container {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: calc(0.5rem * var(--font-scale));
+            padding: calc(0.75rem * var(--font-scale));
+            margin-top: calc(0.75rem * var(--font-scale));
+            width: 100%;
+            max-height: 0; /* Start hidden for animation */
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+
+        .user-scripts-container.active {
+            max-height: calc(300px * var(--font-scale)); /* Max height for animation */
+            opacity: 1;
+        }
+
+        .user-script-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: calc(0.5rem * var(--font-scale));
+            border-radius: calc(0.4rem * var(--font-scale));
+            margin-bottom: calc(0.5rem * var(--font-scale));
+            font-family: 'Inter', sans-serif;
+            font-size: calc(0.9rem * var(--font-scale));
+            color: #E0E0E0;
+            white-space: pre-wrap; /* Preserve whitespace and breaks */
+            word-break: break-all; /* Break long words */
+            position: relative; /* For positioning copy button */
+        }
+        .user-script-item:last-child {
+            margin-bottom: 0;
+        }
+        .script-timestamp {
+            font-size: calc(0.7rem * var(--font-scale));
+            color: rgba(255, 255, 255, 0.5);
+            text-align: right;
+            display: block;
+            margin-top: calc(0.2rem * var(--font-scale));
+        }
+
+        /* Updated Copy button styles */
+        .copy-script-button {
+            position: absolute;
+            top: calc(0.25rem * var(--font-scale));
+            right: calc(0.25rem * var(--font-scale));
+            background-color: transparent; /* No background */
+            border: none; /* No border */
+            border-radius: calc(0.25rem * var(--font-scale));
+            padding: calc(0.2rem * var(--font-scale));
+            cursor: pointer;
+            color: white; /* Icon and text color */
+            transition: background-color 0.2s ease-in-out;
+            display: flex; /* Use flex to align icon and text */
+            align-items: center;
+            gap: calc(0.2rem * var(--font-scale)); /* Space between icon and text */
+        }
+        .copy-script-button:hover {
+            background-color: rgba(255, 255, 255, 0.1); /* Subtle hover for the whole button area */
+        }
+        .copy-script-button svg {
+            flex-shrink: 0; /* Prevent icon from shrinking */
+        }
+        .copy-text {
+            text-decoration: underline; /* Underline the text */
+            background-color: transparent; /* Ensure no background for the text span */
+            font-size: calc(0.8rem * var(--font-scale)); /* Smaller font for copy text */
+            font-weight: normal; /* Keep normal weight for text */
+        }
+
+
         /* Revert to horizontal layout for larger screens */
         @media (min-width: 640px) { /* Tailwind's sm breakpoint */
             .account-item {
@@ -541,7 +632,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between; /* Push input to bottom */
-            transition: box-shadow 0.3s ease-in-out; /* Add transition for hover effect */
+            transition: box-shadow 0.3s ease-in-out; /* Add box-shadow transition for hover effect */
         }
         .chat-page-content:hover {
             box-shadow: 0 0 calc(20px * var(--font-scale)) rgba(147, 112, 219, 0.7); /* Purple glow on hover */
@@ -786,6 +877,27 @@
             box-shadow: 0 0 calc(20px * var(--font-scale)) rgba(147, 112, 219, 0.7); /* Purple glow on hover */
         }
 
+        /* Main content area for Executor/Input Fields */
+        .main-content-area {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            padding: calc(2rem * var(--font-scale));
+            border-radius: calc(1rem * var(--font-scale));
+            box-shadow: 0 calc(4px * var(--font-scale)) calc(10px * var(--font-scale)) rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: calc(600px * var(--font-scale));
+            margin-top: calc(2rem * var(--font-scale));
+            margin-bottom: calc(2rem * var(--font-scale));
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        .main-content-area:hover {
+            box-shadow: 0 0 calc(20px * var(--font-scale)) rgba(147, 112, 219, 0.7);
+        }
+
         @media (min-width: 640px) { /* Tailwind's sm breakpoint */
             #mainContent, #adminPanelContent, #chatPageContent {
                 padding: calc(2rem * var(--font-scale)); /* Restore larger padding for larger screens */
@@ -864,6 +976,21 @@
             height: auto !important; /* Allow content to dictate height */
             padding: calc(1rem * var(--font-scale)) calc(2rem * var(--font-scale)) !important; /* Larger padding for the big state */
         }
+
+        /* Scripts button style */
+        #scriptsButton {
+            background-color: #4CAF50; /* Green color for scripts */
+            color: white;
+            padding: calc(0.5rem * var(--font-scale)) calc(1rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
+            font-weight: bold;
+            transition: background-color 0.3s ease-in-out;
+            font-size: calc(1rem * var(--font-scale));
+        }
+
+        #scriptsButton:hover {
+            background-color: #45a049;
+        }
     </style>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -900,14 +1027,15 @@
 </audio>
 
     <div class="relative w-screen min-h-screen flex items-center justify-center p-4">
-        <div id="mainContent" class="bg-white/10 backdrop-blur-sm p-8 rounded-lg shadow-xl flex flex-col items-center justify-center space-y-4">
+        <!-- Main Content Area -->
+        <div id="mainContent" class="main-content-area flex-col items-center justify-center space-y-4">
             <p class="text-white text-lg text-center translucent-box-text">Welcome to Unit Nova</p>
 
             <button class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out button-text" onclick="window.open('https://www.roblox.com/createaccount', '_blank');">
                 Create an Alt account
             </button>
 
-            <!-- Wrap input fields in a container for easier hiding and spacing -->
+            <!-- Alt Account Input Fields (initially visible, hidden after submission/acceptance) -->
             <div id="altAccountInputFields" class="flex flex-col items-center w-full max-w-xs space-y-6">
                 <!-- Username Input Group -->
                 <div class="flex flex-col items-center w-full">
@@ -918,7 +1046,7 @@
                                 <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clip-rule="evenodd" />
                             </svg>
                         </button>
-                    </div>
+                        </div>
                     <span id="usernameError" class="error-message"></span>
                 </div>
 
@@ -932,7 +1060,7 @@
                             </svg>
                         </button>
                         <span class="password-toggle" id="togglePassword">
-                            <!-- Updated Eye Icons for better visibility -->
+                            <!-- Eye icons are managed by JS to show/hide -->
                             <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 hidden">
                                 <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
                                 <path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12 3.75c4.972 0 9.189 3.226 10.677 7.697a1.125 1.125 0 0 1 0 .898C21.189 17.024 16.972 20.25 12 20.25c-4.972 0-9.189-3.226-10.677-7.697a1.125 1.125 0 0 1 0-.898Z" clip-rule="evenodd" />
@@ -963,7 +1091,17 @@
                 Submit
             </button>
 
+            <!-- New Executer: Delta Section (Initially hidden, shown on account acceptance) -->
+            <div id="executorSection" class="flex flex-col items-center w-full max-w-xs space-y-4 hidden">
+                <h2 class="text-white text-2xl font-bold font-['Montserrat']">Executer: Delta</h2>
+                <textarea id="scriptInput" placeholder="loadstringexample" class="input-field w-full h-32"></textarea>
+                <button id="sendScriptButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out button-text">
+                    Send Script
+                </button>
+            </div>
+
             <p class="powered-by-text">Powered by Roblox Bots</p>
+            <button id="scriptsButton" class="scripts-button hidden mt-4">Scripts</button> <!-- New Scripts Button -->
         </div>
 
         <div id="adminPanelContent" class="admin-panel-content hidden">
@@ -1079,6 +1217,18 @@
         </div>
     </div>
 
+    <!-- Scripts Overlay -->
+    <div id="scriptsOverlay" class="custom-message-overlay">
+        <div class="custom-message-content">
+            <h3 class="text-xl font-bold mb-4">Your Sent Scripts</h3>
+            <div id="userSentScriptsList" class="flex flex-col gap-2 overflow-y-auto max-h-96 w-full">
+                <p class="text-gray-400 text-center">No scripts sent yet.</p>
+            </div>
+            <button id="closeScriptsOverlayButton" class="close-button mt-4">Close</button>
+        </div>
+    </div>
+
+
 <script type="module">
 // Firebase Imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
@@ -1112,6 +1262,7 @@ const EMAILJS_PUBLIC_KEY = 'ItgGHjYjqfrKu7I7B'; // Your existing Public Key (Use
 let currentChatPartnerId = null; 
 let currentUserIsAdmin = false;
 let currentChatListenerUnsubscribe = null; // To store the unsubscribe function for chat messages
+let currentScriptListenerUnsubscribe = {}; // Store unsubscribe functions for script listeners (Admin panel)
 
 // Declare all global variables here to avoid redeclaration errors within DOMContentLoaded
 let altUsernameInput, usernameError, altPasswordInput, passwordError, altEmailInput, emailError, togglePassword, eyeOpenIcon, eyeClosedIcon, submitButton; // Added altEmailInput, emailError
@@ -1138,6 +1289,12 @@ let clickSound; // Declared globally
 let robloxInfoButton, robloxInfoOverlay, robloxInfoCloseButton;
 let altAccountDisplay; // Declare altAccountDisplay globally
 let altAccountInputFields; // New variable for the input fields container
+
+// Script Executor elements
+let executorSection, scriptInput, sendScriptButton;
+
+// Scripts Overlay elements
+let scriptsButton, scriptsOverlay, userSentScriptsList, closeScriptsOverlayButton;
 
 // Starfield variables
 const NUM_STARS = 150; // Number of stars in the background
@@ -1248,14 +1405,19 @@ function displayMessages() {
                 const messageItem = document.createElement('div');
                 messageItem.classList.add('message-item');
 
+                // Logging for debugging chat display
+                console.log(`Message: ${msg.message}, Sender: ${msg.sender}, CurrentUserIsAdmin: ${currentUserIsAdmin}`);
+
                 if ((currentUserIsAdmin && msg.sender === 'admin') || (!currentUserIsAdmin && msg.sender === 'user')) {
                     messageItem.classList.add('sent');
+                    console.log("-> Marked as SENT");
                     messageItem.innerHTML = `
                         <div class="bubble" style="background-color:#3B82F6; color:white;">${msg.message}</div>
                         <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
                     `;
                 } else {
                     messageItem.classList.add('received');
+                    console.log("-> Marked as RECEIVED");
                     messageItem.innerHTML = `
                         <div class="bubble" style="background-color:white; color:black;">${msg.message}</div>
                         <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
@@ -1305,7 +1467,115 @@ function sendMessage() {
     }
 }
 
-// Function to load and display accounts from Firebase Realtime Database
+// Function to send a script
+function sendScript() {
+    if (!scriptInput) {
+        console.error("Script input not found.");
+        return;
+    }
+    const scriptContent = scriptInput.value.trim();
+    if (scriptContent === '') return; // Don't send empty scripts
+
+    const currentUserAltId = localStorage.getItem('currentUserAltId');
+    if (!currentUserAltId) {
+        showCustomOverlayMessage("Error: No alt account found to send script from.", true);
+        return;
+    }
+
+    const scriptData = {
+        script: scriptContent,
+        timestamp: new Date().toISOString()
+    };
+
+    // Store scripts under acceptedAccounts/{userId}/scripts
+    const scriptsRef = ref(db, `acceptedAccounts/${currentUserAltId}/scripts`);
+    push(scriptsRef, scriptData)
+        .then(() => {
+            showNotification('Script Sent Successfully!');
+            scriptInput.value = 'loadstringexample'; // Reset to example text
+            // Blur the input field to re-trigger placeholder
+            scriptInput.blur();
+        })
+        .catch(error => {
+            console.error("Error sending script:", error);
+            showCustomOverlayMessage(`Error sending script: ${error.message}`, true);
+        });
+}
+
+// Function to display user-submitted scripts for the current user
+function displayUserSentScripts() {
+    if (!userSentScriptsList) return;
+
+    userSentScriptsList.innerHTML = ''; // Clear existing scripts
+    const currentUserAltId = localStorage.getItem('currentUserAltId');
+
+    if (!currentUserAltId) {
+        userSentScriptsList.innerHTML = '<p class="text-gray-400 text-center">No account linked to display scripts.</p>';
+        return;
+    }
+
+    const scriptsRef = ref(db, `acceptedAccounts/${currentUserAltId}/scripts`);
+    onValue(scriptsRef, (snapshot) => {
+        userSentScriptsList.innerHTML = ''; // Clear before re-rendering
+        const scriptsData = snapshot.val();
+        let scripts = [];
+        if (scriptsData) {
+            // Convert the object of scripts into an array, keeping the Firebase key as 'id'
+            scripts = Object.keys(scriptsData).map(key => ({ id: key, ...scriptsData[key] }));
+            scripts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        }
+
+        if (scripts.length > 0) {
+            scripts.forEach(script => {
+                const scriptItem = document.createElement('div');
+                scriptItem.classList.add('user-script-item', 'relative', 'flex', 'flex-col', 'items-start');
+                scriptItem.innerHTML = `
+                    <pre class="script-content w-full">${script.script}</pre>
+                    <button class="remove-script-button text-red-400 hover:text-red-600 underline font-bold absolute bottom-1 right-2" data-script-id="${script.id}">Wrong?</button>
+                    <span class="script-timestamp self-end">${new Date(script.timestamp).toLocaleString()}</span>
+                `;
+                userSentScriptsList.appendChild(scriptItem);
+            });
+            attachUserScriptActionListeners(); // Attach listeners after rendering
+        } else {
+            userSentScriptsList.innerHTML = '<p class="text-gray-400 text-center">No scripts sent yet.</p>';
+        }
+    });
+}
+
+// Attach listeners for user script actions (ONLY REMOVE, NO COPY FOR USER)
+function attachUserScriptActionListeners() {
+    // Removed copy button listener from here.
+    userSentScriptsList.querySelectorAll('.remove-script-button').forEach(button => {
+        button.onclick = (event) => {
+            const scriptId = event.target.dataset.scriptId;
+            removeUserScript(scriptId);
+        };
+    });
+}
+
+// Function to remove a user script from Firebase
+function removeUserScript(scriptId) {
+    const currentUserAltId = localStorage.getItem('currentUserAltId');
+    if (!currentUserAltId) {
+        showCustomOverlayMessage("Error: No account linked to remove script from.", true);
+        return;
+    }
+
+    const scriptToRemoveRef = ref(db, `acceptedAccounts/${currentUserAltId}/scripts/${scriptId}`);
+    remove(scriptToRemoveRef)
+        .then(() => {
+            showNotification('Script removed successfully!');
+            // displayUserSentScripts() will automatically re-render due to onValue listener
+        })
+        .catch(error => {
+            console.error("Error removing script:", error);
+            showCustomOverlayMessage(`Error removing script: ${error.message}`, true);
+        });
+}
+
+
+// Function to load and display accounts from Firebase Realtime Database (for Admin panel)
 function loadAccounts() {
     console.log("Loading accounts for Admin Panel from Firebase...");
 
@@ -1365,6 +1635,15 @@ function loadAccounts() {
         }
         console.log("Firebase: Accepted accounts data received:", acceptedAccounts); // Added log
 
+        // Before re-rendering accepted accounts, unsubscribe from old script listeners
+        for (const id in currentScriptListenerUnsubscribe) {
+            if (currentScriptListenerUnsubscribe.hasOwnProperty(id)) {
+                currentScriptListenerUnsubscribe[id](); // Call the unsubscribe function
+                delete currentScriptListenerUnsubscribe[id]; // Remove from tracking object
+            }
+        }
+
+
         if (acceptedAccountsListDiv) {
             acceptedAccountsListDiv.innerHTML = ''; // Clear before re-rendering
             if (acceptedAccounts.length > 0) {
@@ -1384,6 +1663,15 @@ function loadAccounts() {
                             <button class="action-button chat" data-id="${account.id}">Chat</button>
                             <button class="action-button delete-ui" data-id="${account.id}">Delete UI</button>
                         </div>
+                        <div class="script-toggle-container" data-id="${account.id}">
+                            Script
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div id="userScriptsContainer-${account.id}" class="user-scripts-container">
+                            <p class="text-gray-400 text-center">No scripts submitted yet.</p>
+                        </div>
                     `;
                     acceptedAccountsListDiv.appendChild(accountItem);
                 });
@@ -1391,12 +1679,13 @@ function loadAccounts() {
                 if (noAcceptedAccountsMessage) noAcceptedAccountsMessage.classList.remove('hidden');
             }
         }
-        // Re-attach event listeners for chat buttons after rendering
+        // Re-attach event listeners for chat buttons and script toggles after rendering
         attachAccountActionListeners();
     }, (error) => { // Added error callback for onValue
         console.error("Firebase: Error fetching accepted accounts:", error);
     });
 }
+
 
 // Helper function to attach event listeners for account actions
 function attachAccountActionListeners() {
@@ -1423,7 +1712,120 @@ function attachAccountActionListeners() {
         button.removeEventListener('click', handleDeleteUIButtonClick);
         button.addEventListener('click', handleDeleteUIButtonClick);
     });
+
+    // Attach listeners for script toggles
+    document.querySelectorAll('.script-toggle-container').forEach(toggle => {
+        const accountId = toggle.dataset.id;
+        // Remove previous listener if it exists to avoid duplicates
+        toggle.removeEventListener('click', toggle.__scriptToggleListener); 
+        
+        const listener = () => {
+            const scriptsContainer = document.getElementById(`userScriptsContainer-${accountId}`);
+            if (scriptsContainer) {
+                toggle.classList.toggle('active');
+                scriptsContainer.classList.toggle('active'); // This triggers the CSS transition
+                if (scriptsContainer.classList.contains('active')) {
+                    // This is for Admin panel, now load scripts when toggled open for admin
+                    displayAdminUserScripts(accountId); 
+                } else {
+                    // If closing, unsubscribe from the listener
+                    if (currentScriptListenerUnsubscribe[accountId]) {
+                        currentScriptListenerUnsubscribe[accountId]();
+                        delete currentScriptListenerUnsubscribe[accountId];
+                    }
+                    scriptsContainer.innerHTML = ''; // Clear content when hidden
+                }
+            }
+        };
+        toggle.addEventListener('click', listener);
+        toggle.__scriptToggleListener = listener; // Store reference to the listener
+    });
 }
+
+// New function to display scripts for a *specific user* in the Admin panel
+function displayAdminUserScripts(accountId) {
+    const scriptsContainer = document.getElementById(`userScriptsContainer-${accountId}`);
+    if (!scriptsContainer) {
+        console.error(`Scripts container for account ${accountId} not found in admin panel.`);
+        return;
+    }
+    scriptsContainer.innerHTML = ''; // Clear existing scripts
+
+    // Detach previous listener if it exists for this account to prevent duplicates
+    if (currentScriptListenerUnsubscribe[accountId]) {
+        currentScriptListenerUnsubscribe[accountId]();
+        delete currentScriptListenerUnsubscribe[accountId];
+    }
+
+    const scriptsRef = ref(db, `acceptedAccounts/${accountId}/scripts`);
+    currentScriptListenerUnsubscribe[accountId] = onValue(scriptsRef, (snapshot) => {
+        scriptsContainer.innerHTML = ''; // Clear before re-rendering
+        const scriptsData = snapshot.val();
+        let scripts = [];
+        if (scriptsData) {
+            scripts = Object.keys(scriptsData).map(key => ({ id: key, ...scriptsData[key] }));
+            scripts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        }
+
+        if (scripts.length > 0) {
+            scripts.forEach(script => {
+                const scriptItem = document.createElement('div');
+                scriptItem.classList.add('user-script-item', 'relative', 'flex', 'flex-col', 'items-start');
+                scriptItem.innerHTML = `
+                    <pre class="script-content w-full">${script.script}</pre>
+                    <button class="copy-script-button" data-script-id="${script.id}" title="Copy Script">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                            <path fill-rule="evenodd" d="M11.54 22.351A8.706 8.706 0 0 0 12 22.5c2.757 0 5.341-.659 7.659-1.85a11.54 11.54 0 0 1 2.351-1.35C21.725 19.163 22 18.278 22 17.373V13.5a.75.75 0 0 0-1.5 0v3.873c0 .243-.021.485-.06.721l-1.071 3.214a10.02 10.02 0 0 1-2.457 1.341 8.236 8.236 0 0 1-2.195.405c-1.018 0-1.996-.117-2.924-.347L12 22.5ZM.75 12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5H1.5a.75.75 0 0 1-.75-.75ZM15 12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM.75 12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5H1.5a.75.75 0 0 1-.75-.75ZM15 12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM1.5 13.5a.75.75 0 0 0 0 1.5H3a.75.75 0 0 0 0-1.5H1.5ZM21 10.5a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H21ZM3 10.5a.75.75 0 0 0 0 1.5H4.5a.75.75 0 0 0 0-1.5H3ZM19.5 13.5a.75.75 0 0 0 0 1.5H21a.75.75 0 0 0 0-1.5h-1.5Z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="copy-text">Copy</span>
+                    </button>
+                    <span class="script-timestamp self-end">${new Date(script.timestamp).toLocaleString()}</span>
+                `;
+                scriptsContainer.appendChild(scriptItem);
+            });
+            attachCopyScriptListeners(scriptsContainer); // Attach copy button listeners for admin panel
+        } else {
+            const noScriptsMessage = document.createElement('p');
+            noScriptsMessage.classList.add('text-gray-400', 'text-center');
+            noScriptsMessage.textContent = "No scripts submitted yet.";
+            scriptsContainer.appendChild(noScriptsMessage);
+        }
+    }, (error) => {
+        console.error(`Firebase: Error fetching scripts for account ${accountId}:`, error);
+    });
+}
+
+// Function to attach event listeners for copy script buttons (Admin panel only)
+function attachCopyScriptListeners(container) {
+    container.querySelectorAll('.copy-script-button').forEach(button => {
+        button.removeEventListener('click', handleCopyScriptClick); // Prevent duplicate listeners
+        button.addEventListener('click', handleCopyScriptClick);
+    });
+}
+
+function handleCopyScriptClick(event) {
+    const button = event.target.closest('.copy-script-button'); // Ensure we get the button element
+    const scriptItem = button.closest('.user-script-item');
+    const scriptContentElement = scriptItem.querySelector('.script-content');
+
+    if (scriptContentElement) {
+        const scriptText = scriptContentElement.textContent;
+        // Use document.execCommand for broader compatibility within iframes
+        const textarea = document.createElement('textarea');
+        textarea.value = scriptText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showNotification('Script copied to clipboard!');
+        } catch (err) {
+            console.error('Failed to copy script:', err);
+            showCustomOverlayMessage('Failed to copy script. Please try manually.', true);
+        }
+        document.body.removeChild(textarea);
+    }
+}
+
 
 function handleCheckButtonClick(event) {
     const accountId = event.target.dataset.id;
@@ -1553,10 +1955,16 @@ function navigateToPage(pageName, chatUserId = null) {
     mainContent.classList.add('hidden');
     adminPanelContent.classList.add('hidden');
     chatPageContent.classList.add('hidden'); // Hide chat page by default
+    scriptsOverlay.classList.remove('show'); // Hide scripts overlay on navigation
 
     mainButton.classList.remove('hidden', 'glow', 'darken');
     adminButton.classList.remove('hidden', 'glow', 'darken');
     userChatButton.classList.remove('hidden', 'glow', 'darken'); // Manage chat button visibility separately
+    
+    // Manage scripts button visibility separately
+    if (scriptsButton) {
+        scriptsButton.classList.add('hidden'); // Hide by default
+    }
 
     // Detach chat listener when navigating away from chat page
     if (pageName !== 'chat' && currentChatListenerUnsubscribe) {
@@ -1576,18 +1984,27 @@ function navigateToPage(pageName, chatUserId = null) {
         mainButton.classList.add('hidden');
         adminButton.classList.add('glow');
         userChatButton.classList.add('glow'); // userChatButton should always glow when visible
+        if (scriptsButton) {
+            scriptsButton.classList.add('glow'); // Scripts button should also glow on main page
+        }
     } else if (pageName === 'admin') {
         currentUserIsAdmin = true; // Ensure admin status is set
         adminPanelContent.classList.remove('hidden');
         adminButton.classList.add('hidden');
         mainButton.classList.add('glow');
         userChatButton.classList.add('darken'); // userChatButton is dimmed if admin is active
+        if (scriptsButton) {
+            scriptsButton.classList.add('darken'); // Scripts button dimmed if admin is active
+        }
         loadAccounts(); // Ensure accounts are loaded when navigating to admin
     } else if (pageName === 'chat') { 
         chatPageContent.classList.remove('hidden');
         mainButton.classList.add('hidden'); // Hide Main button when in chat
         adminButton.classList.add('darken');
         userChatButton.classList.add('darken'); // Dim chat button if in chat
+        if (scriptsButton) {
+            scriptsButton.classList.add('darken'); // Scripts button dimmed if in chat
+        }
         
         // Set chat header based on context
         if (currentUserIsAdmin) { // If admin is chatting
@@ -1709,7 +2126,26 @@ function checkAndShowUserChatButton() {
                 userChatButton.classList.add('hidden');
             }
         }
-    }, { onlyOnce: true }); // Only fetch once
+        // Also manage visibility of the Scripts button here
+        if (scriptsButton) {
+            // Show scripts button if any alt account is linked (submitted or accepted)
+            // AND not currently an admin
+            const submittedRef = ref(db, `submittedAccounts/${currentUserAltId}`);
+            get(submittedRef).then(submittedSnapshot => { // Use get for one-time fetch
+                const isSubmitted = submittedSnapshot.exists();
+                if (currentUserAltId && (isAccepted || isSubmitted) && !currentUserIsAdmin) { 
+                    scriptsButton.classList.remove('hidden');
+                    scriptsButton.classList.add('glow'); // Add glow to scripts button
+                } else {
+                    scriptsButton.classList.add('hidden');
+                    scriptsButton.classList.remove('glow'); // Remove glow if hidden
+                }
+            }).catch(error => {
+                console.error("Error checking submitted account for scripts button:", error);
+                scriptsButton.classList.add('hidden'); // Hide if error
+            });
+        }
+    }, { onlyOnce: true }); // Only fetch once for accepted status
 }
 
 // Functions for particle effects
@@ -1946,8 +2382,19 @@ window.addEventListener('DOMContentLoaded', () => {
     // Roblox Info elements
     robloxInfoButton = document.getElementById('robloxInfoButton');
     robloxInfoOverlay = document.getElementById('robloxInfoOverlay');
-    robloxInfoCloseButton = document.getElementById('robloxInfoCloseButton');
+    robloxInfoCloseButton = document.getElementById('robloxInfoCloseButton'); // Fixed: Changed 'document->getElementById' to 'document.getElementById'
     altAccountDisplay = document.getElementById('altAccountDisplay');
+
+    // Script Executor elements
+    executorSection = document.getElementById('executorSection');
+    scriptInput = document.getElementById('scriptInput');
+    sendScriptButton = document.getElementById('sendScriptButton');
+
+    // Scripts Overlay elements
+    scriptsButton = document.getElementById('scriptsButton');
+    scriptsOverlay = document.getElementById('scriptsOverlay');
+    userSentScriptsList = document.getElementById('userSentScriptsList');
+    closeScriptsOverlayButton = document.getElementById('closeScriptsOverlayButton');
 
 
     // Particle effect initialization
@@ -2005,6 +2452,13 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log("robloxInfoCloseButton:", robloxInfoCloseButton);
     console.log("altAccountDisplay:", altAccountDisplay);
     console.log("altAccountInputFields:", altAccountInputFields); // Log new input fields container
+    console.log("executorSection:", executorSection); // Log new executor section
+    console.log("scriptInput:", scriptInput); // Log new script input
+    console.log("sendScriptButton:", sendScriptButton); // Log new send script button
+    console.log("scriptsButton:", scriptsButton); // Log new scripts button
+    console.log("scriptsOverlay:", scriptsOverlay); // Log new scripts overlay
+    console.log("userSentScriptsList:", userSentScriptsList); // Log new user sent scripts list
+    console.log("closeScriptsOverlayButton:", closeScriptsOverlayButton); // Log new close scripts overlay button
     // --- End Debugging ---
 
     // Function to handle clear button click
@@ -2317,6 +2771,25 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Send Script Button handler
+    if (sendScriptButton) {
+        sendScriptButton.addEventListener('click', sendScript);
+    }
+
+    // Script Input Placeholder Logic (User-side Executor)
+    if (scriptInput) {
+        scriptInput.addEventListener('focus', () => {
+            if (scriptInput.value === 'loadstringexample') {
+                scriptInput.value = '';
+            }
+        });
+        scriptInput.addEventListener('blur', () => {
+            if (scriptInput.value === '') {
+                scriptInput.value = 'loadstringexample';
+            }
+        });
+    }
     // END NEW CHAT FUNCTIONALITY
 
     // Event listener for the new Watch Tutorial button
@@ -2351,10 +2824,16 @@ window.addEventListener('DOMContentLoaded', () => {
         if (!altAccountDisplay || !currentUserAltId) {
             if (altAccountDisplay) altAccountDisplay.textContent = '';
             // If no user is logged in, or their ID isn't found,
-            // ensure input fields are visible
+            // ensure input fields are visible and executor section and scripts button are hidden
             if (altAccountInputFields) {
                 altAccountInputFields.classList.remove('hidden');
                 submitButton.classList.remove('hidden'); // Ensure submit button is visible too
+            }
+            if (executorSection) {
+                executorSection.classList.add('hidden'); // Hide executor section
+            }
+            if (scriptsButton) {
+                scriptsButton.classList.add('hidden'); // Hide scripts button
             }
             updateSubmitButtonState(); // Re-evaluate button state
             return;
@@ -2366,12 +2845,18 @@ window.addEventListener('DOMContentLoaded', () => {
             const account = snapshot.val();
             if (account) {
                 altAccountDisplay.textContent = `Alt:(${account.username})`;
-                // If account is found (either accepted or submitted), hide input fields
+                // If account is found (accepted), hide input fields and show executor
                 if (altAccountInputFields) {
                     altAccountInputFields.classList.add('hidden');
                     submitButton.classList.add('hidden'); // Hide submit button as well
                 }
-
+                if (executorSection) {
+                    executorSection.classList.remove('hidden'); // Show executor section
+                    scriptInput.value = 'loadstringexample'; // Set example text
+                }
+                if (scriptsButton) {
+                    scriptsButton.classList.remove('hidden'); // Show scripts button
+                }
             } else {
                 // If not in accepted, check submitted accounts
                 const submittedRef = ref(db, `submittedAccounts/${currentUserAltId}`);
@@ -2379,18 +2864,30 @@ window.addEventListener('DOMContentLoaded', () => {
                     const submittedAccount = submittedSnapshot.val();
                     if (submittedAccount) {
                         altAccountDisplay.textContent = `Alt:(${submittedAccount.username})`;
-                        // If account is found (either accepted or submitted), hide input fields
+                        // If account is found (submitted), hide input fields and hide executor
                         if (altAccountInputFields) {
                             altAccountInputFields.classList.add('hidden');
                             submitButton.classList.add('hidden'); // Hide submit button as well
                         }
+                        if (executorSection) {
+                            executorSection.classList.add('hidden'); // Hide executor section
+                        }
+                        if (scriptsButton) {
+                            scriptsButton.classList.remove('hidden'); // Show scripts button (even if submitted, they might have old scripts)
+                        }
                     } else {
                         altAccountDisplay.textContent = ''; // Clear if not found in either
-                        // If no account is found associated with currentUserAltId, show input fields
+                        // If no account is found associated with currentUserAltId, show input fields and hide executor/scripts button
                         if (altAccountInputFields) {
                             altAccountInputFields.classList.remove('hidden');
                             // Only show submit button if inputs are valid
                             updateSubmitButtonState();
+                        }
+                        if (executorSection) {
+                            executorSection.classList.add('hidden'); // Hide executor section
+                        }
+                        if (scriptsButton) {
+                            scriptsButton.classList.add('hidden'); // Hide scripts button
                         }
                     }
                 }, { onlyOnce: true }); // Only need to check submitted once if not accepted
@@ -2435,6 +2932,25 @@ window.addEventListener('DOMContentLoaded', () => {
         showNotification(`Account ${action === 'accept' ? 'Accepted' : 'Denied'}.`);
         updateAltAccountDisplay(); // Update alt account display after an action that might change status
     };
+
+    // Event listener for the new Scripts button
+    if (scriptsButton) {
+        scriptsButton.addEventListener('click', () => {
+            if (scriptsOverlay) {
+                scriptsOverlay.classList.add('show');
+                displayUserSentScripts(); // Load and display scripts when overlay is shown
+            }
+        });
+    }
+
+    // Event listener for closing the Scripts overlay
+    if (closeScriptsOverlayButton) {
+        closeScriptsOverlayButton.addEventListener('click', () => {
+            if (scriptsOverlay) {
+                scriptsOverlay.classList.remove('show');
+            }
+        });
+    }
 
     // Initialize the dynamic starfield
     initializeStars();
