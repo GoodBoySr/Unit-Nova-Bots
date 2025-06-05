@@ -6,12 +6,29 @@
     <title>Unit Nova Bots</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Montserrat:wght@600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- CryptoJS for MD5 hashing (for Gravatar) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
+        /* Responsive Base Units */
+        :root {
+            --base-unit: 16px; /* Default for desktop (1rem) */
+            --font-scale: 1; /* Default font scale */
+        }
+
+        @media (max-width: 768px) { /* Adjust for mobile devices */
+            :root {
+                --base-unit: 12px; /* Smaller base unit for mobile */
+                --font-scale: 0.85; /* Smaller font scale for mobile */
+            }
+        }
+
         /* Custom CSS for the background and text */
         body {
             font-family: 'Inter', sans-serif; /* Default font for the body */
             margin: 0;
-            overflow: auto; /* Hide overflow to prevent scrollbars from stars */
+            overflow: hidden; /* Hide overflow to prevent scrollbars from stars */
             min-height: 100vh; width: 100vw; /* Full viewport height */
             display: flex;
             flex-direction: column;
@@ -19,22 +36,52 @@
             align-items: flex-start; /* Align content to the left */
             position: relative; /* For absolute positioning of text and stars */
             background: linear-gradient(135deg, #6A0DAD, #8A2BE2, #9370DB); /* Purple gradient background */
+            background-size: 400% 400%; /* Larger background for animation */
+            animation: gradientAnimation 15s ease infinite; /* Apply gradient animation */
+            font-size: calc(1rem * var(--font-scale)); /* Scale base font */
+        }
+
+        /* Keyframes for gradient background animation */
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .nova-text {
             position: absolute;
-            top: 1.5rem; /* Equivalent to Tailwind's top-6 */
-            left: 1.5rem; /* Equivalent to Tailwind's left-6 */
+            top: calc(1.5rem * var(--font-scale));
+            left: calc(1.5rem * var(--font-scale));
             z-index: 10; /* Ensure text is above the background and stars */
             color: white;
             /* Applying a cool font to the main title */
             font-family: 'Montserrat', sans-serif;
             /* Enhanced glow effect */
             text-shadow:
-                0 0 10px rgba(255, 255, 255, 0.7), /* Soft white glow */
-                0 0 20px rgba(255, 255, 255, 0.5), /* Medium white glow */
-                0 0 30px rgba(255, 255, 255, 0.3); /* Wider, subtle white glow */
+                0 0 calc(10px * var(--font-scale)) rgba(255, 255, 255, 0.7), /* Soft white glow */
+                0 0 calc(20px * var(--font-scale)) rgba(255, 255, 255, 0.5), /* Medium white glow */
+                0 0 calc(30px * var(--font-scale)) rgba(255, 255, 255, 0.3); /* Wider, subtle white glow */
+            font-size: calc(2.5rem * var(--font-scale)); /* Scale specific elements */
+            display: flex;
+            align-items: center; /* Align items vertically */
         }
+
+        /* Alt account display within the title */
+        #altAccountDisplay {
+            font-size: calc(1.5rem * var(--font-scale)); /* Slightly smaller than main title */
+            font-family: 'Poppins', sans-serif;
+            margin-left: calc(0.75rem * var(--font-scale));
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: calc(0.25rem * var(--font-scale)) calc(0.75rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
+            white-space: nowrap; /* Prevent wrapping */
+            overflow: hidden; /* Hide overflow text */
+            text-overflow: ellipsis; /* Show ellipsis for overflow */
+            max-width: calc(150px * var(--font-scale)); /* Limit width for long usernames */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: none; /* Remove glow from this specific span */
+        }
+
 
         /* Stars container */
         .stars-container {
@@ -45,36 +92,17 @@
             height: 100%;
             pointer-events: none; /* Allow clicks to pass through */
             z-index: 1; /* Below text, above background */
+            overflow: hidden; /* Crucial to hide stars outside bounds */
         }
 
-        /* Star styling */
+        /* Star styling - now mostly managed by JS, but keeping base for definition */
         .star {
             position: absolute;
             background-color: white;
             border-radius: 50%; /* Make them round */
-            opacity: 0; /* Start invisible for blinking effect */
-            animation: blink-and-move linear infinite;
             /* Added glow effect to stars */
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.8),
-                        0 0 10px rgba(255, 255, 255, 0.5);
-        }
-
-        /* Keyframes for blinking and moving */
-        @keyframes blink-and-move {
-            0% {
-                transform: translateX(100vw); /* Start off-screen right */
-                opacity: 0; /* Start completely invisible */
-            }
-            20% {
-                opacity: 0.8; /* Fade in to visible */
-            }
-            80% {
-                opacity: 0.8; /* Stay visible */
-            }
-            100% {
-                transform: translateX(-100vw); /* Move off-screen left */
-                opacity: 0; /* Fade out to invisible */
-            }
+            box-shadow: 0 0 calc(5px * var(--font-scale)) rgba(255, 255, 255, 0.8),
+                        0 0 calc(10px * var(--font-scale)) rgba(255, 255, 255, 0.5);
         }
 
         /* Styles for the translucent box text and button text */
@@ -87,15 +115,25 @@
         }
 
         /* Input field styling */
+        .input-group {
+            position: relative; /* For positioning the clear button */
+            width: 100%;
+            display: flex; /* Make input and button inline */
+            align-items: center;
+        }
+
         .input-field {
             background-color: rgba(255, 255, 255, 0.2); /* Slightly more opaque for readability */
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.3);
             color: white;
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.5rem;
+            padding: calc(0.5rem * var(--font-scale)) calc(0.75rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
             font-family: 'Inter', sans-serif;
             outline: none; /* Remove default focus outline */
             transition: border-color 0.3s ease-in-out;
+            font-size: calc(1rem * var(--font-scale));
+            width: 100%; /* Fill parent width */
+            padding-right: calc(2.5rem * var(--font-scale)); /* Space for clear button */
         }
 
         .input-field:focus {
@@ -107,16 +145,41 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
+        .clear-input-button {
+            position: absolute;
+            right: calc(0.5rem * var(--font-scale));
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            display: none; /* Hidden by default */
+            font-size: calc(1.2rem * var(--font-scale));
+            width: calc(24px * var(--font-scale));
+            height: calc(24px * var(--font-scale));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .clear-input-button svg {
+            width: 100%;
+            height: 100%;
+        }
+
         /* Password toggle styling */
         .password-toggle {
             cursor: pointer;
             color: rgba(255, 255, 255, 0.7);
             transition: color 0.3s ease-in-out;
-            margin-left: 0.5rem; /* Space between input and toggle */
+            position: absolute; /* Position relative to .input-group */
+            right: calc(0.5rem * var(--font-scale) + 2.5rem * var(--font-scale)); /* Adjusted for clear button space */
             flex-shrink: 0; /* Prevent it from shrinking */
             display: flex; /* Ensure SVG is properly centered if needed */
             align-items: center;
             justify-content: center;
+        }
+        .password-toggle svg {
+            width: calc(24px * var(--font-scale));
+            height: calc(24px * var(--font-scale));
         }
 
         .password-toggle:hover {
@@ -148,30 +211,30 @@
         .custom-message-content {
             background-color: rgba(255, 255, 255, 0.15); /* Translucent white */
             backdrop-filter: blur(8px);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            padding: calc(2rem * var(--font-scale));
+            border-radius: calc(1rem * var(--font-scale));
+            box-shadow: 0 calc(8px * var(--font-scale)) calc(16px * var(--font-scale)) rgba(0, 0, 0, 0.3);
             text-align: center;
             color: white;
             font-family: 'Poppins', sans-serif;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: calc(1rem * var(--font-scale));
             width: 90%;
-            max-width: 400px;
+            max-width: calc(400px * var(--font-scale));
         }
 
         .custom-message-content .message-text {
-            font-size: 1.25rem;
+            font-size: calc(1.25rem * var(--font-scale));
             font-weight: bold;
-            margin-bottom: 1rem;
+            margin-bottom: calc(1rem * var(--font-scale));
         }
 
         .custom-message-content .close-button {
             background-color: #8A2BE2; /* Purple */
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            padding: calc(0.75rem * var(--font-scale)) calc(1.5rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.3s ease-in-out;
@@ -188,18 +251,18 @@
             background-color: #8A2BE2; /* A vibrant purple */
             /* Glowing effect */
             box-shadow:
-                0 0 5px rgba(138, 43, 226, 0.7), /* Soft purple glow */
-                0 0 15px rgba(138, 43, 226, 0.5), /* Medium purple glow */
-                0 0 25px rgba(138, 43, 226, 0.3); /* Wider purple glow */
+                0 0 calc(5px * var(--font-scale)) rgba(138, 43, 226, 0.7), /* Soft purple glow */
+                0 0 calc(15px * var(--font-scale)) rgba(138, 43, 226, 0.5), /* Medium purple glow */
+                0 0 calc(25px * var(--font-scale)) rgba(138, 43, 226, 0.3); /* Wider purple glow */
         }
 
         /* Navigation buttons container styling */
         .nav-buttons-container {
             position: absolute;
-            top: 1.5rem; /* Align with nova-text's top */
-            right: 1.5rem; /* Place in the top right corner */
+            top: calc(1.5rem * var(--font-scale)); /* Align with nova-text's top */
+            right: calc(1.5rem * var(--font-scale)); /* Place in the top right corner */
             display: flex;
-            gap: 1rem; /* Space between buttons */
+            gap: calc(1rem * var(--font-scale)); /* Space between buttons */
             z-index: 10; /* Ensure it's above other elements */
         }
 
@@ -209,8 +272,9 @@
             text-decoration: underline;
             font-family: 'Poppins', sans-serif;
             cursor: pointer;
-            padding: 0.5rem 1.5rem; /* Increased padding for better click area */
+            padding: calc(0.5rem * var(--font-scale)) calc(1.5rem * var(--font-scale)); /* Increased padding for better click area */
             transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out; /* Add text-shadow to transition */
+            font-size: calc(1rem * var(--font-scale));
         }
 
         .nav-button:hover {
@@ -220,8 +284,8 @@
         /* Glow effect for navigation buttons */
         .nav-button.glow {
             text-shadow:
-                0 0 5px rgba(255, 255, 255, 0.7),
-                0 0 10px rgba(255, 255, 255, 0.5);
+                0 0 calc(5px * var(--font-scale)) rgba(255, 255, 255, 0.7),
+                0 0 calc(10px * var(--font-scale)) rgba(255, 255, 255, 0.5);
         }
 
         /* Darken effect for navigation buttons */
@@ -255,28 +319,29 @@
         .modal-content {
             background-color: rgba(255, 255, 255, 0.15); /* Translucent white */
             backdrop-filter: blur(8px);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            padding: calc(2rem * var(--font-scale));
+            border-radius: calc(1rem * var(--font-scale));
+            box-shadow: 0 calc(8px * var(--font-scale)) calc(16px * var(--font-scale)) rgba(0, 0, 0, 0.3);
             text-align: center;
             color: white;
             font-family: 'Poppins', sans-serif;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: calc(1rem * var(--font-scale));
             width: 90%;
-            max-width: 400px;
+            max-width: calc(400px * var(--font-scale));
         }
 
         .modal-input {
             background-color: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.4);
             color: white;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
+            padding: calc(0.75rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
             outline: none;
             font-family: 'Inter', sans-serif;
             width: 100%;
+            font-size: calc(1rem * var(--font-scale));
         }
 
         .modal-input::placeholder {
@@ -286,10 +351,11 @@
         .modal-button {
             background-color: #8A2BE2;
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            padding: calc(0.75rem * var(--font-scale)) calc(1.5rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
             font-weight: bold;
             transition: background-color 0.3s ease-in-out;
+            font-size: calc(1rem * var(--font-scale));
         }
 
         .modal-button:hover {
@@ -298,57 +364,63 @@
 
         .modal-error {
             color: #ffcccc;
-            font-size: 0.9rem;
+            font-size: calc(0.9rem * var(--font-scale));
         }
 
         /* Admin Panel specific styles */
         .admin-panel-content {
             background-color: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(5px);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            padding: calc(2rem * var(--font-scale));
+            border-radius: calc(1rem * var(--font-scale));
+            box-shadow: 0 calc(4px * var(--font-scale)) calc(10px * var(--font-scale)) rgba(0, 0, 0, 0.3);
             width: 90%;
-            max-width: 800px;
-            margin-top: 2rem;
-            margin-bottom: 2rem;
+            max-width: calc(800px * var(--font-scale));
+            margin-top: calc(2rem * var(--font-scale));
+            margin-bottom: calc(2rem * var(--font-scale));
             text-align: center;
             display: flex; /* Use flexbox for content alignment */
             flex-direction: column;
             align-items: center;
+            transition: box-shadow 0.3s ease-in-out; /* Add transition for hover effect */
         }
+        .admin-panel-content:hover {
+            box-shadow: 0 0 calc(20px * var(--font-scale)) rgba(147, 112, 219, 0.7); /* Purple glow on hover */
+        }
+
 
         .accounts-section {
             width: 100%;
-            margin-top: 1.5rem;
+            margin-top: calc(1.5rem * var(--font-scale));
             text-align: left;
             background-color: rgba(255, 255, 255, 0.05); /* Slightly darker translucent */
-            border-radius: 0.5rem;
-            padding: 1rem;
-            max-height: 400px; /* Limit height for scrolling */
+            border-radius: calc(0.5rem * var(--font-scale));
+            padding: calc(1rem * var(--font-scale));
+            max-height: calc(400px * var(--font-scale)); /* Limit height for scrolling */
             overflow-y: auto; /* Enable scrolling for the list */
         }
 
         .accounts-section h2 {
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.5rem;
+            font-size: calc(1.5rem * var(--font-scale));
             font-weight: bold;
             color: white;
-            margin-bottom: 1rem;
+            margin-bottom: calc(1rem * var(--font-scale));
             text-align: center;
         }
 
         /* Responsive adjustments for account items in admin panel */
         .account-item {
             background-color: rgba(255, 255, 255, 0.08);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            margin-bottom: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: calc(0.75rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
+            margin-bottom: calc(0.75rem * var(--font-scale));
+            border: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column; /* Stack vertically by default for mobile */
             align-items: flex-start; /* Align text to the left */
-            gap: 0.5rem; /* Space between items */
+            gap: calc(0.5rem * var(--font-scale)); /* Space between items */
+            font-size: calc(1rem * var(--font-scale));
         }
 
         .account-item:last-child {
@@ -361,16 +433,16 @@
 
         .account-info {
             flex-grow: 1; /* Allow info to take available space */
-            min-width: 150px; /* Ensure info doesn't get too squished */
+            min-width: calc(150px * var(--font-scale)); /* Ensure info doesn't get too squished */
         }
 
         .account-actions {
             display: flex;
-            gap: 0.5rem;
+            gap: calc(0.5rem * var(--font-scale));
             flex-shrink: 0; /* Prevent actions from shrinking */
             width: 100%; /* Take full width on mobile */
             justify-content: space-around; /* Distribute buttons evenly */
-            margin-top: 0.5rem; /* Space between info and buttons */
+            margin-top: calc(0.5rem * var(--font-scale)); /* Space between info and buttons */
         }
 
         /* Revert to horizontal layout for larger screens */
@@ -389,16 +461,17 @@
 
         .action-button {
             background-color: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.3);
             color: white;
-            padding: 0.4rem 0.6rem;
-            border-radius: 0.3rem;
+            padding: calc(0.4rem * var(--font-scale)) calc(0.6rem * var(--font-scale));
+            border-radius: calc(0.3rem * var(--font-scale));
             cursor: pointer;
             transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: calc(1rem * var(--font-scale));
         }
 
         .action-button.check {
@@ -441,11 +514,12 @@
         .logout-button {
             background-color: #DC2626; /* Red color for logout */
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
+            padding: calc(0.5rem * var(--font-scale)) calc(1rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
             font-weight: bold;
             transition: background-color 0.3s ease-in-out;
-            margin-top: 1rem;
+            margin-top: calc(1rem * var(--font-scale));
+            font-size: calc(1rem * var(--font-scale));
         }
 
         .logout-button:hover {
@@ -456,65 +530,70 @@
         .chat-page-content {
             background-color: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(5px);
-            padding: 1.5rem; /* Default padding for mobile */
-            border-radius: 1rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            padding: calc(1.5rem * var(--font-scale)); /* Default padding for mobile */
+            border-radius: calc(1rem * var(--font-scale));
+            box-shadow: 0 calc(4px * var(--font-scale)) calc(10px * var(--font-scale)) rgba(0, 0, 0, 0.3);
             width: 90%;
-            max-width: 600px;
+            max-width: calc(600px * var(--font-scale));
             height: 80vh; /* Make chat area take most of the height */
-            margin-top: 2rem;
-            margin-bottom: 2rem;
+            margin-top: calc(2rem * var(--font-scale));
+            margin-bottom: calc(2rem * var(--font-scale));
             display: flex;
             flex-direction: column;
             justify-content: space-between; /* Push input to bottom */
+            transition: box-shadow 0.3s ease-in-out; /* Add transition for hover effect */
+        }
+        .chat-page-content:hover {
+            box-shadow: 0 0 calc(20px * var(--font-scale)) rgba(147, 112, 219, 0.7); /* Purple glow on hover */
         }
 
         @media (min-width: 640px) { /* Tailwind's sm breakpoint */
             .chat-page-content {
-                padding: 2rem; /* Restore larger padding for larger screens */
+                padding: calc(2rem * var(--font-scale)); /* Restore larger padding for larger screens */
             }
         }
 
         .chat-header {
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.75rem;
+            font-size: calc(1.75rem * var(--font-scale));
             font-weight: bold;
             color: white;
-            margin-bottom: 1rem;
+            margin-bottom: calc(1rem * var(--font-scale));
             text-align: center;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: calc(0.5rem * var(--font-scale));
+            border-bottom: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.2);
         }
 
         .chat-messages-container {
             flex-grow: 1; /* Take all available space */
             overflow-y: auto; /* Enable scrolling for messages */
-            padding: 0.5rem;
-            margin-bottom: 1rem;
+            padding: calc(0.5rem * var(--font-scale));
+            margin-bottom: calc(1rem * var(--font-scale));
             background-color: rgba(0, 0, 0, 0.1);
-            border-radius: 0.5rem;
+            border-radius: calc(0.5rem * var(--font-scale));
             display: flex;
             flex-direction: column; /* Messages stack vertically */
         }
 
         .chat-input-container {
             display: flex;
-            gap: 0.5rem;
+            gap: calc(0.5rem * var(--font-scale));
             width: 100%;
         }
 
         .chat-input-field {
             flex-grow: 1;
             background-color: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.4);
             color: white;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
+            padding: calc(0.75rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
             outline: none;
             font-family: 'Inter', sans-serif;
             resize: none; /* Prevent manual resizing */
-            min-height: 40px; /* Ensure a minimum height */
+            min-height: calc(40px * var(--font-scale)); /* Ensure a minimum height */
             height: auto; /* Allow height to adjust based on content */
+            font-size: calc(1rem * var(--font-scale));
         }
 
         .chat-input-field::placeholder {
@@ -524,24 +603,30 @@
         .chat-send-button {
             background-color: #8A2BE2;
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            padding: calc(0.75rem * var(--font-scale)) calc(1.5rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
             font-weight: bold;
-            transition: background-color 0.3s ease-in-out;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Add box-shadow transition */
             flex-shrink: 0; /* Prevent button from shrinking */
+            font-size: calc(1rem * var(--font-scale));
         }
-
         .chat-send-button:hover {
             background-color: #9370DB;
+            box-shadow: 0 0 calc(10px * var(--font-scale)) rgba(147, 112, 219, 0.7); /* Purple glow on hover */
+        }
+        .chat-send-button svg {
+            width: calc(24px * var(--font-scale));
+            height: calc(24px * var(--font-scale));
         }
 
         /* Individual message styling */
         
 .message-item {
     background-color: transparent;
-    margin-bottom: 0.5rem;
+    margin-bottom: calc(0.5rem * var(--font-scale));
     max-width: 70%;
-    font-size: 1rem;
+    font-size: calc(1rem * var(--font-scale));
     color: white;
     display: flex;
     flex-direction: column;
@@ -553,37 +638,38 @@
 }
 .message-item .bubble {
     background-color: rgba(255, 255, 255, 0.15);
-    padding: 0.6rem 0.8rem;
-    border-radius: 0.8rem;
+    padding: calc(0.6rem * var(--font-scale)) calc(0.8rem * var(--font-scale));
+    border-radius: calc(0.8rem * var(--font-scale));
     word-wrap: break-word;
 }
 .message-item.sent .bubble {
     background-color: rgba(138, 43, 226, 0.3);
 }
 .message-timestamp {
-    font-size: 0.75rem;
+    font-size: calc(0.75rem * var(--font-scale));
     color: rgba(255, 255, 255, 0.7);
-    margin-top: 0.2rem;
+    margin-top: calc(0.2rem * var(--font-scale));
     display: block;
 }
 
 
         .message-timestamp {
-            font-size: 0.75rem; /* Smaller font for timestamp */
+            font-size: calc(0.75rem * var(--font-scale)); /* Smaller font for timestamp */
             color: rgba(255, 255, 255, 0.7); /* Slightly dimmed color */
-            margin-top: 0.2rem;
+            margin-top: calc(0.2rem * var(--font-scale));
             display: block; /* Ensure it's on its own line */
         }
 
         .close-chat-button {
             background-color: #DC2626; /* Red color for close */
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            padding: calc(0.75rem * var(--font-scale)) calc(1.5rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
             font-weight: bold;
             transition: background-color 0.3s ease-in-out;
-            margin-top: 1rem; /* Space from chat input */
+            margin-top: calc(1rem * var(--font-scale)); /* Space from chat input */
             align-self: center; /* Center the button */
+            font-size: calc(1rem * var(--font-scale));
         }
 
         .close-chat-button:hover {
@@ -615,17 +701,17 @@
         .chat-overlay-content {
             background-color: rgba(255, 255, 255, 0.15); /* Translucent white */
             backdrop-filter: blur(8px);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            padding: calc(2rem * var(--font-scale));
+            border-radius: calc(1rem * var(--font-scale));
+            box-shadow: 0 calc(8px * var(--font-scale)) calc(16px * var(--font-scale)) rgba(0, 0, 0, 0.3);
             text-align: center;
             color: white;
             font-family: 'Poppins', sans-serif;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: calc(1rem * var(--font-scale));
             width: 90%;
-            max-width: 400px;
+            max-width: calc(400px * var(--font-scale));
         }
 
         /* Big Animated Chat Button */
@@ -644,7 +730,7 @@
             left: 0;
             width: 100vw;
             min-height: 100vh; width: 100vw;
-            font-size: 5rem; /* Very large text */
+            font-size: calc(5rem * var(--font-scale)); /* Very large text */
             background-color: #8A2BE2; /* Purple background */
             border-radius: 0; /* No rounded corners initially */
             color: white;
@@ -655,13 +741,13 @@
         }
 
         .big-chat-button-final {
-            top: 1.5rem; /* Target top for nav bar */
-            right: 1.5rem; /* Target right for nav bar */
-            width: 120px; /* Approximate width of nav button */
-            height: 40px; /* Approximate height of nav button */
-            font-size: 1rem; /* Normal font size */
+            top: calc(1.5rem * var(--font-scale)); /* Target top for nav bar */
+            right: calc(1.5rem * var(--font-scale)); /* Target right for nav bar */
+            width: calc(120px * var(--font-scale)); /* Approximate width of nav button */
+            height: calc(40px * var(--font-scale)); /* Approximate height of nav button */
+            font-size: calc(1rem * var(--font-scale)); /* Normal font size */
             background-color: #8A2BE2;
-            border-radius: 0.5rem; /* Normal rounded corners */
+            border-radius: calc(0.5rem * var(--font-scale)); /* Normal rounded corners */
             opacity: 1;
             transform: translate(0, 0) scale(1); /* Ensure no residual transform */
         }
@@ -669,12 +755,12 @@
         /* Green Glow for userChatButton */
         @keyframes greenGlow {
             0%, 100% {
-                box-shadow: 0 0 5px rgba(144, 238, 144, 0.5), /* Light green glow */
-                            0 0 10px rgba(144, 238, 144, 0.3);
+                box-shadow: 0 0 calc(5px * var(--font-scale)) rgba(144, 238, 144, 0.5), /* Light green glow */
+                            0 0 calc(10px * var(--font-scale)) rgba(144, 238, 144, 0.3);
             }
             50% {
-                box-shadow: 0 0 10px rgba(144, 238, 144, 0.8),
-                            0 0 20px rgba(144, 238, 144, 0.6);
+                box-shadow: 0 0 calc(10px * var(--font-scale)) rgba(144, 238, 144, 0.8),
+                            0 0 calc(20px * var(--font-scale)) rgba(144, 238, 144, 0.6);
             }
         }
 
@@ -685,20 +771,24 @@
         /* Powered by text styling */
         .powered-by-text {
             color: rgba(255, 255, 255, 0.7); /* Slightly dimmed white */
-            font-size: 0.875rem; /* Small font size */
+            font-size: calc(0.875rem * var(--font-scale)); /* Small font size */
             font-family: 'Poppins', sans-serif;
-            margin-top: 1rem; /* Space from elements above */
+            margin-top: calc(1rem * var(--font-scale)); /* Space from elements above */
             text-align: center;
         }
 
         /* Responsive padding for main content areas */
-        #mainContent, #adminPanelContent, #chatPageContent {
-            padding: 1.5rem; /* Default padding for smaller screens */
+        #mainContent {
+            padding: calc(1.5rem * var(--font-scale)); /* Default padding for smaller screens */
+            transition: box-shadow 0.3s ease-in-out; /* Add transition for hover effect */
+        }
+        #mainContent:hover {
+            box-shadow: 0 0 calc(20px * var(--font-scale)) rgba(147, 112, 219, 0.7); /* Purple glow on hover */
         }
 
         @media (min-width: 640px) { /* Tailwind's sm breakpoint */
             #mainContent, #adminPanelContent, #chatPageContent {
-                padding: 2rem; /* Restore larger padding for larger screens */
+                padding: calc(2rem * var(--font-scale)); /* Restore larger padding for larger screens */
             }
         }
 
@@ -716,14 +806,14 @@
         .chat-greeting-box {
             background-color: rgba(0, 0, 0, 0.5); /* Dark translucent background */
             color: white;
-            padding: 0.75rem 1.25rem;
-            border-radius: 0.75rem;
-            margin-bottom: 1rem;
+            padding: calc(0.75rem * var(--font-scale)) calc(1.25rem * var(--font-scale));
+            border-radius: calc(0.75rem * var(--font-scale));
+            margin-bottom: calc(1rem * var(--font-scale));
             text-align: center;
             font-family: 'Poppins', sans-serif;
-            font-size: 1rem;
+            font-size: calc(1rem * var(--font-scale));
             width: 100%; /* Take full width of chat container */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 calc(2px * var(--font-scale)) calc(5px * var(--font-scale)) rgba(0, 0, 0, 0.3);
             cursor: pointer; /* Indicate it's clickable */
             display: none; /* Hidden by default, shown on input focus */
         }
@@ -754,10 +844,10 @@
         #accountAcceptedText {
             color: white;
             font-family: 'Montserrat', sans-serif;
-            font-size: 2.5rem; /* Large text */
+            font-size: calc(2.5rem * var(--font-scale)); /* Large text */
             font-weight: bold;
             text-align: center;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 calc(15px * var(--font-scale)) rgba(255, 255, 255, 0.8);
         }
 
         /* Styles for animating the userChatButton */
@@ -767,12 +857,12 @@
             top: 50% !important;
             left: 50% !important;
             transform: translate(-50%, -50%) scale(3) !important; /* Start large and centered */
-            font-size: 2.5rem !important; /* Large font size */
+            font-size: calc(2.5rem * var(--font-scale)) !important; /* Large font size */
             opacity: 1 !important;
             z-index: 4001; /* Above the account accepted overlay */
             width: auto !important; /* Allow content to dictate width */
             height: auto !important; /* Allow content to dictate height */
-            padding: 1rem 2rem !important; /* Larger padding for the big state */
+            padding: calc(1rem * var(--font-scale)) calc(2rem * var(--font-scale)) !important; /* Larger padding for the big state */
         }
     </style>
 
@@ -817,26 +907,56 @@
                 Create an Alt account
             </button>
 
-            <div class="flex flex-col items-center w-full max-w-xs">
-                <input type="text" id="altUsername" placeholder="Alt Username" class="input-field w-full">
-                <span id="usernameError" class="error-message"></span>
-            </div>
-
-            <div class="flex flex-col items-center w-full max-w-xs">
-                <div class="flex items-center w-full">
-                    <input type="password" id="altPassword" placeholder="Alt Password" class="input-field flex-grow">
-                    <span class="password-toggle" id="togglePassword">
-                        <!-- Updated Eye Icons for better visibility -->
-                        <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 hidden">
-                            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-                            <path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12 3.75c4.972 0 9.189 3.226 10.677 7.697a1.125 1.125 0 0 1 0 .898C21.189 17.024 16.972 20.25 12 20.25c-4.972 0-9.189-3.226-10.677-7.697a1.125 1.125 0 0 1 0-.898Z" clip-rule="evenodd" />
-                        </svg>
-                        <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                            <path d="m11.69 11.69 3.01-3.01m-2.25 2.25 2.25 2.25M3.636 11.447A9.955 9.955 0 0 1 12 5.25c4.46 0 8.204 2.478 9.756 7.447M10.5 12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm-3.75 0a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM12 15.75c-1.727 0-3.424-.102-5.07-.294m5.07.294v2.25A2.25 2.25 0 0 1 9.75 20.25v-2.625c-1.668.078-3.321.21-4.946.39M12 15.75c1.727 0 3.424-.102 5.07-.294m-5.07.294v2.25c1.115 0 2.199-.199 3.25-.55M12 12c-1.727 0-3.424-.102-5.07-.294m5.07.294c.175.02.35.04.524.058m-5.07-.294c-.175.02-.35.04-.524.058M14.25 12a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0ZM12 12c.175.02.35.04.524.058m-5.07-.294c.175.02.35.04.524.058M12 15.75c-1.727 0-3.424-.102-5.07-.294m5.07.294v2.25A2.25 2.25 0 0 1 9.75 20.25v-2.625c-1.668.078-3.321.21-4.946.39M12 15.75c1.727 0 3.424-.102 5.07-.294m-5.07.294v2.25c1.115 0 2.199-.199 3.25-.55M12 12c-1.727 0-3.424-.102-5.07-.294m5.07.294c.175.02.35.04.524.058m-5.07-.294c-.175.02-.35.04-.524.058" />
-                        </svg>
-                    </span>
+            <!-- Wrap input fields in a container for easier hiding and spacing -->
+            <div id="altAccountInputFields" class="flex flex-col items-center w-full max-w-xs space-y-6">
+                <!-- Username Input Group -->
+                <div class="flex flex-col items-center w-full">
+                    <div class="input-group">
+                        <input type="text" id="altUsername" placeholder="Alt Username" class="input-field">
+                        <button class="clear-input-button" data-target="altUsername">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <span id="usernameError" class="error-message"></span>
                 </div>
-                <span id="passwordError" class="error-message"></span>
+
+                <!-- Password Input Group -->
+                <div class="flex flex-col items-center w-full">
+                    <div class="input-group">
+                        <input type="password" id="altPassword" placeholder="Alt Password" class="input-field">
+                        <button class="clear-input-button" data-target="altPassword">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <span class="password-toggle" id="togglePassword">
+                            <!-- Updated Eye Icons for better visibility -->
+                            <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 hidden">
+                                <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                                <path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12 3.75c4.972 0 9.189 3.226 10.677 7.697a1.125 1.125 0 0 1 0 .898C21.189 17.024 16.972 20.25 12 20.25c-4.972 0-9.189-3.226-10.677-7.697a1.125 1.125 0 0 1 0-.898Z" clip-rule="evenodd" />
+                            </svg>
+                            <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                                <path d="m11.69 11.69 3.01-3.01m-2.25 2.25 2.25 2.25M3.636 11.447A9.955 9.955 0 0 1 12 5.25c4.46 0 8.204 2.478 9.756 7.447M10.5 12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm-3.75 0a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM12 15.75c-1.727 0-3.424-.102-5.07-.294m5.07.294v2.25A2.25 2.25 0 0 1 9.75 20.25v-2.625c-1.668.078-3.321.21-4.946.39M12 15.75c1.727 0 3.424-.102 5.07-.294m-5.07.294v2.25c1.115 0 2.199-.199 3.25-.55M12 12c-1.727 0-3.424-.102-5.07-.294m5.07.294c.175.02.35.04.524.058m-5.07-.294c-.175.02-.35.04-.524.058M14.25 12a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0ZM12 12c.175.02.35.04.524.058m-5.07-.294c.175.02.35.04-.524.058M12 15.75c-1.727 0-3.424-.102-5.07-.294m5.07.294v2.25A2.25 2.25 0 0 1 9.75 20.25v-2.625c-1.668.078-3.321.21-4.946.39M12 15.75c1.727 0 3.424-.102 5.07-.294m-5.07.294v2.25c1.115 0 2.199-.199 3.25-.55M12 12c-1.727 0-3.424-.102-5.07-.294m5.07.294c.175.02.35.04.524.058m-5.07-.294c-.175.02-.35.04-.524.058" />
+                            </svg>
+                        </span>
+                    </div>
+                    <span id="passwordError" class="error-message"></span>
+                </div>
+
+                <!-- New Email Input Field -->
+                <div class="flex flex-col items-center w-full" id="emailInputGroup">
+                    <div class="input-group">
+                        <input type="email" id="altEmail" placeholder="Your Email" class="input-field">
+                        <button class="clear-input-button" data-target="altEmail">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <span id="emailError" class="error-message"></span>
+                </div>
             </div>
 
             <button id="submitButton" class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out button-text submit-button-glow">
@@ -913,7 +1033,7 @@
     </div>
 
     <div id="customMessageOverlay" class="custom-message-overlay">
-        <div id="customMessageContent" class="custom-message-content">
+        <div class="custom-message-content">
             <p id="customMessageText" class="message-text"></p>
             <button id="customMessageCloseButton" class="close-button">Close</button>
         </div>
@@ -963,14 +1083,14 @@
 // Firebase Imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
-import { getDatabase, ref, push, onChildAdded, onValue, set, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, onValue, set, remove, get } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js"; // Added 'get'
 
 // Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDEXPa2hL26ramq26kOObputL0ocyijQ9s",
   authDomain: "chat-n-account-app.firebaseapp.com",
   projectId: "chat-n-account-app",
-  storageBucket: "chat-n-account-app.firebasestorage.app",
+  storageBucket: "chat-n-account-app.firebaseostorage.app",
   messagingSenderId: "285075561198",
   appId: "1:285075561198:web:d3faabc7a8191d43d4b1ff",
   measurementId: "G-MW7D8Z16MT"
@@ -980,13 +1100,21 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app); // Initialize analytics
 const db = getDatabase(app); // Initialize Realtime Database
 
+// EmailJS Configuration
+// IMPORTANT: Replace with your actual EmailJS Service ID, Template ID, and Public Key
+const EMAILJS_SERVICE_ID = 'service_k6qwu7a'; // Your existing Service ID
+const EMAILJS_ADMIN_NOTIFICATION_TEMPLATE_ID = 'template_4d1o4sg'; // Template for admin notification
+// IMPORTANT: Replace 'template_user_acceptance' with the ACTUAL Template ID you get from EmailJS for user acceptance
+const EMAILJS_USER_ACCEPTANCE_TEMPLATE_ID = 'template_ni0afp6'; // User Acceptance Template ID
+const EMAILJS_PUBLIC_KEY = 'ItgGHjYjqfrKu7I7B'; // Your existing Public Key (User ID)
+
 // Global variables for chat functionality
 let currentChatPartnerId = null; 
 let currentUserIsAdmin = false;
 let currentChatListenerUnsubscribe = null; // To store the unsubscribe function for chat messages
 
 // Declare all global variables here to avoid redeclaration errors within DOMContentLoaded
-let altUsernameInput, usernameError, altPasswordInput, passwordError, togglePassword, eyeOpenIcon, eyeClosedIcon, submitButton;
+let altUsernameInput, usernameError, altPasswordInput, passwordError, altEmailInput, emailError, togglePassword, eyeOpenIcon, eyeClosedIcon, submitButton; // Added altEmailInput, emailError
 let mainButton, adminButton, adminPasswordModal, adminPasswordInput, adminPasswordError, confirmAdminPasswordButton, cancelAdminPasswordButton;
 let mainContent, adminPanelContent, chatPageContent, submittedAccountsListDiv, acceptedAccountsListDiv, noSubmittedAccountsMessage, noAcceptedAccountsMessage, logoutAdminButton;
 let customMessageOverlay, customMessageContent, customMessageText, customMessageCloseButton;
@@ -1009,6 +1137,74 @@ let clickSound; // Declared globally
 // New Roblox Info elements
 let robloxInfoButton, robloxInfoOverlay, robloxInfoCloseButton;
 let altAccountDisplay; // Declare altAccountDisplay globally
+let altAccountInputFields; // New variable for the input fields container
+
+// Starfield variables
+const NUM_STARS = 150; // Number of stars in the background
+let stars = [];
+let starsContainer;
+
+// Star object definition
+function Star(element, speed) {
+    this.element = element;
+    this.x = Math.random() * window.innerWidth;
+    this.y = Math.random() * window.innerHeight;
+    this.size = Math.random() * 2 + 1; // Size between 1px and 3px
+    this.speed = speed; // Speed of horizontal movement
+    this.blinkCounter = Math.random() * 100; // Counter for blinking effect
+    this.originalOpacity = Math.random() * 0.7 + 0.3; // Base opacity between 0.3 and 1.0
+
+    this.element.style.width = `${this.size}px`;
+    this.element.style.height = `${this.size}px`;
+    this.element.style.left = `${this.x}px`;
+    this.element.style.top = `${this.y}px`;
+    this.element.style.opacity = this.originalOpacity;
+}
+
+Star.prototype.update = function() {
+    this.x -= this.speed; // Move left
+
+    // If star moves off-screen, reset its position to the right
+    if (this.x < -this.size) {
+        this.x = window.innerWidth + this.size;
+        this.y = Math.random() * window.innerHeight; // Randomize Y for new appearance
+        this.size = Math.random() * 2 + 1; // Randomize size
+        this.speed = Math.random() * 0.5 + 0.2; // Randomize speed
+        this.originalOpacity = Math.random() * 0.7 + 0.3; // Randomize opacity
+        this.blinkCounter = Math.random() * 100; // Reset blink counter
+        this.element.style.width = `${this.size}px`;
+        this.element.style.height = `${this.size}px`;
+    }
+
+    // Apply blinking effect (subtle opacity change)
+    this.blinkCounter += 0.05;
+    this.element.style.opacity = this.originalOpacity * (0.8 + Math.sin(this.blinkCounter) * 0.2);
+
+
+    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
+};
+
+// Animation loop for stars
+function animateStars() {
+    stars.forEach(star => star.update());
+    requestAnimationFrame(animateStars);
+}
+
+// Function to initialize stars
+function initializeStars() {
+    starsContainer = document.getElementById('starsContainer');
+    if (!starsContainer) {
+        console.error("Stars container not found.");
+        return;
+    }
+    for (let i = 0; i < NUM_STARS; i++) {
+        const starElement = document.createElement('div');
+        starElement.classList.add('star');
+        starsContainer.appendChild(starElement);
+        stars.push(new Star(starElement, Math.random() * 0.5 + 0.2)); // Random speed between 0.2 and 0.7
+    }
+    animateStars(); // Start the star animation
+}
 
 
 // Function to get the storage key for the current chat
@@ -1035,36 +1231,49 @@ function displayMessages() {
 
     chatMessagesContainer.innerHTML = ''; // Clear previous messages
     const chatKey = getChatStorageKey();
-    document.getElementById('chatIdDisplay').textContent = `Chat ID: ${chatKey.split('/')[1]}`; // Show Chat ID without 'chats/'
+    document.getElementById('chatIdDisplay').textContent = `Chat ID: ${chatKey.split('/')[1]}`;
 
     const chatRef = ref(db, chatKey);
 
-    // Listen for new messages
-    currentChatListenerUnsubscribe = onChildAdded(chatRef, (snapshot) => {
-        const msg = snapshot.val();
-        const messageItem = document.createElement('div');
-        messageItem.classList.add('message-item');
+    // Use onValue to get the entire chat history and listen for any changes
+    // This listener will fire initially with all existing data, and then again whenever data changes.
+    currentChatListenerUnsubscribe = onValue(chatRef, (snapshot) => {
+        chatMessagesContainer.innerHTML = ''; // Clear messages before re-rendering everything
+        const messages = snapshot.val();
+        if (messages) {
+            // Convert messages object to an array and sort by timestamp
+            const messageList = Object.values(messages).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-        // Determine if the message was sent by the current user (admin or regular user)
-        if ((currentUserIsAdmin && msg.sender === 'admin') || (!currentUserIsAdmin && msg.sender === 'user')) {
-            messageItem.classList.add('sent');
-            messageItem.innerHTML = `
-                <div class="bubble" style="background-color:#3B82F6; color:white;">${msg.message}</div>
-                <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
-            `;
+            messageList.forEach(msg => {
+                const messageItem = document.createElement('div');
+                messageItem.classList.add('message-item');
+
+                if ((currentUserIsAdmin && msg.sender === 'admin') || (!currentUserIsAdmin && msg.sender === 'user')) {
+                    messageItem.classList.add('sent');
+                    messageItem.innerHTML = `
+                        <div class="bubble" style="background-color:#3B82F6; color:white;">${msg.message}</div>
+                        <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
+                    `;
+                } else {
+                    messageItem.classList.add('received');
+                    messageItem.innerHTML = `
+                        <div class="bubble" style="background-color:white; color:black;">${msg.message}</div>
+                        <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
+                    `;
+                }
+                chatMessagesContainer.appendChild(messageItem);
+            });
         } else {
-            messageItem.classList.add('received');
-            messageItem.innerHTML = `
-                <div class="bubble" style="background-color:white; color:black;">${msg.message}</div>
-                <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
-            `;
+            // If no messages, show the "No messages yet" text
+            const noMessagesText = document.createElement('p');
+            noMessagesText.classList.add('text-gray-400', 'text-center');
+            noMessagesText.textContent = "No messages yet. Start chatting!";
+            chatMessagesContainer.appendChild(noMessagesText);
         }
-
-        chatMessagesContainer.appendChild(messageItem);
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
+    }, (error) => {
+        console.error("Firebase: Error fetching chat messages:", error);
     });
-    // Note on timestamps: Timestamps are stored in ISO 8601 format (UTC) and converted to the user's local time for display.
-    // Any discrepancies might be due to incorrect system clock settings or timezone configurations on the user's device.
 }
 
 // Function to send a message
@@ -1126,10 +1335,11 @@ function loadAccounts() {
                         <div class="account-info">
                             <p><strong>Username:</strong> ${account.username}</p>
                             <p><strong>Password:</strong> ${account.password}</p>
+                            <p><strong>Email:</strong> ${account.email || 'N/A'}</p> <!-- Display email -->
                             <p class="text-sm text-gray-300"><strong>Submitted:</strong> ${new Date(account.timestamp).toLocaleDateString()} ${new Date(account.timestamp).toLocaleTimeString()}</p>
                         </div>
                         <div class="account-actions">
-                            <button class="action-button check" data-id="${account.id}" data-username="${account.username}" data-password="${account.password}" data-timestamp="${account.timestamp}">✓</button>
+                            <button class="action-button check" data-id="${account.id}" data-username="${account.username}" data-password="${account.password}" data-email="${account.email || ''}" data-timestamp="${account.timestamp}">✓</button>
                             <button class="action-button remove" data-id="${account.id}">X</button>
                         </div>
                     `;
@@ -1167,6 +1377,7 @@ function loadAccounts() {
                         <div class="account-info">
                             <p><strong>Username:</strong> ${account.username}</p>
                             <p><strong>Password:</strong> ${account.password}</p>
+                            <p><strong>Email:</strong> ${account.email || 'N/A'}</p> <!-- Display email -->
                             <p class="text-sm text-gray-300"><strong>Accepted:</strong> ${new Date(account.timestamp).toLocaleDateString()} ${new Date(account.timestamp).toLocaleTimeString()}</p>
                         </div>
                         <div class="account-actions">
@@ -1218,8 +1429,9 @@ function handleCheckButtonClick(event) {
     const accountId = event.target.dataset.id;
     const username = event.target.dataset.username;
     const password = event.target.dataset.password;
+    const email = event.target.dataset.email; // Get email
     const timestamp = event.target.dataset.timestamp;
-    handleAccountAction(accountId, 'accept', { username, password, timestamp });
+    handleAccountAction(accountId, 'accept', { username, password, email, timestamp }); // Pass email
 }
 
 function handleRemoveButtonClick(event) {
@@ -1251,16 +1463,30 @@ function handleDeleteUIButtonClick(event) {
 
 
 // Handle account actions (accept or remove)
-function handleAccountAction(accountId, action, accountData = null) {
+async function handleAccountAction(accountId, action, accountData = null) { // Made async
     if (action === 'accept') {
+        // First, get the full account data from submittedAccounts to ensure we have the email
+        const submittedAccountRef = ref(db, `submittedAccounts/${accountId}`);
+        const submittedAccountSnapshot = await get(submittedAccountRef); // Use 'get' to fetch data once
+        const fullAccountData = submittedAccountSnapshot.val();
+
+        if (!fullAccountData) {
+            console.error(`Account ${accountId} not found in submitted accounts.`);
+            showCustomOverlayMessage(`Error: Account ${accountId} not found for acceptance.`, true);
+            return;
+        }
+
+        // Add logging for email and username being used
+        console.log("Attempting to accept account. Full Account Data:", fullAccountData);
+
         // Remove from submittedAccounts in Firebase
-        remove(ref(db, `submittedAccounts/${accountId}`))
+        remove(submittedAccountRef)
             .then(() => {
                 console.log(`Account ${accountId} removed from submitted.`);
-                // Add to acceptedAccounts in Firebase
-                return set(ref(db, `acceptedAccounts/${accountId}`), accountData);
+                // Add to acceptedAccounts in Firebase, using the full data including email
+                return set(ref(db, `acceptedAccounts/${accountId}`), fullAccountData);
             })
-            .then(() => {
+            .then(async () => { // Made this .then() callback async
                 console.log(`Account ${accountId} accepted and moved.`);
                 // Update user notification in localStorage
                 const currentUserAltId = localStorage.getItem('currentUserAltId');
@@ -1269,7 +1495,15 @@ function handleAccountAction(accountId, action, accountData = null) {
                     localStorage.setItem('accountDecisionStatus', 'accepted');
                 }
                 // Show a simple notification to the admin who performed the action
-                showNotification(`Account ${accountData.username} Accepted!`);
+                showNotification(`Account ${fullAccountData.username} Accepted!`);
+                
+                // Send acceptance email to the user
+                if (fullAccountData.email) {
+                    console.log(`Sending user acceptance email to: ${fullAccountData.email} for user: ${fullAccountData.username}`); // Log before sending EmailJS call
+                    await sendUserAcceptanceEmail(fullAccountData.email, fullAccountData.username);
+                } else {
+                    console.warn(`No email found for user ${fullAccountData.username}, cannot send acceptance email.`);
+                }
                 // loadAccounts() will be triggered by onValue listeners
             })
             .catch(error => {
@@ -1445,7 +1679,7 @@ function animateChatButton() {
     userChatButton.style.left = `${finalLeft}px`;
     userChatButton.style.width = `${finalWidth}px`;
     userChatButton.style.height = `${finalHeight}px`;
-    userChatButton.style.fontSize = '1rem'; // Normal font size
+    userChatButton.style.fontSize = `calc(1rem * var(--font-scale))`; // Normal font size
     userChatButton.style.transform = 'translate(0, 0) scale(1)'; // Normal scale
 
     // Listen for the end of the transition
@@ -1608,17 +1842,61 @@ function showAccountDecision(status) {
     overlay.classList.add('show'); // Ensure this is called outside the if/else for both cases
 }
 
+// Function to send email notification to admin via EmailJS
+async function sendAdminNotificationEmail(username, accountId) {
+    const templateParams = {
+        username: username,
+        accountId: accountId,
+    };
+
+    try {
+        const response = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_ADMIN_NOTIFICATION_TEMPLATE_ID, templateParams);
+        console.log('Admin notification email sent successfully!', response.status, response.text);
+    }
+    catch (error) {
+        console.error('Failed to send admin notification email:', error);
+    }
+}
+
+// Function to send email to the user upon account acceptance via EmailJS
+async function sendUserAcceptanceEmail(recipientEmail, username) {
+    const templateParams = {
+        to_email: recipientEmail, // This variable name must match your EmailJS user acceptance template's 'To' field
+        username: username,
+        status: 'accepted' // Or 'denied' if you create a denial template
+    };
+
+    console.log('Attempting to send user acceptance email with params:', templateParams); // New logging
+    console.log('EmailJS Service ID:', EMAILJS_SERVICE_ID);
+    console.log('EmailJS User Acceptance Template ID:', EMAILJS_USER_ACCEPTANCE_TEMPLATE_ID);
+    console.log('EmailJS Public Key:', EMAILJS_PUBLIC_KEY);
+
+
+    try {
+        const response = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_USER_ACCEPTANCE_TEMPLATE_ID, templateParams);
+        console.log('User acceptance email sent successfully!', response.status, response.text);
+    } catch (error) {
+        console.error('Failed to send user acceptance email:', error);
+    }
+}
+
 
 window.addEventListener('DOMContentLoaded', () => {
+    // Initialize EmailJS with your Public Key (User ID)
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+
     // Assign elements to globally declared variables
     altUsernameInput = document.getElementById('altUsername');
     usernameError = document.getElementById('usernameError');
     altPasswordInput = document.getElementById('altPassword');
     passwordError = document.getElementById('passwordError');
+    altEmailInput = document.getElementById('altEmail'); // Get the new email input
+    emailError = document.getElementById('emailError'); // Get the new email error span
     togglePassword = document.getElementById('togglePassword');
     eyeOpenIcon = document.getElementById('eyeOpen');
     eyeClosedIcon = document.getElementById('eyeClosed');
     submitButton = document.getElementById('submitButton');
+    altAccountInputFields = document.getElementById('altAccountInputFields'); // Get the new input fields container
 
     mainButton = document.getElementById('mainButton');
     adminButton = document.getElementById('adminButton');
@@ -1704,6 +1982,7 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log("Elements retrieved on DOMContentLoaded:");
     console.log("altUsernameInput:", altUsernameInput);
     console.log("altPasswordInput:", altPasswordInput);
+    console.log("altEmailInput:", altEmailInput); // Log new email input
     console.log("togglePassword:", togglePassword);
     console.log("eyeOpenIcon:", eyeOpenIcon);
     console.log("eyeClosedIcon:", eyeClosedIcon);
@@ -1725,11 +2004,33 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log("robloxInfoOverlay:", robloxInfoOverlay);
     console.log("robloxInfoCloseButton:", robloxInfoCloseButton);
     console.log("altAccountDisplay:", altAccountDisplay);
+    console.log("altAccountInputFields:", altAccountInputFields); // Log new input fields container
     // --- End Debugging ---
 
+    // Function to handle clear button click
+    const setupClearButton = (inputElement, clearButtonElement) => {
+        if (inputElement && clearButtonElement) {
+            const toggleClearButtonVisibility = () => {
+                if (inputElement.value.length > 0) {
+                    clearButtonElement.style.display = 'flex'; // Show clear button
+                } else {
+                    clearButtonElement.style.display = 'none'; // Hide clear button
+                }
+            };
+
+            inputElement.addEventListener('input', toggleClearButtonVisibility);
+            clearButtonElement.addEventListener('click', () => {
+                inputElement.value = '';
+                toggleClearButtonVisibility(); // Hide after clearing
+                updateSubmitButtonState(); // Re-validate button state
+            });
+            // Initial check in case the input field is pre-filled
+            toggleClearButtonVisibility();
+        }
+    };
 
     // Function to validate input for spaces and minimum length
-    const validateInput = (inputElement, errorElement, fieldName) => {
+    const validateInput = (inputElement, errorElement, fieldName, minLength = 2) => { // Added minLength parameter
         let isValid = true;
         if (errorElement) {
             errorElement.style.display = 'none'; // Hide previous error
@@ -1742,9 +2043,35 @@ window.addEventListener('DOMContentLoaded', () => {
                 errorElement.style.display = 'block';
             }
             isValid = false;
-        } else if (inputValue.length > 0 && inputValue.length < 2) {
+        } else if (inputValue.length > 0 && inputValue.length < minLength) { // Use minLength
             if (errorElement) {
-                errorElement.textContent = `${fieldName} must be at least 2 characters`;
+                errorElement.textContent = `${fieldName} must be at least ${minLength} characters`;
+                errorElement.style.display = 'block';
+            }
+            isValid = false;
+        }
+        return isValid;
+    };
+
+    // Function to validate email format
+    const validateEmail = (inputElement, errorElement) => {
+        let isValid = true;
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
+        const emailValue = inputElement.value.trim();
+        // Basic regex for email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+
+        if (emailValue.length > 0 && !emailRegex.test(emailValue)) {
+            if (errorElement) {
+                errorElement.textContent = 'Invalid email format';
+                errorElement.style.display = 'block';
+            }
+            isValid = false;
+        } else if (emailValue.length === 0) { // Email cannot be empty
+            if (errorElement) {
+                errorElement.textContent = 'Email cannot be empty';
                 errorElement.style.display = 'block';
             }
             isValid = false;
@@ -1754,11 +2081,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Function to update the visibility of the submit button
     const updateSubmitButtonState = () => {
-        const isUsernameValid = altUsernameInput && altUsernameInput.value.trim().length >= 2 && !altUsernameInput.value.trim().includes(' ');
-        const isPasswordValid = altPasswordInput && altPasswordInput.value.trim().length >= 2 && !altPasswordInput.value.trim().includes(' ');
+        // Only check if input fields are visible
+        if (altAccountInputFields && altAccountInputFields.classList.contains('hidden')) {
+            submitButton.classList.add('hidden');
+            return;
+        }
+
+        // Updated minLength for username and password to 8
+        const isUsernameValid = altUsernameInput && validateInput(altUsernameInput, usernameError, 'Username', 8);
+        const isPasswordValid = altPasswordInput && validateInput(altPasswordInput, passwordError, 'Password', 8);
+        const isEmailValid = altEmailInput && validateEmail(altEmailInput, emailError); // Validate email
 
         if (submitButton) {
-            if (isUsernameValid && isPasswordValid) {
+            if (isUsernameValid && isPasswordValid && isEmailValid) { // All three must be valid
                 submitButton.classList.remove('hidden');
             } else {
                 submitButton.classList.add('hidden');
@@ -1769,28 +2104,43 @@ window.addEventListener('DOMContentLoaded', () => {
     // Add event listeners to input fields for real-time validation and button state update
     if (altUsernameInput && usernameError) {
         altUsernameInput.addEventListener('input', () => {
-            validateInput(altUsernameInput, usernameError, 'Username');
+            validateInput(altUsernameInput, usernameError, 'Username', 8); // Pass 8 as minLength
             updateSubmitButtonState();
         });
     }
 
     if (altPasswordInput && passwordError) {
         altPasswordInput.addEventListener('input', () => {
-            validateInput(altPasswordInput, passwordError, 'Password');
+            validateInput(altPasswordInput, passwordError, 'Password', 8); // Pass 8 as minLength
             updateSubmitButtonState();
         });
     }
 
-    // Submit button click handler
-    if (submitButton && altUsernameInput && altPasswordInput) {
-        submitButton.addEventListener('click', () => {
-            const isUsernameValid = validateInput(altUsernameInput, usernameError, 'Username');
-            const isPasswordValid = validateInput(altPasswordInput, passwordError, 'Password');
+    if (altEmailInput && emailError) { // Add event listener for email input
+        altEmailInput.addEventListener('input', () => {
+            validateEmail(altEmailInput, emailError);
+            updateSubmitButtonState();
+        });
+    }
 
-            if (isUsernameValid && isPasswordValid) {
+    // Setup clear buttons
+    setupClearButton(altUsernameInput, document.querySelector('[data-target="altUsername"]'));
+    setupClearButton(altPasswordInput, document.querySelector('[data-target="altPassword"]'));
+    setupClearButton(altEmailInput, document.querySelector('[data-target="altEmail"]'));
+
+
+    // Submit button click handler
+    if (submitButton && altUsernameInput && altPasswordInput && altEmailInput) { // Include altEmailInput
+        submitButton.addEventListener('click', async () => { // Made async to await email sending
+            const isUsernameValid = validateInput(altUsernameInput, usernameError, 'Username', 8); // Re-validate with 8
+            const isPasswordValid = validateInput(altPasswordInput, passwordError, 'Password', 8); // Re-validate with 8
+            const isEmailValid = validateEmail(altEmailInput, emailError); // Validate email
+
+            if (isUsernameValid && isPasswordValid && isEmailValid) { // All three must be valid
                 const newAccount = {
                     username: altUsernameInput.value.trim(), // Store trimmed value
                     password: altPasswordInput.value.trim(), // Store trimmed value
+                    email: altEmailInput.value.trim(), // Store trimmed email
                     timestamp: new Date().toISOString()
                 };
                 
@@ -1803,15 +2153,25 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 showCustomOverlayMessage('Account Submitted');
 
+                // Send admin notification email using EmailJS
+                await sendAdminNotificationEmail(newAccount.username, firebaseId);
+
                 altUsernameInput.value = '';
                 altPasswordInput.value = '';
+                altEmailInput.value = ''; // Clear email input
                 altPasswordInput.setAttribute('type', 'password');
                 if (eyeOpenIcon && eyeClosedIcon) {
                     eyeOpenIcon.classList.add('hidden');
                     eyeClosedIcon.classList.remove('hidden');
                 }
 
-                updateSubmitButtonState();
+                // Hide the input fields and submit button after successful submission
+                if (altAccountInputFields) {
+                    altAccountInputFields.classList.add('hidden');
+                }
+                submitButton.classList.add('hidden'); // Hide submit button as well
+
+                updateSubmitButtonState(); // Re-evaluate state after hiding
                 checkAndShowUserChatButton(); // Check chat button visibility after submission
                 updateAltAccountDisplay(); // Update alt account display immediately after submission
             }
@@ -1881,11 +2241,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
         // Set initial state of eye icons based on default password type
         if (altPasswordInput.getAttribute('type') === 'password') {
-            eyeOpenIcon.classList.add('hidden');
-            eyeClosedIcon.classList.remove('hidden');
+            eyeOpenIcon.classList.add('hidden'); // Hide open eye
+            eyeClosedIcon.classList.remove('hidden'); // Show closed eye
         } else {
-            eyeOpenIcon.classList.remove('hidden');
-            eyeClosedIcon.classList.add('hidden');
+            eyeOpenIcon.classList.remove('hidden'); // Show open eye
+            eyeClosedIcon.classList.add('hidden'); // Hide closed eye
         }
     }
 
@@ -1990,6 +2350,13 @@ window.addEventListener('DOMContentLoaded', () => {
         const currentUserAltId = localStorage.getItem('currentUserAltId');
         if (!altAccountDisplay || !currentUserAltId) {
             if (altAccountDisplay) altAccountDisplay.textContent = '';
+            // If no user is logged in, or their ID isn't found,
+            // ensure input fields are visible
+            if (altAccountInputFields) {
+                altAccountInputFields.classList.remove('hidden');
+                submitButton.classList.remove('hidden'); // Ensure submit button is visible too
+            }
+            updateSubmitButtonState(); // Re-evaluate button state
             return;
         }
 
@@ -1999,6 +2366,12 @@ window.addEventListener('DOMContentLoaded', () => {
             const account = snapshot.val();
             if (account) {
                 altAccountDisplay.textContent = `Alt:(${account.username})`;
+                // If account is found (either accepted or submitted), hide input fields
+                if (altAccountInputFields) {
+                    altAccountInputFields.classList.add('hidden');
+                    submitButton.classList.add('hidden'); // Hide submit button as well
+                }
+
             } else {
                 // If not in accepted, check submitted accounts
                 const submittedRef = ref(db, `submittedAccounts/${currentUserAltId}`);
@@ -2006,13 +2379,28 @@ window.addEventListener('DOMContentLoaded', () => {
                     const submittedAccount = submittedSnapshot.val();
                     if (submittedAccount) {
                         altAccountDisplay.textContent = `Alt:(${submittedAccount.username})`;
+                        // If account is found (either accepted or submitted), hide input fields
+                        if (altAccountInputFields) {
+                            altAccountInputFields.classList.add('hidden');
+                            submitButton.classList.add('hidden'); // Hide submit button as well
+                        }
                     } else {
                         altAccountDisplay.textContent = ''; // Clear if not found in either
+                        // If no account is found associated with currentUserAltId, show input fields
+                        if (altAccountInputFields) {
+                            altAccountInputFields.classList.remove('hidden');
+                            // Only show submit button if inputs are valid
+                            updateSubmitButtonState();
+                        }
                     }
                 }, { onlyOnce: true }); // Only need to check submitted once if not accepted
             }
         }); // This listener for accepted will keep it updated if status changes
     };
+
+    // All `DOMContentLoaded` logic now directly within this main listener
+    // The previous `script.onload` was causing race conditions and errors.
+    // The `CryptoJS` library is now loaded via a direct <script> tag in the <head>.
 
     // Initial state: show main page
     navigateToPage('main');
@@ -2033,7 +2421,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // This re-assigns the handleAccountAction function to add notification logic.
     // Ensure this runs AFTER the original handleAccountAction is fully defined.
     const originalHandleAccountAction = handleAccountAction; 
-    handleAccountAction = function(accountId, action, accountData = null) { // Capture accountData for notification
+    handleAccountAction = async function(accountId, action, accountData = null) { // Made async here too
         const currentUserAltId = localStorage.getItem('currentUserAltId');
         console.log(`handleAccountAction: accountId=${accountId}, action=${action}, currentUserAltId=${currentUserAltId}`);
         if (currentUserAltId === accountId) {
@@ -2042,11 +2430,14 @@ window.addEventListener('DOMContentLoaded', () => {
             console.log(`handleAccountAction: Setting localStorage accountDecisionStatus to ${decisionStatus}`);
         }
         // Call the original function with all arguments
-        originalHandleAccountAction(accountId, action, accountData);
+        await originalHandleAccountAction(accountId, action, accountData); // Await the original function
         // Show notification after the action is processed
         showNotification(`Account ${action === 'accept' ? 'Accepted' : 'Denied'}.`);
         updateAltAccountDisplay(); // Update alt account display after an action that might change status
     };
+
+    // Initialize the dynamic starfield
+    initializeStars();
 });
 </script>
 
