@@ -6,9 +6,7 @@
     <title>Unit Nova Bots</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Montserrat:wght@600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <!-- CryptoJS for MD5 hashing (for Gravatar) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         /* Responsive Base Units */
@@ -28,14 +26,15 @@
         body {
             font-family: 'Inter', sans-serif; /* Default font for the body */
             margin: 0;
-            overflow: hidden; /* Hide overflow to prevent scrollbars from stars */
-            min-height: 100vh; width: 100vw; /* Full viewport height */
+            overflow-x: hidden; /* Hide horizontal overflow */
+            min-height: 100vh;
+            width: 100vw; /* Full viewport width */
             display: flex;
             flex-direction: column;
             justify-content: flex-start; /* Align content to the top */
-            align-items: flex-start; /* Align content to the left */
-            position: relative; /* For absolute positioning of text and stars */
-            background: linear-gradient(135deg, #6A0DAD, #8A2BE2, #9370DB); /* Purple gradient background */
+            align-items: flex-start;
+            position: relative; /* For absolute positioning of stars */
+            background: linear-gradient(135deg, #000, #333, #666); /* Black to white gradient */
             background-size: 400% 400%; /* Larger background for animation */
             animation: gradientAnimation 15s ease infinite; /* Apply gradient animation */
             font-size: calc(1rem * var(--font-scale)); /* Scale base font */
@@ -48,27 +47,39 @@
             100% { background-position: 0% 50%; }
         }
 
-        .nova-text {
-            position: absolute;
-            top: calc(1.5rem * var(--font-scale));
-            left: calc(1.5rem * var(--font-scale));
-            z-index: 10; /* Ensure text is above the background and stars */
-            color: white;
-            /* Applying a cool font to the main title */
-            font-family: 'Montserrat', sans-serif;
-            /* Enhanced glow effect */
-            text-shadow:
-                0 0 calc(10px * var(--font-scale)) rgba(255, 255, 255, 0.7), /* Soft white glow */
-                0 0 calc(20px * var(--font-scale)) rgba(255, 255, 255, 0.5), /* Medium white glow */
-                0 0 calc(30px * var(--font-scale)) rgba(255, 255, 255, 0.3); /* Wider, subtle white glow */
-            font-size: calc(2.5rem * var(--font-scale)); /* Scale specific elements */
+        .header-container {
+            width: 100%;
             display: flex;
-            align-items: center; /* Align items vertically */
+            justify-content: space-between;
+            align-items: center;
+            padding: calc(1.5rem * var(--font-scale));
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            height: calc(3rem * var(--font-scale));
+            max-width: 100%;
+            filter: grayscale(100%);
+        }
+
+        .nova-text {
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            text-shadow:
+                0 0 calc(10px * var(--font-scale)) rgba(255, 255, 255, 0.7),
+                0 0 calc(20px * var(--font-scale)) rgba(255, 255, 255, 0.5),
+                0 0 calc(30px * var(--font-scale)) rgba(255, 255, 255, 0.3);
+            font-size: calc(2.5rem * var(--font-scale));
+            display: flex;
+            align-items: center;
         }
 
         /* Alt account display within the title */
         #altAccountDisplay {
-            font-size: calc(1.5rem * var(--font-scale)); /* Slightly smaller than main title */
+            font-size: calc(1.5rem * var(--font-scale));
             font-family: 'Poppins', sans-serif;
             margin-left: calc(0.75rem * var(--font-scale));
             background-color: rgba(255, 255, 255, 0.1);
@@ -81,7 +92,6 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             text-shadow: none; /* Remove glow from this specific span */
         }
-
 
         /* Stars container */
         .stars-container {
@@ -137,7 +147,7 @@
         }
 
         .input-field:focus {
-            border-color: #9370DB; /* Highlight on focus */
+            border-color: #999; /* Highlight on focus */
         }
 
         /* Placeholder color */
@@ -209,7 +219,7 @@
         }
 
         .custom-message-content {
-            background-color: rgba(255, 255, 255, 0.15); /* Translucent white */
+            background-color: rgba(0, 0, 0, 0.5); /* Translucent black */
             backdrop-filter: blur(8px);
             padding: calc(2rem * var(--font-scale));
             border-radius: calc(1rem * var(--font-scale));
@@ -231,7 +241,7 @@
         }
 
         .custom-message-content .close-button {
-            background-color: #8A2BE2; /* Purple */
+            background-color: #333; /* Dark gray */
             color: white;
             padding: calc(0.75rem * var(--font-scale)) calc(1.5rem * var(--font-scale));
             border-radius: calc(0.5rem * var(--font-scale));
@@ -241,29 +251,26 @@
         }
 
         .custom-message-content .close-button:hover {
-            background-color: #9370DB;
+            background-color: #666; /* Lighter gray on hover */
         }
 
 
         /* Submit Button specific styling */
         .submit-button-glow {
-            /* Purple background */
-            background-color: #8A2BE2; /* A vibrant purple */
+            /* Black background */
+            background-color: #000; /* A vibrant black */
             /* Glowing effect */
             box-shadow:
-                0 0 calc(5px * var(--font-scale)) rgba(138, 43, 226, 0.7), /* Soft purple glow */
-                0 0 calc(15px * var(--font-scale)) rgba(138, 43, 226, 0.5), /* Medium purple glow */
-                0 0 calc(25px * var(--font-scale)) rgba(138, 43, 226, 0.3); /* Wider purple glow */
+                0 0 calc(5px * var(--font-scale)) rgba(0, 0, 0, 0.7), /* Soft black glow */
+                0 0 calc(15px * var(--font-scale)) rgba(0, 0, 0, 0.5), /* Medium black glow */
+                0 0 calc(25px * var(--font-scale)) rgba(0, 0, 0, 0.3); /* Wider black glow */
         }
 
         /* Navigation buttons container styling */
         .nav-buttons-container {
-            position: absolute;
-            top: calc(1.5rem * var(--font-scale)); /* Align with nova-text's top */
-            right: calc(1.5rem * var(--font-scale)); /* Place in the top right corner */
             display: flex;
             gap: calc(1rem * var(--font-scale)); /* Space between buttons */
-            z-index: 10; /* Ensure it's above other elements */
+            z-index: 10;
         }
 
         .nav-button {
@@ -278,7 +285,7 @@
         }
 
         .nav-button:hover {
-            color: #DDA0DD; /* Lighter purple on hover */
+            color: #ccc; /* Lighter gray on hover */
         }
 
         /* Glow effect for navigation buttons */
@@ -286,85 +293,6 @@
             text-shadow:
                 0 0 calc(5px * var(--font-scale)) rgba(255, 255, 255, 0.7),
                 0 0 calc(10px * var(--font-scale)) rgba(255, 255, 255, 0.5);
-        }
-
-        /* Darken effect for navigation buttons */
-        .nav-button.darken {
-            color: rgba(255, 255, 255, 0.5); /* Make text semi-transparent */
-            text-shadow: none; /* Remove glow */
-        }
-
-        /* Modal for password input */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000; /* Above all other content */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-        }
-
-        .modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background-color: rgba(255, 255, 255, 0.15); /* Translucent white */
-            backdrop-filter: blur(8px);
-            padding: calc(2rem * var(--font-scale));
-            border-radius: calc(1rem * var(--font-scale));
-            box-shadow: 0 calc(8px * var(--font-scale)) calc(16px * var(--font-scale)) rgba(0, 0, 0, 0.3);
-            text-align: center;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            display: flex;
-            flex-direction: column;
-            gap: calc(1rem * var(--font-scale));
-            width: 90%;
-            max-width: calc(400px * var(--font-scale));
-        }
-
-        .modal-input {
-            background-color: rgba(255, 255, 255, 0.2);
-            border: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.4);
-            color: white;
-            padding: calc(0.75rem * var(--font-scale));
-            border-radius: calc(0.5rem * var(--font-scale));
-            outline: none;
-            font-family: 'Inter', sans-serif;
-            width: 100%;
-            font-size: calc(1rem * var(--font-scale));
-        }
-
-        .modal-input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .modal-button {
-            background-color: #8A2BE2;
-            color: white;
-            padding: calc(0.75rem * var(--font-scale)) calc(1.5rem * var(--font-scale));
-            border-radius: calc(0.5rem * var(--font-scale));
-            font-weight: bold;
-            transition: background-color 0.3s ease-in-out;
-            font-size: calc(1rem * var(--font-scale));
-        }
-
-        .modal-button:hover {
-            background-color: #9370DB;
-        }
-
-        .modal-error {
-            color: #ffcccc;
-            font-size: calc(0.9rem * var(--font-scale));
         }
 
         /* Admin Panel specific styles */
@@ -376,92 +304,38 @@
             box-shadow: 0 calc(4px * var(--font-scale)) calc(10px * var(--font-scale)) rgba(0, 0, 0, 0.3);
             width: 90%;
             max-width: calc(800px * var(--font-scale));
-            margin-top: calc(2rem * var(--font-scale));
-            margin-bottom: calc(2rem * var(--font-scale));
-            text-align: center;
-            display: flex; /* Use flexbox for content alignment */
+            display: flex;
             flex-direction: column;
-            align-items: center;
-            transition: box-shadow 0.3s ease-in-out; /* Add transition for hover effect */
-        }
-        .admin-panel-content:hover {
-            box-shadow: 0 0 calc(20px * var(--font-scale)) rgba(147, 112, 219, 0.7); /* Purple glow on hover */
-        }
-
-
-        .accounts-section {
-            width: 100%;
-            margin-top: calc(1.5rem * var(--font-scale));
-            text-align: left;
-            background-color: rgba(255, 255, 255, 0.05); /* Slightly darker translucent */
-            border-radius: calc(0.5rem * var(--font-scale));
-            padding: calc(1rem * var(--font-scale));
-            max-height: calc(400px * var(--font-scale)); /* Limit height for scrolling */
-            overflow-y: auto; /* Enable scrolling for the list */
-        }
-
-        .accounts-section h2 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: calc(1.5rem * var(--font-scale));
-            font-weight: bold;
+            gap: calc(2rem * var(--font-scale));
             color: white;
-            margin-bottom: calc(1rem * var(--font-scale));
-            text-align: center;
+            font-family: 'Poppins', sans-serif;
         }
 
-        /* Responsive adjustments for account items in admin panel */
-        .account-item {
-            background-color: rgba(255, 255, 255, 0.08);
-            padding: calc(0.75rem * var(--font-scale));
-            border-radius: calc(0.5rem * var(--font-scale));
-            margin-bottom: calc(0.75rem * var(--font-scale));
-            border: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column; /* Stack vertically by default for mobile */
-            align-items: flex-start; /* Align text to the left */
-            gap: calc(0.5rem * var(--font-scale)); /* Space between items */
-            font-size: calc(1rem * var(--font-scale));
-        }
-
-        .account-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .account-item strong {
-            color: #DDA0DD;
-        }
-
-        .account-info {
-            flex-grow: 1; /* Allow info to take available space */
-            min-width: calc(150px * var(--font-scale)); /* Ensure info doesn't get too squished */
-        }
-
-        .account-actions {
-            display: flex;
-            gap: calc(0.5rem * var(--font-scale));
-            flex-shrink: 0; /* Prevent actions from shrinking */
-            width: 100%; /* Take full width on mobile */
-            justify-content: space-around; /* Distribute buttons evenly */
-            margin-top: calc(0.5rem * var(--font-scale)); /* Space between info and buttons */
-        }
-
-        /* Script toggle for accepted accounts */
+        /* Script toggle container */
         .script-toggle-container {
             display: flex;
             align-items: center;
-            gap: calc(0.5rem * var(--font-scale));
-            color: #ADD8E6; /* Light blue */
-            font-weight: bold;
             cursor: pointer;
-            margin-top: calc(0.5rem * var(--font-scale));
-            width: 100%;
-            justify-content: center; /* Center the text and icon */
+            padding: calc(0.5rem * var(--font-scale));
+            border-radius: calc(0.5rem * var(--font-scale));
+            transition: background-color 0.3s ease-in-out;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.1);
+            justify-content: space-between;
         }
 
+        .script-toggle-container:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .script-toggle-container .username-text {
+            font-weight: bold;
+        }
+
+        /* Rotate icon */
         .script-toggle-container svg {
             transition: transform 0.3s ease-in-out;
         }
-
         .script-toggle-container.active svg {
             transform: rotate(180deg); /* Rotate icon when active */
         }
@@ -469,199 +343,19 @@
         .user-scripts-container {
             background-color: rgba(255, 255, 255, 0.05);
             border-radius: calc(0.5rem * var(--font-scale));
-            padding: calc(0.75rem * var(--font-scale));
-            margin-top: calc(0.75rem * var(--font-scale));
-            width: 100%;
-            max-height: 0; /* Start hidden for animation */
-            overflow: hidden;
-            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
-            opacity: 0;
+            padding: calc(1rem * var(--font-scale));
+            display: none; /* Hide by default */
         }
-
         .user-scripts-container.active {
-            max-height: calc(300px * var(--font-scale)); /* Max height for animation */
-            opacity: 1;
+            display: block; /* Show when active */
         }
 
-        .user-script-item {
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: calc(0.5rem * var(--font-scale));
-            border-radius: calc(0.4rem * var(--font-scale));
-            margin-bottom: calc(0.5rem * var(--font-scale));
-            font-family: 'Inter', sans-serif;
-            font-size: calc(0.9rem * var(--font-scale));
-            color: #E0E0E0;
-            white-space: pre-wrap; /* Preserve whitespace and breaks */
-            word-break: break-all; /* Break long words */
-            position: relative; /* For positioning copy button */
-        }
-        .user-script-item:last-child {
-            margin-bottom: 0;
-        }
-        .script-timestamp {
-            font-size: calc(0.7rem * var(--font-scale));
-            color: rgba(255, 255, 255, 0.5);
-            text-align: right;
-            display: block;
-            margin-top: calc(0.2rem * var(--font-scale));
-        }
-
-        /* Updated Copy button styles */
-        .copy-script-button {
-            position: absolute;
-            top: calc(0.25rem * var(--font-scale));
-            right: calc(0.25rem * var(--font-scale));
-            background-color: transparent; /* No background */
-            border: none; /* No border */
-            border-radius: calc(0.25rem * var(--font-scale));
-            padding: calc(0.2rem * var(--font-scale));
-            cursor: pointer;
-            color: white; /* Icon and text color */
-            transition: background-color 0.2s ease-in-out;
-            display: flex; /* Use flex to align icon and text */
-            align-items: center;
-            gap: calc(0.2rem * var(--font-scale)); /* Space between icon and text */
-        }
-        .copy-script-button:hover {
-            background-color: rgba(255, 255, 255, 0.1); /* Subtle hover for the whole button area */
-        }
-        .copy-script-button svg {
-            flex-shrink: 0; /* Prevent icon from shrinking */
-        }
-        .copy-text {
-            text-decoration: underline; /* Underline the text */
-            background-color: transparent; /* Ensure no background for the text span */
-            font-size: calc(0.8rem * var(--font-scale)); /* Smaller font for copy text */
-            font-weight: normal; /* Keep normal weight for text */
-        }
-
-
-        /* Revert to horizontal layout for larger screens */
-        @media (min-width: 640px) { /* Tailwind's sm breakpoint */
-            .account-item {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-            }
-            .account-actions {
-                width: auto;
-                justify-content: flex-end;
-                margin-top: 0;
-            }
-        }
-
-        .action-button {
-            background-color: transparent;
+        .chat-container {
+            height: calc(300px * var(--font-scale));
+            overflow-y: auto;
             border: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: calc(0.4rem * var(--font-scale)) calc(0.6rem * var(--font-scale));
-            border-radius: calc(0.3rem * var(--font-scale));
-            cursor: pointer;
-            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: calc(1rem * var(--font-scale));
-        }
-
-        .action-button.check {
-            color: #4CAF50; /* Green check */
-            border-color: #4CAF50;
-        }
-        .action-button.check:hover {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .action-button.remove {
-            color: #DC2626; /* Red X */
-            border-color: #DC2626;
-        }
-        .action-button.remove:hover {
-            background-color: #DC2626;
-            color: white;
-        }
-        
-        .action-button.chat { /* New chat button style */
-            color: #ADD8E6; /* Light blue */
-            border-color: #ADD8E6;
-        }
-        .action-button.chat:hover {
-            background-color: #ADD8E6;
-            color: white;
-        }
-
-        .action-button.delete-ui { /* New delete UI button style */
-            color: #FFD700; /* Gold/Yellow */
-            border-color: #FFD700;
-        }
-        .action-button.delete-ui:hover {
-            background-color: #FFD700;
-            color: black;
-        }
-
-
-        .logout-button {
-            background-color: #DC2626; /* Red color for logout */
-            color: white;
-            padding: calc(0.5rem * var(--font-scale)) calc(1rem * var(--font-scale));
             border-radius: calc(0.5rem * var(--font-scale));
-            font-weight: bold;
-            transition: background-color 0.3s ease-in-out;
-            margin-top: calc(1rem * var(--font-scale));
-            font-size: calc(1rem * var(--font-scale));
-        }
-
-        .logout-button:hover {
-            background-color: #B91C1C;
-        }
-
-        /* Chat Page Specific Styles */
-        .chat-page-content {
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            padding: calc(1.5rem * var(--font-scale)); /* Default padding for mobile */
-            border-radius: calc(1rem * var(--font-scale));
-            box-shadow: 0 calc(4px * var(--font-scale)) calc(10px * var(--font-scale)) rgba(0, 0, 0, 0.3);
-            width: 90%;
-            max-width: calc(600px * var(--font-scale));
-            height: 80vh; /* Make chat area take most of the height */
-            margin-top: calc(2rem * var(--font-scale));
-            margin-bottom: calc(2rem * var(--font-scale));
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* Push input to bottom */
-            transition: box-shadow 0.3s ease-in-out; /* Add box-shadow transition for hover effect */
-        }
-        .chat-page-content:hover {
-            box-shadow: 0 0 calc(20px * var(--font-scale)) rgba(147, 112, 219, 0.7); /* Purple glow on hover */
-        }
-
-        @media (min-width: 640px) { /* Tailwind's sm breakpoint */
-            .chat-page-content {
-                padding: calc(2rem * var(--font-scale)); /* Restore larger padding for larger screens */
-            }
-        }
-
-        .chat-header {
-            font-family: 'Montserrat', sans-serif;
-            font-size: calc(1.75rem * var(--font-scale));
-            font-weight: bold;
-            color: white;
-            margin-bottom: calc(1rem * var(--font-scale));
-            text-align: center;
-            padding-bottom: calc(0.5rem * var(--font-scale));
-            border-bottom: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.2);
-        }
-
-        .chat-messages-container {
-            flex-grow: 1; /* Take all available space */
-            overflow-y: auto; /* Enable scrolling for messages */
-            padding: calc(0.5rem * var(--font-scale));
-            margin-bottom: calc(1rem * var(--font-scale));
-            background-color: rgba(0, 0, 0, 0.1);
-            border-radius: calc(0.5rem * var(--font-scale));
+            padding: calc(0.75rem * var(--font-scale));
             display: flex;
             flex-direction: column; /* Messages stack vertically */
         }
@@ -674,2288 +368,650 @@
 
         .chat-input-field {
             flex-grow: 1;
-            background-color: rgba(255, 255, 255, 0.2);
-            border: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.4);
-            color: white;
-            padding: calc(0.75rem * var(--font-scale));
+            background-color: rgba(255, 255, 255, 0.1);
+            border: calc(1px * var(--font-scale)) solid rgba(255, 255, 255, 0.3);
             border-radius: calc(0.5rem * var(--font-scale));
-            outline: none;
-            font-family: 'Inter', sans-serif;
-            resize: none; /* Prevent manual resizing */
-            min-height: calc(40px * var(--font-scale)); /* Ensure a minimum height */
-            height: auto; /* Allow height to adjust based on content */
-            font-size: calc(1rem * var(--font-scale));
-        }
-
-        .chat-input-field::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+            color: white;
+            padding: calc(0.5rem * var(--font-scale)) calc(0.75rem * var(--font-scale));
         }
 
         .chat-send-button {
-            background-color: #8A2BE2;
+            background-color: #333;
             color: white;
-            padding: calc(0.75rem * var(--font-scale)) calc(1.5rem * var(--font-scale));
+            border: none;
             border-radius: calc(0.5rem * var(--font-scale));
-            font-weight: bold;
+            padding: calc(0.5rem * var(--font-scale)) calc(1rem * var(--font-scale));
             cursor: pointer;
-            transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Add box-shadow transition */
-            flex-shrink: 0; /* Prevent button from shrinking */
-            font-size: calc(1rem * var(--font-scale));
+            transition: background-color 0.3s ease;
         }
+
         .chat-send-button:hover {
-            background-color: #9370DB;
-            box-shadow: 0 0 calc(10px * var(--font-scale)) rgba(147, 112, 219, 0.7); /* Purple glow on hover */
-        }
-        .chat-send-button svg {
-            width: calc(24px * var(--font-scale));
-            height: calc(24px * var(--font-scale));
+            background-color: #666;
         }
 
-        /* Individual message styling */
-        
-.message-item {
-    background-color: transparent;
-    margin-bottom: calc(0.5rem * var(--font-scale));
-    max-width: 70%;
-    font-size: calc(1rem * var(--font-scale));
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-.message-item.sent {
-    align-self: flex-end;
-    align-items: flex-end;
-}
-.message-item .bubble {
-    background-color: rgba(255, 255, 255, 0.15);
-    padding: calc(0.6rem * var(--font-scale)) calc(0.8rem * var(--font-scale));
-    border-radius: calc(0.8rem * var(--font-scale));
-    word-wrap: break-word;
-}
-.message-item.sent .bubble {
-    background-color: rgba(138, 43, 226, 0.3);
-}
-.message-timestamp {
-    font-size: calc(0.75rem * var(--font-scale));
-    color: rgba(255, 255, 255, 0.7);
-    margin-top: calc(0.2rem * var(--font-scale));
-    display: block;
-}
-
-
-        .message-timestamp {
-            font-size: calc(0.75rem * var(--font-scale)); /* Smaller font for timestamp */
-            color: rgba(255, 255, 255, 0.7); /* Slightly dimmed color */
-            margin-top: calc(0.2rem * var(--font-scale));
-            display: block; /* Ensure it's on its own line */
-        }
-
-        .close-chat-button {
-            background-color: #DC2626; /* Red color for close */
-            color: white;
-            padding: calc(0.75rem * var(--font-scale)) calc(1.5rem * var(--font-scale));
-            border-radius: calc(0.5rem * var(--font-scale));
-            font-weight: bold;
-            transition: background-color 0.3s ease-in-out;
-            margin-top: calc(1rem * var(--font-scale)); /* Space from chat input */
-            align-self: center; /* Center the button */
-            font-size: calc(1rem * var(--font-scale));
-        }
-
-        .close-chat-button:hover {
-            background-color: #B91C1C;
-        }
-
-        /* New Chat Overlay for "Chat with Admin" */
-        .chat-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000; /* Above all other content */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-        }
-
-        .chat-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .chat-overlay-content {
-            background-color: rgba(255, 255, 255, 0.15); /* Translucent white */
-            backdrop-filter: blur(8px);
-            padding: calc(2rem * var(--font-scale));
-            border-radius: calc(1rem * var(--font-scale));
-            box-shadow: 0 calc(8px * var(--font-scale)) calc(16px * var(--font-scale)) rgba(0, 0, 0, 0.3);
-            text-align: center;
-            color: white;
-            font-family: 'Poppins', sans-serif;
+        .message-item {
             display: flex;
             flex-direction: column;
-            gap: calc(1rem * var(--font-scale));
-            width: 90%;
-            max-width: calc(400px * var(--font-scale));
+            margin-bottom: calc(0.5rem * var(--font-scale));
+        }
+        .message-item.sent {
+            align-items: flex-end;
+        }
+        .message-item.received {
+            align-items: flex-start;
+        }
+        .bubble {
+            padding: calc(0.5rem * var(--font-scale)) calc(0.75rem * var(--font-scale));
+            border-radius: calc(1rem * var(--font-scale));
+            max-width: 80%;
+        }
+        .message-timestamp {
+            font-size: calc(0.7rem * var(--font-scale));
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: calc(0.25rem * var(--font-scale));
         }
 
-        /* Big Animated Chat Button */
-        .big-chat-button-container {
-            position: fixed;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1500; /* Below overlays, above main content */
-            transition: all 1s ease-in-out; /* Smooth transition for size and position */
-            opacity: 1;
-        }
-
-        .big-chat-button-initial {
-            top: 0;
-            left: 0;
-            width: 100vw;
-            min-height: 100vh; width: 100vw;
-            font-size: calc(5rem * var(--font-scale)); /* Very large text */
-            background-color: #8A2BE2; /* Purple background */
-            border-radius: 0; /* No rounded corners initially */
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 1;
-        }
-
-        .big-chat-button-final {
-            top: calc(1.5rem * var(--font-scale)); /* Target top for nav bar */
-            right: calc(1.5rem * var(--font-scale)); /* Target right for nav bar */
-            width: calc(120px * var(--font-scale)); /* Approximate width of nav button */
-            height: calc(40px * var(--font-scale)); /* Approximate height of nav button */
-            font-size: calc(1rem * var(--font-scale)); /* Normal font size */
-            background-color: #8A2BE2;
-            border-radius: calc(0.5rem * var(--font-scale)); /* Normal rounded corners */
-            opacity: 1;
-            transform: translate(0, 0) scale(1); /* Ensure no residual transform */
-        }
-
-        /* Green Glow for userChatButton */
-        @keyframes greenGlow {
-            0%, 100% {
-                box-shadow: 0 0 calc(5px * var(--font-scale)) rgba(144, 238, 144, 0.5), /* Light green glow */
-                            0 0 calc(10px * var(--font-scale)) rgba(144, 238, 144, 0.3);
-            }
-            50% {
-                box-shadow: 0 0 calc(10px * var(--font-scale)) rgba(144, 238, 144, 0.8),
-                            0 0 calc(20px * var(--font-scale)) rgba(144, 238, 144, 0.6);
-            }
-        }
-
-        .green-glow {
-            animation: greenGlow 2s infinite alternate; /* Apply blinking green glow */
-        }
-
-        /* Powered by text styling */
-        .powered-by-text {
-            color: rgba(255, 255, 255, 0.7); /* Slightly dimmed white */
+        .error-message {
+            color: #ccc; /* Slightly dimmed white */
             font-size: calc(0.875rem * var(--font-scale)); /* Small font size */
             font-family: 'Poppins', sans-serif;
             margin-top: calc(1rem * var(--font-scale)); /* Space from elements above */
             text-align: center;
         }
 
-        /* Responsive padding for main content areas */
-        #mainContent {
-            padding: calc(1.5rem * var(--font-scale)); /* Default padding for smaller screens */
-            transition: box-shadow 0.3s ease-in-out; /* Add transition for hover effect */
-        }
-        #mainContent:hover {
-            box-shadow: 0 0 calc(20px * var(--font-scale)) rgba(147, 112, 219, 0.7); /* Purple glow on hover */
-        }
-
-        /* Main content area for Executor/Input Fields */
-        .main-content-area {
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            padding: calc(2rem * var(--font-scale));
-            border-radius: calc(1rem * var(--font-scale));
-            box-shadow: 0 calc(4px * var(--font-scale)) calc(10px * var(--font-scale)) rgba(0, 0, 0, 0.3);
-            width: 90%;
-            max-width: calc(600px * var(--font-scale));
-            margin-top: calc(2rem * var(--font-scale));
-            margin-bottom: calc(2rem * var(--font-scale));
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: box-shadow 0.3s ease-in-out;
-        }
-        .main-content-area:hover {
-            box-shadow: 0 0 calc(20px * var(--font-scale)) rgba(147, 112, 219, 0.7);
-        }
-
-        @media (min-width: 640px) { /* Tailwind's sm breakpoint */
-            #mainContent, #adminPanelContent, #chatPageContent {
-                padding: calc(2rem * var(--font-scale)); /* Restore larger padding for larger screens */
-            }
-        }
-
-        /* Floating animation for the tutorial button */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        .animate-float {
-            animation: float 2s ease-in-out infinite;
-        }
-
-        /* Chat Greeting Box */
-        .chat-greeting-box {
-            background-color: rgba(0, 0, 0, 0.5); /* Dark translucent background */
-            color: white;
-            padding: calc(0.75rem * var(--font-scale)) calc(1.25rem * var(--font-scale));
-            border-radius: calc(0.75rem * var(--font-scale));
-            margin-bottom: calc(1rem * var(--font-scale));
-            text-align: center;
-            font-family: 'Poppins', sans-serif;
-            font-size: calc(1rem * var(--font-scale));
-            width: 100%; /* Take full width of chat container */
-            box-shadow: 0 calc(2px * var(--font-scale)) calc(5px * var(--font-scale)) rgba(0, 0, 0, 0.3);
-            cursor: pointer; /* Indicate it's clickable */
-            display: none; /* Hidden by default, shown on input focus */
-        }
-
-        /* New overlay for "Account Accepted" message */
-        #accountAcceptedOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* New Gallery Section Styles */
+        #gallery-section {
+            padding: calc(4rem * var(--font-scale)) 0;
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8); /* Darker overlay */
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            z-index: 4000; /* Higher than other overlays */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
-        }
-
-        #accountAcceptedOverlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        #accountAcceptedText {
             color: white;
-            font-family: 'Montserrat', sans-serif;
-            font-size: calc(2.5rem * var(--font-scale)); /* Large text */
-            font-weight: bold;
+            font-family: 'Poppins', sans-serif;
             text-align: center;
-            text-shadow: 0 0 calc(15px * var(--font-scale)) rgba(255, 255, 255, 0.8);
+            background-color: rgba(0, 0, 0, 0.3);
         }
 
-        /* Styles for animating the userChatButton */
-        .user-chat-button-animating {
-            transition: all 1s ease-in-out; /* Smooth transition for all properties */
-            position: fixed !important; /* Override other positioning */
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) scale(3) !important; /* Start large and centered */
-            font-size: calc(2.5rem * var(--font-scale)) !important; /* Large font size */
-            opacity: 1 !important;
-            z-index: 4001; /* Above the account accepted overlay */
-            width: auto !important; /* Allow content to dictate width */
-            height: auto !important; /* Allow content to dictate height */
-            padding: calc(1rem * var(--font-scale)) calc(2rem * var(--font-scale)) !important; /* Larger padding for the big state */
-        }
-
-        /* Scripts button style */
-        #scriptsButton {
-            background-color: #4CAF50; /* Green color for scripts */
-            color: white;
-            padding: calc(0.5rem * var(--font-scale)) calc(1rem * var(--font-scale));
-            border-radius: calc(0.5rem * var(--font-scale));
+        .gallery-title {
+            font-size: calc(2rem * var(--font-scale));
             font-weight: bold;
-            transition: background-color 0.3s ease-in-out;
-            font-size: calc(1rem * var(--font-scale));
+            margin-bottom: calc(2rem * var(--font-scale));
         }
 
-        #scriptsButton:hover {
-            background-color: #45a049;
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(calc(250px * var(--font-scale)), 1fr));
+            gap: calc(1.5rem * var(--font-scale));
+            padding: 0 calc(2rem * var(--font-scale));
+            max-width: 1200px;
+            width: 100%;
         }
+
+        .gallery-item {
+            display: flex;
+            flex-direction: column;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: calc(0.5rem * var(--font-scale));
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: calc(150px * var(--font-scale));
+            object-fit: cover;
+            filter: grayscale(100%);
+        }
+
+        .gallery-description {
+            padding: calc(1rem * var(--font-scale));
+        }
+
+        .gallery-description h3 {
+            font-size: calc(1.2rem * var(--font-scale));
+            font-weight: bold;
+            margin-bottom: calc(0.5rem * var(--font-scale));
+        }
+
     </style>
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<style>
-    html, body {
-        overflow-x: hidden;
-    }
-</style>
-
 </head>
-<body>
-    <div class="nova-text text-4xl font-bold p-4 rounded-lg">
-        Unit Nova Bots <span id="altAccountDisplay" class="text-xl text-gray-300 font-normal ml-2"></span>
+<body class="bg-black text-white flex flex-col items-center min-h-screen relative overflow-x-hidden">
+    <div class="stars-container"></div>
+
+    <div class="header-container">
+        <div class="flex items-center gap-4">
+            <img src="https://i.imgur.com/X32FKR9.jpg" alt="Logo" class="logo">
+            <div class="nova-text">
+                Unit Nova Bots
+                <span id="altAccountDisplay" class="translucent-box-text"></span>
+            </div>
+        </div>
+        <div class="nav-buttons-container">
+            <a href="#login-section" class="nav-button glow">Login</a>
+            <a href="#gallery-section" class="nav-button glow">Gallery</a>
+        </div>
     </div>
-
-    <div class="nav-buttons-container">
-        <button class="nav-button" id="mainButton">Main</button>
-        <button class="nav-button" id="adminButton">Admin</button>
-        <button class="nav-button hidden" id="userChatButton">Chat</button> </div>
-
-    
-<audio autoplay loop id="bgMusic">
-    <source src="https://cdn.pixabay.com/audio/2022/10/13/audio_d5a56c2d7e.mp3" type="audio/mpeg">
-</audio>
-
-<div class="stars-container" id="starsContainer"></div>
-
-<canvas id="explosionCanvas" style="position:fixed;pointer-events:none;top:0;left:0;width:100%;height:100%;z-index:999;"></canvas>
-<audio id="clickSound">
-    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c6a7da2525.mp3" type="audio/mpeg">
-</audio>
-<audio id="sendMessageSound">
-    <source src="https://cdn.pixabay.com/audio/2022/03/10/audio_b2089f2d01.mp3" type="audio/mpeg">
-</audio>
-
-    <div class="relative w-screen min-h-screen flex items-center justify-center p-4">
-        <!-- Main Content Area -->
-        <div id="mainContent" class="main-content-area flex-col items-center justify-center space-y-4">
-            <p class="text-white text-lg text-center translucent-box-text">Welcome to Unit Nova</p>
-
-            <button class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out button-text" onclick="window.open('https://www.roblox.com/createaccount', '_blank');">
-                Create an Alt account
-            </button>
-
-            <!-- Alt Account Input Fields (initially visible, hidden after submission/acceptance) -->
-            <div id="altAccountInputFields" class="flex flex-col items-center w-full max-w-xs space-y-6">
-                <!-- Username Input Group -->
-                <div class="flex flex-col items-center w-full">
-                    <div class="input-group">
-                        <input type="text" id="altUsername" placeholder="Alt Username" class="input-field">
-                        <button class="clear-input-button" data-target="altUsername">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                        </div>
-                    <span id="usernameError" class="error-message"></span>
-                </div>
-
-                <!-- Password Input Group -->
-                <div class="flex flex-col items-center w-full">
-                    <div class="input-group">
-                        <input type="password" id="altPassword" placeholder="Alt Password" class="input-field">
-                        <button class="clear-input-button" data-target="altPassword">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                        <span class="password-toggle" id="togglePassword">
-                            <!-- Eye icons are managed by JS to show/hide -->
-                            <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 hidden">
-                                <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-                                <path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12 3.75c4.972 0 9.189 3.226 10.677 7.697a1.125 1.125 0 0 1 0 .898C21.189 17.024 16.972 20.25 12 20.25c-4.972 0-9.189-3.226-10.677-7.697a1.125 1.125 0 0 1 0-.898Z" clip-rule="evenodd" />
-                            </svg>
-                            <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                                <path d="m11.69 11.69 3.01-3.01m-2.25 2.25 2.25 2.25M3.636 11.447A9.955 9.955 0 0 1 12 5.25c4.46 0 8.204 2.478 9.756 7.447M10.5 12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm-3.75 0a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM12 15.75c-1.727 0-3.424-.102-5.07-.294m5.07.294v2.25A2.25 2.25 0 0 1 9.75 20.25v-2.625c-1.668.078-3.321.21-4.946.39M12 15.75c1.727 0 3.424-.102 5.07-.294m-5.07.294v2.25c1.115 0 2.199-.199 3.25-.55M12 12c-1.727 0-3.424-.102-5.07-.294m5.07.294c.175.02.35.04.524.058m-5.07-.294c-.175.02-.35.04-.524.058M14.25 12a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0ZM12 12c.175.02.35.04.524.058m-5.07-.294c.175.02.35.04-.524.058M12 15.75c-1.727 0-3.424-.102-5.07-.294m5.07.294v2.25A2.25 2.25 0 0 1 9.75 20.25v-2.625c-1.668.078-3.321.21-4.946.39M12 15.75c1.727 0 3.424-.102 5.07-.294m-5.07.294v2.25c1.115 0 2.199-.199 3.25-.55M12 12c-1.727 0-3.424-.102-5.07-.294m5.07.294c.175.02.35.04.524.058m-5.07-.294c-.175.02-.35.04-.524.058" />
-                            </svg>
-                        </span>
-                    </div>
-                    <span id="passwordError" class="error-message"></span>
-                </div>
-
-                <!-- New Email Input Field -->
-                <div class="flex flex-col items-center w-full" id="emailInputGroup">
-                    <div class="input-group">
-                        <input type="email" id="altEmail" placeholder="Your Email" class="input-field">
-                        <button class="clear-input-button" data-target="altEmail">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                    </div>
-                    <span id="emailError" class="error-message"></span>
-                </div>
-            </div>
-
-            <button id="submitButton" class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out button-text submit-button-glow">
-                Submit
-            </button>
-
-            <!-- New Executer: Delta Section (Initially hidden, shown on account acceptance) -->
-            <div id="executorSection" class="flex flex-col items-center w-full max-w-xs space-y-4 hidden">
-                <h2 class="text-white text-2xl font-bold font-['Montserrat']">Executer: Delta</h2>
-                <textarea id="scriptInput" placeholder="loadstringexample" class="input-field w-full h-32"></textarea>
-                <button id="sendScriptButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out button-text">
-                    Send Script
-                </button>
-            </div>
-
-            <p class="powered-by-text">Powered by Roblox Bots</p>
-            <button id="scriptsButton" class="scripts-button hidden mt-4">Scripts</button> <!-- New Scripts Button -->
-        </div>
-
-        <div id="adminPanelContent" class="admin-panel-content hidden">
-            <h1 class="text-5xl font-bold mb-4">Admin Panel</h1>
-            <button id="robloxLoginButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out button-text mb-4">
-                Go to Roblox Login
-            </button>
-
-            <div class="accounts-section">
-                <h2>Submitted Alt Accounts</h2>
-                <div id="submittedAccountsList">
-                    <p class="text-gray-400" id="noSubmittedAccountsMessage">No submitted accounts yet.</p>
-                </div>
-            </div>
-
-            <div class="accounts-section mt-8">
-                <h2>Accepted Alt Accounts</h2>
-                <div id="acceptedAccountsList">
-                    <p class="text-gray-400" id="noAcceptedAccountsMessage">No accepted accounts yet.</p>
-                </div>
-            </div>
-            
-            <button id="logoutAdminButton" class="logout-button">Logout Admin</button>
-        </div>
-
-        <div id="chatPageContent" class="chat-page-content hidden">
-            <h1 class="chat-header" id="chatHeader"></h1>
-            
-            <div id="chatGreetingBox" class="chat-greeting-box">
-                Hello! Can you turn on the bot now?
-            </div>
-
-            <div class="chat-messages-container" id="chatMessagesContainer">
-                <p class="text-gray-400 text-center">No messages yet. Start chatting!</p>
-            </div>
-
-            <div class="chat-input-container">
-                <textarea id="chatInput" placeholder="Type your message..." class="chat-input-field" rows="1"></textarea>
-                <button id="sendButton" class="chat-send-button flex items-center justify-center">
-                    <!-- Paper Airplane Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                        <path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.599 60.599 0 0 0 18.445-8.852.75.75 0 0 0 0-1.218A60.599 60.599 0 0 0 3.478 2.405Z" />
+    <div class="flex-grow flex flex-col justify-center items-center w-full mt-24">
+    <div id="login-section" class="p-8 rounded-xl shadow-lg w-11/12 md:w-1/2 lg:w-1/3 mt-20" style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px);">
+        <h2 class="text-3xl font-bold text-center mb-6">User/Admin Login</h2>
+        <div class="space-y-4">
+            <div class="input-group relative">
+                <input type="text" id="usernameInput" placeholder="Enter Username" class="input-field" oninput="this.value = this.value.replace(/[^a-zA-Z0-9_]/g, '');">
+                <button type="button" id="clearUsername" class="clear-input-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
-                <p id="chatIdDisplay" class="text-white mt-2 text-sm text-center"></p> <!-- Added as per user's request -->
             </div>
-            <button id="closeChatButton" class="close-chat-button">Close</button> </div>
-    </div>
-
-    <div id="chatWithAdminOverlay" class="chat-overlay">
-        <div class="chat-overlay-content">
-            <p class="message-text">Chat with Admin</p>
-            <button id="chatWithAdminOverlayOkayButton" class="close-button">Okay</button>
-        </div>
-    </div>
-
-    <div id="adminPasswordModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 class="text-xl font-bold">Admin Access</h3>
-            <input type="password" id="adminPasswordInput" placeholder="Enter Admin Password" class="modal-input">
-            <span id="adminPasswordError" class="modal-error hidden">Incorrect password.</span>
-            <div class="flex justify-center space-x-4">
-                <button id="confirmAdminPassword" class="modal-button">Confirm</button>
-                <button id="cancelAdminPassword" class="modal-button bg-gray-600 hover:bg-gray-700">Cancel</button>
+            <div class="input-group relative">
+                <input type="password" id="passwordInput" placeholder="Enter Password" class="input-field">
+                <button type="button" id="togglePassword" class="password-toggle absolute right-20">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.575 3.01 9.963 7.822.039.194.039.403 0 .597C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.575-3.01-9.963-7.822z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+                <button type="button" id="clearPassword" class="clear-input-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="error-message" class="error-message hidden"></div>
+            <div class="flex items-center justify-between">
+                <button id="loginButton" class="bg-gray-800 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700 transition-colors w-full submit-button-glow">Login</button>
             </div>
         </div>
     </div>
 
-    <div id="customMessageOverlay" class="custom-message-overlay">
-        <div class="custom-message-content">
-            <p id="customMessageText" class="message-text"></p>
-            <button id="customMessageCloseButton" class="close-button">Close</button>
-        </div>
-    </div>
-
-    <!-- Overlay for Account Decision -->
-    <div id="accountDecisionOverlay" class="custom-message-overlay">
-      <div class="custom-message-content">
-        <p id="accountDecisionText" class="message-text"></p>
-        <button id="accountDecisionOkay" class="close-button">Okay</button>
-      </div>
-    </div>
-
-    <!-- Notification Bubble -->
-    <div id="notificationBubble" style="position: fixed; top: 1rem; right: 1rem; background: rgba(0,0,0,0.7); color: white; padding: 1rem 1.5rem; border-radius: 0.75rem; display: none; z-index: 9999; font-family: Poppins, sans-serif; font-weight: bold;"></div>
-
-    <!-- New Tutorial Button -->
-    <button id="watchTutorialButton" class="fixed bottom-4 left-4 bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out button-text shadow-lg transform hover:scale-105 animate-float z-50">
-        Watch Tutorial
-    </button>
-
-    <!-- Account Accepted Animation Overlay -->
-    <div id="accountAcceptedOverlay">
-        <p id="accountAcceptedText" class="hidden">Your account was accepted, Discuss with Admin!</p>
-    </div>
-
-    <!-- Roblox Info Button -->
-    <button id="robloxInfoButton" class="fixed bottom-4 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out button-text shadow-lg transform hover:scale-105 animate-float z-50">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" class="w-6 h-6 inline-block mr-2">
-            <!-- Roblox Logo SVG (simplified) -->
-            <path d="M490.5 401.9c-10.7-32-37.5-56.8-71.1-66.2-12.9-3.6-26.6-5.4-40.3-5.4H132.8c-13.7 0-27.4 1.8-40.3 5.4-33.6 9.4-60.4 34.2-71.1 66.2C10.7 433.9 0 464.3 0 496.2v15.8c0 2.2 1.8 4 4 4h504c2.2 0 4-1.8 4-4v-15.8c0-31.9-10.7-62.3-31.5-94.3zM448 192c0-88.4-71.6-160-160-160S128 103.6 128 192s71.6 160 160 160 160-71.6 160-160zM288 288c-53 0-96-43-96-96s43-96 96-96 96 43 96 96-43 96-96 96z"/>
-        </svg>
-        Roblox Info
-    </button>
-
-    <!-- Roblox Info Overlay -->
-    <div id="robloxInfoOverlay" class="custom-message-overlay">
-        <div class="custom-message-content">
-            <p id="robloxInfoText" class="message-text">
-                Unit Nova is a bot Maker and lets you make the bot do anything for you like jump there jump here walk over there if thats safe.
-            </p>
-            <button id="robloxInfoCloseButton" class="close-button">Okay</button>
-        </div>
-    </div>
-
-    <!-- Scripts Overlay -->
-    <div id="scriptsOverlay" class="custom-message-overlay">
-        <div class="custom-message-content">
-            <h3 class="text-xl font-bold mb-4">Your Sent Scripts</h3>
-            <div id="userSentScriptsList" class="flex flex-col gap-2 overflow-y-auto max-h-96 w-full">
-                <p class="text-gray-400 text-center">No scripts sent yet.</p>
+    <div id="adminPanel" class="hidden p-8 rounded-xl shadow-lg mt-8 w-11/12 md:w-2/3 lg:w-1/2" style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px);">
+        <h2 class="text-3xl font-bold text-center mb-6">Admin Panel</h2>
+        <div class="admin-panel-content">
+            <h3 class="text-xl font-bold">User Scripts</h3>
+            <div id="userSentScriptsList"></div>
+            <div class="chat-section">
+                <h3 class="text-xl font-bold mb-4">Chat with Bots</h3>
+                <div id="chat-container" class="chat-container mb-4"></div>
+                <div class="chat-input-container">
+                    <input type="text" id="chat-input" class="chat-input-field" placeholder="Type your message...">
+                    <button id="chat-send-button" class="chat-send-button">Send</button>
+                </div>
             </div>
-            <button id="closeScriptsOverlayButton" class="close-button mt-4">Close</button>
+            <div class="new-admin-functions">
+                <h3 class="text-xl font-bold">New Admin Functions</h3>
+                <p>This is a placeholder for new backend-less admin features.</p>
+                </div>
+        </div>
+        <button id="logoutButton" class="bg-gray-800 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700 transition-colors mt-6 w-full">Logout</button>
+    </div>
+
+    <div id="gallery-section">
+        <h2 class="gallery-title">Our Work in Action</h2>
+        <div id="gallery-grid" class="gallery-grid">
+            </div>
+    </div>
+    </div>
+
+    <div id="custom-message-overlay" class="custom-message-overlay">
+        <div class="custom-message-content">
+            <div class="message-text" id="custom-message-text"></div>
+            <button id="custom-message-close" class="close-button">Close</button>
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        // This script provides all the client-side functionality for the Unit Nova Bots website.
+// It handles UI interactions, a simulated chat, a dynamic photo gallery, and an animated starfield background.
+// All features are implemented without a backend, relying on client-side storage and logic.
 
-<script type="module">
-// Firebase Imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
-import { getDatabase, ref, push, onChildAdded, onValue, set, remove, get } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js"; // Added 'get'
+// --- Theme Management with localStorage ---
+const currentTheme = localStorage.getItem('theme') || 'dark';
 
-// Firebase Configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDEXPa2hL26ramq26kOObputL0ocyijQ9s",
-  authDomain: "chat-n-account-app.firebaseapp.com",
-  projectId: "chat-n-account-app",
-  storageBucket: "chat-n-account-app.firebaseostorage.app",
-  messagingSenderId: "285075561198",
-  appId: "1:285075561198:web:d3faabc7a8191d43d4b1ff",
-  measurementId: "G-MW7D8Z16MT"
-};
-
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app); // Initialize analytics
-const db = getDatabase(app); // Initialize Realtime Database
-
-// EmailJS Configuration
-// IMPORTANT: Replace with your actual EmailJS Service ID, Template ID, and Public Key
-const EMAILJS_SERVICE_ID = 'service_k6qwu7a'; // Your existing Service ID
-const EMAILJS_ADMIN_NOTIFICATION_TEMPLATE_ID = 'template_4d1o4sg'; // Template for admin notification
-// IMPORTANT: Replace 'template_user_acceptance' with the ACTUAL Template ID you get from EmailJS for user acceptance
-const EMAILJS_USER_ACCEPTANCE_TEMPLATE_ID = 'template_ni0afp6'; // User Acceptance Template ID
-const EMAILJS_PUBLIC_KEY = 'ItgGHjYjqfrKu7I7B'; // Your existing Public Key (User ID)
-
-// Global variables for chat functionality
-let currentChatPartnerId = null; 
-let currentUserIsAdmin = false;
-let currentChatListenerUnsubscribe = null; // To store the unsubscribe function for chat messages
-let currentScriptListenerUnsubscribe = {}; // Store unsubscribe functions for script listeners (Admin panel)
-
-// Declare all global variables here to avoid redeclaration errors within DOMContentLoaded
-let altUsernameInput, usernameError, altPasswordInput, passwordError, altEmailInput, emailError, togglePassword, eyeOpenIcon, eyeClosedIcon, submitButton; // Added altEmailInput, emailError
-let mainButton, adminButton, adminPasswordModal, adminPasswordInput, adminPasswordError, confirmAdminPasswordButton, cancelAdminPasswordButton;
-let mainContent, adminPanelContent, chatPageContent, submittedAccountsListDiv, acceptedAccountsListDiv, noSubmittedAccountsMessage, noAcceptedAccountsMessage, logoutAdminButton;
-let customMessageOverlay, customMessageContent, customMessageText, customMessageCloseButton;
-let userChatButton, chatHeader, chatMessagesContainer, chatInput, sendButton, closeChatButton, chatGreetingBox;
-let chatWithAdminOverlay, chatWithAdminOverlayOkayButton;
-let sendMessageSound; // Declare sendMessageSound globally
-
-// New global variables for tutorial button
-let watchTutorialButton;
-let robloxLoginButton; // New Roblox Login Button
-
-// New global variables for account accepted animation
-let accountAcceptedOverlay, accountAcceptedText;
-
-// Particle effect variables
-let canvas, ctx;
-let particles = [];
-let clickSound; // Declared globally
-
-// New Roblox Info elements
-let robloxInfoButton, robloxInfoOverlay, robloxInfoCloseButton;
-let altAccountDisplay; // Declare altAccountDisplay globally
-let altAccountInputFields; // New variable for the input fields container
-
-// Script Executor elements
-let executorSection, scriptInput, sendScriptButton;
-
-// Scripts Overlay elements
-let scriptsButton, scriptsOverlay, userSentScriptsList, closeScriptsOverlayButton;
-
-// Starfield variables
-const NUM_STARS = 150; // Number of stars in the background
-let stars = [];
-let starsContainer;
-
-// Star object definition
-function Star(element, speed) {
-    this.element = element;
-    this.x = Math.random() * window.innerWidth;
-    this.y = Math.random() * window.innerHeight;
-    this.size = Math.random() * 2 + 1; // Size between 1px and 3px
-    this.speed = speed; // Speed of horizontal movement
-    this.blinkCounter = Math.random() * 100; // Counter for blinking effect
-    this.originalOpacity = Math.random() * 0.7 + 0.3; // Base opacity between 0.3 and 1.0
-
-    this.element.style.width = `${this.size}px`;
-    this.element.style.height = `${this.size}px`;
-    this.element.style.left = `${this.x}px`;
-    this.element.style.top = `${this.y}px`;
-    this.element.style.opacity = this.originalOpacity;
+if (currentTheme === 'light') {
+    document.body.classList.add('light-theme');
 }
 
-Star.prototype.update = function() {
-    this.x -= this.speed; // Move left
-
-    // If star moves off-screen, reset its position to the right
-    if (this.x < -this.size) {
-        this.x = window.innerWidth + this.size;
-        this.y = Math.random() * window.innerHeight; // Randomize Y for new appearance
-        this.size = Math.random() * 2 + 1; // Randomize size
-        this.speed = Math.random() * 0.5 + 0.2; // Randomize speed
-        this.originalOpacity = Math.random() * 0.7 + 0.3; // Randomize opacity
-        this.blinkCounter = Math.random() * 100; // Reset blink counter
-        this.element.style.width = `${this.size}px`;
-        this.element.style.height = `${this.size}px`;
-    }
-
-    // Apply blinking effect (subtle opacity change)
-    this.blinkCounter += 0.05;
-    this.element.style.opacity = this.originalOpacity * (0.8 + Math.sin(this.blinkCounter) * 0.2);
-
-
-    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
-};
-
-// Animation loop for stars
-function animateStars() {
-    stars.forEach(star => star.update());
-    requestAnimationFrame(animateStars);
-}
-
-// Function to initialize stars
-function initializeStars() {
-    starsContainer = document.getElementById('starsContainer');
-    if (!starsContainer) {
-        console.error("Stars container not found.");
-        return;
-    }
-    for (let i = 0; i < NUM_STARS; i++) {
-        const starElement = document.createElement('div');
-        starElement.classList.add('star');
-        starsContainer.appendChild(starElement);
-        stars.push(new Star(starElement, Math.random() * 0.5 + 0.2)); // Random speed between 0.2 and 0.7
-    }
-    animateStars(); // Start the star animation
-}
-
-
-// Function to get the storage key for the current chat
-const getChatStorageKey = () => {
-    if (currentUserIsAdmin) {
-        // Admin is chatting with a specific user, format as CH########
-        return `chats/CH${currentChatPartnerId.replace(/\D/g, '').padStart(8, '0')}`;
-    } else {
-        // User is chatting with admin, format as CH######## based on user's ID
-        const id = localStorage.getItem('currentUserAltId') || '';
-        return `chats/CH${id.replace(/\D/g, '').padStart(8, '0')}`;
-    }
-};
-
-// Function to load and display messages from Firebase
-function displayMessages() {
-    if (!chatMessagesContainer) return;
-
-    // Detach previous listener if it exists
-    if (currentChatListenerUnsubscribe) {
-        currentChatListenerUnsubscribe();
-        currentChatListenerUnsubscribe = null;
-    }
-
-    chatMessagesContainer.innerHTML = ''; // Clear previous messages
-    const chatKey = getChatStorageKey();
-    document.getElementById('chatIdDisplay').textContent = `Chat ID: ${chatKey.split('/')[1]}`;
-
-    const chatRef = ref(db, chatKey);
-
-    // Use onValue to get the entire chat history and listen for any changes
-    // This listener will fire initially with all existing data, and then again whenever data changes.
-    currentChatListenerUnsubscribe = onValue(chatRef, (snapshot) => {
-        chatMessagesContainer.innerHTML = ''; // Clear messages before re-rendering everything
-        const messages = snapshot.val();
-        if (messages) {
-            // Convert messages object to an array and sort by timestamp
-            const messageList = Object.values(messages).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-            messageList.forEach(msg => {
-                const messageItem = document.createElement('div');
-                messageItem.classList.add('message-item');
-
-                // Logging for debugging chat display
-                console.log(`Message: ${msg.message}, Sender: ${msg.sender}, CurrentUserIsAdmin: ${currentUserIsAdmin}`);
-
-                if ((currentUserIsAdmin && msg.sender === 'admin') || (!currentUserIsAdmin && msg.sender === 'user')) {
-                    messageItem.classList.add('sent');
-                    console.log("-> Marked as SENT");
-                    messageItem.innerHTML = `
-                        <div class="bubble" style="background-color:#3B82F6; color:white;">${msg.message}</div>
-                        <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
-                    `;
-                } else {
-                    messageItem.classList.add('received');
-                    console.log("-> Marked as RECEIVED");
-                    messageItem.innerHTML = `
-                        <div class="bubble" style="background-color:white; color:black;">${msg.message}</div>
-                        <span class="message-timestamp">(${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(msg.timestamp).toLocaleDateString()})</span>
-                    `;
-                }
-                chatMessagesContainer.appendChild(messageItem);
-            });
-        } else {
-            // If no messages, show the "No messages yet" text
-            const noMessagesText = document.createElement('p');
-            noMessagesText.classList.add('text-gray-400', 'text-center');
-            noMessagesText.textContent = "No messages yet. Start chatting!";
-            chatMessagesContainer.appendChild(noMessagesText);
-        }
-        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
-    }, (error) => {
-        console.error("Firebase: Error fetching chat messages:", error);
-    });
-}
-
-// Function to send a message
-function sendMessage() {
-    if (!chatInput) {
-        console.error("Chat input not found.");
-        return;
-    }
-    const messageText = chatInput.value.trim();
-    if (messageText === '') return; // Don't send empty messages
-
-    const chatKey = getChatStorageKey();
-    const senderRole = currentUserIsAdmin ? 'admin' : 'user';
-    const newMessage = {
-        sender: senderRole,
-        message: messageText,
-        timestamp: new Date().toISOString()
-    };
-    
-    const chatRef = ref(db, chatKey); // Get Firebase reference for the specific chat key
-    push(chatRef, newMessage); // Push the new message to Firebase Realtime Database
-
-    chatInput.value = ''; // Clear input field
-
-    // Play send message sound
-    if (sendMessageSound) {
-        sendMessageSound.currentTime = 0;
-        sendMessageSound.play();
-    }
-}
-
-// Function to send a script
-function sendScript() {
-    if (!scriptInput) {
-        console.error("Script input not found.");
-        return;
-    }
-    const scriptContent = scriptInput.value.trim();
-    if (scriptContent === '') return; // Don't send empty scripts
-
-    const currentUserAltId = localStorage.getItem('currentUserAltId');
-    if (!currentUserAltId) {
-        showCustomOverlayMessage("Error: No alt account found to send script from.", true);
-        return;
-    }
-
-    const scriptData = {
-        script: scriptContent,
-        timestamp: new Date().toISOString()
-    };
-
-    // Store scripts under acceptedAccounts/{userId}/scripts
-    const scriptsRef = ref(db, `acceptedAccounts/${currentUserAltId}/scripts`);
-    push(scriptsRef, scriptData)
-        .then(() => {
-            showNotification('Script Sent Successfully!');
-            scriptInput.value = 'loadstringexample'; // Reset to example text
-            // Blur the input field to re-trigger placeholder
-            scriptInput.blur();
-        })
-        .catch(error => {
-            console.error("Error sending script:", error);
-            showCustomOverlayMessage(`Error sending script: ${error.message}`, true);
-        });
-}
-
-// Function to display user-submitted scripts for the current user
-function displayUserSentScripts() {
-    if (!userSentScriptsList) return;
-
-    userSentScriptsList.innerHTML = ''; // Clear existing scripts
-    const currentUserAltId = localStorage.getItem('currentUserAltId');
-
-    if (!currentUserAltId) {
-        userSentScriptsList.innerHTML = '<p class="text-gray-400 text-center">No account linked to display scripts.</p>';
-        return;
-    }
-
-    const scriptsRef = ref(db, `acceptedAccounts/${currentUserAltId}/scripts`);
-    onValue(scriptsRef, (snapshot) => {
-        userSentScriptsList.innerHTML = ''; // Clear before re-rendering
-        const scriptsData = snapshot.val();
-        let scripts = [];
-        if (scriptsData) {
-            // Convert the object of scripts into an array, keeping the Firebase key as 'id'
-            scripts = Object.keys(scriptsData).map(key => ({ id: key, ...scriptsData[key] }));
-            scripts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        }
-
-        if (scripts.length > 0) {
-            scripts.forEach(script => {
-                const scriptItem = document.createElement('div');
-                scriptItem.classList.add('user-script-item', 'relative', 'flex', 'flex-col', 'items-start');
-                scriptItem.innerHTML = `
-                    <pre class="script-content w-full">${script.script}</pre>
-                    <button class="remove-script-button text-red-400 hover:text-red-600 underline font-bold absolute bottom-1 right-2" data-script-id="${script.id}">Wrong?</button>
-                    <span class="script-timestamp self-end">${new Date(script.timestamp).toLocaleString()}</span>
-                `;
-                userSentScriptsList.appendChild(scriptItem);
-            });
-            attachUserScriptActionListeners(); // Attach listeners after rendering
-        } else {
-            userSentScriptsList.innerHTML = '<p class="text-gray-400 text-center">No scripts sent yet.</p>';
-        }
-    });
-}
-
-// Attach listeners for user script actions (ONLY REMOVE, NO COPY FOR USER)
-function attachUserScriptActionListeners() {
-    // Removed copy button listener from here.
-    userSentScriptsList.querySelectorAll('.remove-script-button').forEach(button => {
-        button.onclick = (event) => {
-            const scriptId = event.target.dataset.scriptId;
-            removeUserScript(scriptId);
-        };
-    });
-}
-
-// Function to remove a user script from Firebase
-function removeUserScript(scriptId) {
-    const currentUserAltId = localStorage.getItem('currentUserAltId');
-    if (!currentUserAltId) {
-        showCustomOverlayMessage("Error: No account linked to remove script from.", true);
-        return;
-    }
-
-    const scriptToRemoveRef = ref(db, `acceptedAccounts/${currentUserAltId}/scripts/${scriptId}`);
-    remove(scriptToRemoveRef)
-        .then(() => {
-            showNotification('Script removed successfully!');
-            // displayUserSentScripts() will automatically re-render due to onValue listener
-        })
-        .catch(error => {
-            console.error("Error removing script:", error);
-            showCustomOverlayMessage(`Error removing script: ${error.message}`, true);
-        });
-}
-
-
-// Function to load and display accounts from Firebase Realtime Database (for Admin panel)
-function loadAccounts() {
-    console.log("Loading accounts for Admin Panel from Firebase...");
-
-    // Clear previous content
-    if (submittedAccountsListDiv) submittedAccountsListDiv.innerHTML = '';
-    if (acceptedAccountsListDiv) acceptedAccountsListDiv.innerHTML = '';
-
-    // Submitted Accounts Listener
-    const submittedRef = ref(db, 'submittedAccounts');
-    onValue(submittedRef, (snapshot) => {
-        const data = snapshot.val();
-        let submittedAccounts = [];
-        if (data) {
-            submittedAccounts = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-        }
-        console.log("Firebase: Submitted accounts data received:", submittedAccounts); // Added log
-
-        if (submittedAccountsListDiv) {
-            submittedAccountsListDiv.innerHTML = ''; // Clear before re-rendering
-            if (submittedAccounts.length > 0) {
-                if (noSubmittedAccountsMessage) noSubmittedAccountsMessage.classList.add('hidden');
-                submittedAccounts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                submittedAccounts.forEach(account => {
-                    const accountItem = document.createElement('div');
-                    accountItem.classList.add('account-item');
-                    accountItem.innerHTML = `
-                        <div class="account-info">
-                            <p><strong>Username:</strong> ${account.username}</p>
-                            <p><strong>Password:</strong> ${account.password}</p>
-                            <p><strong>Email:</strong> ${account.email || 'N/A'}</p> <!-- Display email -->
-                            <p class="text-sm text-gray-300"><strong>Submitted:</strong> ${new Date(account.timestamp).toLocaleDateString()} ${new Date(account.timestamp).toLocaleTimeString()}</p>
-                        </div>
-                        <div class="account-actions">
-                            <button class="action-button check" data-id="${account.id}" data-username="${account.username}" data-password="${account.password}" data-email="${account.email || ''}" data-timestamp="${account.timestamp}">✓</button>
-                            <button class="action-button remove" data-id="${account.id}">X</button>
-                        </div>
-                    `;
-                    submittedAccountsListDiv.appendChild(accountItem);
-                });
-            } else {
-                if (noSubmittedAccountsMessage) noSubmittedAccountsMessage.classList.remove('hidden');
-            }
-        }
-        // Re-attach event listeners after rendering
-        attachAccountActionListeners();
-    }, (error) => { // Added error callback for onValue
-        console.error("Firebase: Error fetching submitted accounts:", error);
-    });
-
-    // Accepted Accounts Listener
-    const acceptedRef = ref(db, 'acceptedAccounts');
-    onValue(acceptedRef, (snapshot) => {
-        const data = snapshot.val();
-        let acceptedAccounts = [];
-        if (data) {
-            acceptedAccounts = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-        }
-        console.log("Firebase: Accepted accounts data received:", acceptedAccounts); // Added log
-
-        // Before re-rendering accepted accounts, unsubscribe from old script listeners
-        for (const id in currentScriptListenerUnsubscribe) {
-            if (currentScriptListenerUnsubscribe.hasOwnProperty(id)) {
-                currentScriptListenerUnsubscribe[id](); // Call the unsubscribe function
-                delete currentScriptListenerUnsubscribe[id]; // Remove from tracking object
-            }
-        }
-
-
-        if (acceptedAccountsListDiv) {
-            acceptedAccountsListDiv.innerHTML = ''; // Clear before re-rendering
-            if (acceptedAccounts.length > 0) {
-                if (noAcceptedAccountsMessage) noAcceptedAccountsMessage.classList.add('hidden');
-                acceptedAccounts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                acceptedAccounts.forEach(account => {
-                    const accountItem = document.createElement('div');
-                    accountItem.classList.add('account-item');
-                    accountItem.innerHTML = `
-                        <div class="account-info">
-                            <p><strong>Username:</strong> ${account.username}</p>
-                            <p><strong>Password:</strong> ${account.password}</p>
-                            <p><strong>Email:</strong> ${account.email || 'N/A'}</p> <!-- Display email -->
-                            <p class="text-sm text-gray-300"><strong>Accepted:</strong> ${new Date(account.timestamp).toLocaleDateString()} ${new Date(account.timestamp).toLocaleTimeString()}</p>
-                        </div>
-                        <div class="account-actions">
-                            <button class="action-button chat" data-id="${account.id}">Chat</button>
-                            <button class="action-button delete-ui" data-id="${account.id}">Delete UI</button>
-                        </div>
-                        <div class="script-toggle-container" data-id="${account.id}">
-                            Script
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                                <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div id="userScriptsContainer-${account.id}" class="user-scripts-container">
-                            <p class="text-gray-400 text-center">No scripts submitted yet.</p>
-                        </div>
-                    `;
-                    acceptedAccountsListDiv.appendChild(accountItem);
-                });
-            } else {
-                if (noAcceptedAccountsMessage) noAcceptedAccountsMessage.classList.remove('hidden');
-            }
-        }
-        // Re-attach event listeners for chat buttons and script toggles after rendering
-        attachAccountActionListeners();
-    }, (error) => { // Added error callback for onValue
-        console.error("Firebase: Error fetching accepted accounts:", error);
-    });
-}
-
-
-// Helper function to attach event listeners for account actions
-function attachAccountActionListeners() {
-    document.querySelectorAll('.action-button.check').forEach(button => {
-        // Remove existing listener to prevent duplicates
-        button.removeEventListener('click', handleCheckButtonClick);
-        button.addEventListener('click', handleCheckButtonClick);
-    });
-
-    document.querySelectorAll('.action-button.remove').forEach(button => {
-        // Remove existing listener to prevent duplicates
-        button.removeEventListener('click', handleRemoveButtonClick);
-        button.addEventListener('click', handleRemoveButtonClick);
-    });
-
-    document.querySelectorAll('.action-button.chat').forEach(button => {
-        // Remove existing listener to prevent duplicates
-        button.removeEventListener('click', handleChatButtonClick);
-        button.addEventListener('click', handleChatButtonClick);
-    });
-
-    document.querySelectorAll('.action-button.delete-ui').forEach(button => {
-        // Remove existing listener to prevent duplicates
-        button.removeEventListener('click', handleDeleteUIButtonClick);
-        button.addEventListener('click', handleDeleteUIButtonClick);
-    });
-
-    // Attach listeners for script toggles
-    document.querySelectorAll('.script-toggle-container').forEach(toggle => {
-        const accountId = toggle.dataset.id;
-        // Remove previous listener if it exists to avoid duplicates
-        toggle.removeEventListener('click', toggle.__scriptToggleListener); 
-        
-        const listener = () => {
-            const scriptsContainer = document.getElementById(`userScriptsContainer-${accountId}`);
-            if (scriptsContainer) {
-                toggle.classList.toggle('active');
-                scriptsContainer.classList.toggle('active'); // This triggers the CSS transition
-                if (scriptsContainer.classList.contains('active')) {
-                    // This is for Admin panel, now load scripts when toggled open for admin
-                    displayAdminUserScripts(accountId); 
-                } else {
-                    // If closing, unsubscribe from the listener
-                    if (currentScriptListenerUnsubscribe[accountId]) {
-                        currentScriptListenerUnsubscribe[accountId]();
-                        delete currentScriptListenerUnsubscribe[accountId];
-                    }
-                    scriptsContainer.innerHTML = ''; // Clear content when hidden
-                }
-            }
-        };
-        toggle.addEventListener('click', listener);
-        toggle.__scriptToggleListener = listener; // Store reference to the listener
-    });
-}
-
-// New function to display scripts for a *specific user* in the Admin panel
-function displayAdminUserScripts(accountId) {
-    const scriptsContainer = document.getElementById(`userScriptsContainer-${accountId}`);
-    if (!scriptsContainer) {
-        console.error(`Scripts container for account ${accountId} not found in admin panel.`);
-        return;
-    }
-    scriptsContainer.innerHTML = ''; // Clear existing scripts
-
-    // Detach previous listener if it exists for this account to prevent duplicates
-    if (currentScriptListenerUnsubscribe[accountId]) {
-        currentScriptListenerUnsubscribe[accountId]();
-        delete currentScriptListenerUnsubscribe[accountId];
-    }
-
-    const scriptsRef = ref(db, `acceptedAccounts/${accountId}/scripts`);
-    currentScriptListenerUnsubscribe[accountId] = onValue(scriptsRef, (snapshot) => {
-        scriptsContainer.innerHTML = ''; // Clear before re-rendering
-        const scriptsData = snapshot.val();
-        let scripts = [];
-        if (scriptsData) {
-            scripts = Object.keys(scriptsData).map(key => ({ id: key, ...scriptsData[key] }));
-            scripts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        }
-
-        if (scripts.length > 0) {
-            scripts.forEach(script => {
-                const scriptItem = document.createElement('div');
-                scriptItem.classList.add('user-script-item', 'relative', 'flex', 'flex-col', 'items-start');
-                scriptItem.innerHTML = `
-                    <pre class="script-content w-full">${script.script}</pre>
-                    <button class="copy-script-button" data-script-id="${script.id}" title="Copy Script">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                            <path fill-rule="evenodd" d="M11.54 22.351A8.706 8.706 0 0 0 12 22.5c2.757 0 5.341-.659 7.659-1.85a11.54 11.54 0 0 1 2.351-1.35C21.725 19.163 22 18.278 22 17.373V13.5a.75.75 0 0 0-1.5 0v3.873c0 .243-.021.485-.06.721l-1.071 3.214a10.02 10.02 0 0 1-2.457 1.341 8.236 8.236 0 0 1-2.195.405c-1.018 0-1.996-.117-2.924-.347L12 22.5ZM.75 12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5H1.5a.75.75 0 0 1-.75-.75ZM15 12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM.75 12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5H1.5a.75.75 0 0 1-.75-.75ZM15 12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM1.5 13.5a.75.75 0 0 0 0 1.5H3a.75.75 0 0 0 0-1.5H1.5ZM21 10.5a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H21ZM3 10.5a.75.75 0 0 0 0 1.5H4.5a.75.75 0 0 0 0-1.5H3ZM19.5 13.5a.75.75 0 0 0 0 1.5H21a.75.75 0 0 0 0-1.5h-1.5Z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="copy-text">Copy</span>
-                    </button>
-                    <span class="script-timestamp self-end">${new Date(script.timestamp).toLocaleString()}</span>
-                `;
-                scriptsContainer.appendChild(scriptItem);
-            });
-            attachCopyScriptListeners(scriptsContainer); // Attach copy button listeners for admin panel
-        } else {
-            const noScriptsMessage = document.createElement('p');
-            noScriptsMessage.classList.add('text-gray-400', 'text-center');
-            noScriptsMessage.textContent = "No scripts submitted yet.";
-            scriptsContainer.appendChild(noScriptsMessage);
-        }
-    }, (error) => {
-        console.error(`Firebase: Error fetching scripts for account ${accountId}:`, error);
-    });
-}
-
-// Function to attach event listeners for copy script buttons (Admin panel only)
-function attachCopyScriptListeners(container) {
-    container.querySelectorAll('.copy-script-button').forEach(button => {
-        button.removeEventListener('click', handleCopyScriptClick); // Prevent duplicate listeners
-        button.addEventListener('click', handleCopyScriptClick);
-    });
-}
-
-function handleCopyScriptClick(event) {
-    const button = event.target.closest('.copy-script-button'); // Ensure we get the button element
-    const scriptItem = button.closest('.user-script-item');
-    const scriptContentElement = scriptItem.querySelector('.script-content');
-
-    if (scriptContentElement) {
-        const scriptText = scriptContentElement.textContent;
-        // Use document.execCommand for broader compatibility within iframes
-        const textarea = document.createElement('textarea');
-        textarea.value = scriptText;
-        document.body.appendChild(textarea);
-        textarea.select();
-        try {
-            document.execCommand('copy');
-            showNotification('Script copied to clipboard!');
-        } catch (err) {
-            console.error('Failed to copy script:', err);
-            showCustomOverlayMessage('Failed to copy script. Please try manually.', true);
-        }
-        document.body.removeChild(textarea);
-    }
-}
-
-
-function handleCheckButtonClick(event) {
-    const accountId = event.target.dataset.id;
-    const username = event.target.dataset.username;
-    const password = event.target.dataset.password;
-    const email = event.target.dataset.email; // Get email
-    const timestamp = event.target.dataset.timestamp;
-    handleAccountAction(accountId, 'accept', { username, password, email, timestamp }); // Pass email
-}
-
-function handleRemoveButtonClick(event) {
-    const accountId = event.target.dataset.id;
-    handleAccountAction(accountId, 'remove');
-}
-
-function handleChatButtonClick(event) {
-    const userIdToChatWith = event.target.dataset.id;
-    // Force a refresh of chat messages when clicking a chat button
-    currentChatPartnerId = userIdToChatWith; // Set the chat partner ID
-    navigateToPage('chat', userIdToChatWith); // Navigate and trigger displayMessages
-}
-
-function handleDeleteUIButtonClick(event) {
-    const accountId = event.target.dataset.id;
-    // Remove from acceptedAccounts in Firebase
-    remove(ref(db, `acceptedAccounts/${accountId}`))
-        .then(() => {
-            console.log(`Account ${accountId} removed from accepted accounts.`);
-            showNotification(`Account ${accountId} UI deleted.`);
-            // loadAccounts() will be triggered by onValue listeners
-        })
-        .catch(error => {
-            console.error("Error deleting account UI:", error);
-            showCustomOverlayMessage(`Error deleting account UI: ${error.message}`, true);
-        });
-}
-
-
-// Handle account actions (accept or remove)
-async function handleAccountAction(accountId, action, accountData = null) { // Made async
-    if (action === 'accept') {
-        // First, get the full account data from submittedAccounts to ensure we have the email
-        const submittedAccountRef = ref(db, `submittedAccounts/${accountId}`);
-        const submittedAccountSnapshot = await get(submittedAccountRef); // Use 'get' to fetch data once
-        const fullAccountData = submittedAccountSnapshot.val();
-
-        if (!fullAccountData) {
-            console.error(`Account ${accountId} not found in submitted accounts.`);
-            showCustomOverlayMessage(`Error: Account ${accountId} not found for acceptance.`, true);
-            return;
-        }
-
-        // Add logging for email and username being used
-        console.log("Attempting to accept account. Full Account Data:", fullAccountData);
-
-        // Remove from submittedAccounts in Firebase
-        remove(submittedAccountRef)
-            .then(() => {
-                console.log(`Account ${accountId} removed from submitted.`);
-                // Add to acceptedAccounts in Firebase, using the full data including email
-                return set(ref(db, `acceptedAccounts/${accountId}`), fullAccountData);
-            })
-            .then(async () => { // Made this .then() callback async
-                console.log(`Account ${accountId} accepted and moved.`);
-                // Update user notification in localStorage
-                const currentUserAltId = localStorage.getItem('currentUserAltId');
-                if (currentUserAltId === accountId) {
-                    // This sets the flag for the *user* to see the decision on their next load
-                    localStorage.setItem('accountDecisionStatus', 'accepted');
-                }
-                // Show a simple notification to the admin who performed the action
-                showNotification(`Account ${fullAccountData.username} Accepted!`);
-                
-                // Send acceptance email to the user
-                if (fullAccountData.email) {
-                    console.log(`Sending user acceptance email to: ${fullAccountData.email} for user: ${fullAccountData.username}`); // Log before sending EmailJS call
-                    await sendUserAcceptanceEmail(fullAccountData.email, fullAccountData.username);
-                } else {
-                    console.warn(`No email found for user ${fullAccountData.username}, cannot send acceptance email.`);
-                }
-                // loadAccounts() will be triggered by onValue listeners
-            })
-            .catch(error => {
-                console.error("Error accepting account:", error);
-                showCustomOverlayMessage(`Error accepting account: ${error.message}`, true); // This is for admin
-            });
-    } else if (action === 'remove') {
-        // Remove from submittedAccounts in Firebase
-        remove(ref(db, `submittedAccounts/${accountId}`))
-            .then(() => {
-                console.log(`Account ${accountId} removed.`);
-                // Update user notification in localStorage
-                const currentUserAltId = localStorage.getItem('currentUserAltId');
-                if (currentUserAltId === accountId) {
-                    localStorage.setItem('accountDecisionStatus', 'denied');
-                }
-                showNotification(`Account ${accountId} Denied/Removed.`); // This is for admin
-                showCustomOverlayMessage(`Account ${accountId} Denied/Removed!`, true); // This is for admin
-                // loadAccounts() will be triggered by onValue listeners
-            })
-            .catch(error => {
-                console.error("Error removing account:", error);
-                showCustomOverlayMessage(`Error removing account: ${error.message}`, true); // This is for admin
-            });
-    }
-}
-
-// Function to display user-specific messages on the main page
-function displayUserMessages() {
-    // This function is now primarily for handling the "Account Accepted" overlay and animation
-    // when a user logs in and finds their account accepted.
-    const status = localStorage.getItem('accountDecisionStatus');
-    if (status) { // Check if status exists at all
-        localStorage.removeItem('accountDecisionStatus'); // Clear the flag immediately
-        showAccountDecision(status); // Trigger the animation and message
-    }
-}
-
-// Function to update navigation button styles and content visibility
-function navigateToPage(pageName, chatUserId = null) {
-    // Ensure elements are available before trying to access classList
-    if (!mainContent || !adminPanelContent || !chatPageContent || !mainButton || !adminButton || !userChatButton) {
-        console.error("Navigation elements not found. Cannot navigate.");
-        return;
-    }
-
-    mainContent.classList.add('hidden');
-    adminPanelContent.classList.add('hidden');
-    chatPageContent.classList.add('hidden'); // Hide chat page by default
-    scriptsOverlay.classList.remove('show'); // Hide scripts overlay on navigation
-
-    mainButton.classList.remove('hidden', 'glow', 'darken');
-    adminButton.classList.remove('hidden', 'glow', 'darken');
-    userChatButton.classList.remove('hidden', 'glow', 'darken'); // Manage chat button visibility separately
-    
-    // Manage scripts button visibility separately
-    if (scriptsButton) {
-        scriptsButton.classList.add('hidden'); // Hide by default
-    }
-
-    // Detach chat listener when navigating away from chat page
-    if (pageName !== 'chat' && currentChatListenerUnsubscribe) {
-        currentChatListenerUnsubscribe();
-        currentChatListenerUnsubscribe = null;
-    }
-
-    // Ensure the accepted overlay is hidden if navigating away from the animation
-    if (accountAcceptedOverlay) {
-        accountAcceptedOverlay.classList.remove('show');
-        accountAcceptedText.classList.add('hidden');
-    }
-
-
-    if (pageName === 'main') {
-        mainContent.classList.remove('hidden');
-        mainButton.classList.add('hidden');
-        adminButton.classList.add('glow');
-        userChatButton.classList.add('glow'); // userChatButton should always glow when visible
-        if (scriptsButton) {
-            scriptsButton.classList.add('glow'); // Scripts button should also glow on main page
-        }
-    } else if (pageName === 'admin') {
-        currentUserIsAdmin = true; // Ensure admin status is set
-        adminPanelContent.classList.remove('hidden');
-        adminButton.classList.add('hidden');
-        mainButton.classList.add('glow');
-        userChatButton.classList.add('darken'); // userChatButton is dimmed if admin is active
-        if (scriptsButton) {
-            scriptsButton.classList.add('darken'); // Scripts button dimmed if admin is active
-        }
-        loadAccounts(); // Ensure accounts are loaded when navigating to admin
-    } else if (pageName === 'chat') { 
-        chatPageContent.classList.remove('hidden');
-        mainButton.classList.add('hidden'); // Hide Main button when in chat
-        adminButton.classList.add('darken');
-        userChatButton.classList.add('darken'); // Dim chat button if in chat
-        if (scriptsButton) {
-            scriptsButton.classList.add('darken'); // Scripts button dimmed if in chat
-        }
-        
-        // Set chat header based on context
-        if (currentUserIsAdmin) { // If admin is chatting
-            // Fetch username from accepted accounts in Firebase
-            onValue(ref(db, `acceptedAccounts/${chatUserId}`), (snapshot) => {
-                const chatUserAccount = snapshot.val();
-                chatHeader.textContent = `Chatting with ${chatUserAccount ? chatUserAccount.username : 'User'}`;
-            }, { onlyOnce: true }); // Only fetch once
-        } else { // If regular user is chatting
-            chatHeader.textContent = 'Chatting with Admin';
-        }
-        currentChatPartnerId = chatUserId; // Store the ID of the person we are chatting with
-        displayMessages(); // Load and display messages for the current chat
-    }
-    checkAndShowUserChatButton(); // Re-evaluate chat button visibility after navigation
-}
-
-// Function to display a custom message overlay (now with optional callback)
-function showCustomOverlayMessage(message, isError = false, onCloseCallback = null) {
-    if (customMessageText && customMessageContent && customMessageOverlay && customMessageCloseButton) {
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- UI Element References ---
+    const usernameInput = document.getElementById('usernameInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const loginButton = document.getElementById('loginButton');
+    const logoutButton = document.getElementById('logoutButton');
+    const adminPanel = document.getElementById('adminPanel');
+    const loginSection = document.getElementById('login-section');
+    const errorMessage = document.getElementById('error-message');
+    const altAccountDisplay = document.getElementById('altAccountDisplay');
+    const clearUsername = document.getElementById('clearUsername');
+    const clearPassword = document.getElementById('clearPassword');
+    const togglePassword = document.getElementById('togglePassword');
+    const customMessageOverlay = document.getElementById('custom-message-overlay');
+    const customMessageText = document.getElementById('custom-message-text');
+    const customMessageClose = document.getElementById('custom-message-close');
+    const navButtons = document.querySelectorAll('.nav-button');
+    const galleryGrid = document.getElementById('gallery-grid');
+    const userSentScriptsList = document.getElementById('userSentScriptsList');
+    const chatContainer = document.getElementById('chat-container');
+    const chatInput = document.getElementById('chat-input');
+    const chatSendButton = document.getElementById('chat-send-button');
+    const themeToggle = document.getElementById('theme-toggle');
+    const contactForm = document.getElementById('contact-form');
+    const contactFormSection = document.getElementById('contact-us');
+    const scriptSearchInput = document.getElementById('script-search-input');
+    const calculatorSection = document.getElementById('calculator-section');
+    const calculatorDisplay = document.getElementById('calculator-display');
+    const calculatorButtons = document.querySelectorAll('#calculator-buttons button');
+
+    // --- Helper Functions ---
+
+    /**
+     * Shows a custom message overlay with the given text.
+     * @param {string} message The message to display.
+     */
+    const showCustomMessage = (message) => {
         customMessageText.textContent = message;
-        customMessageContent.style.backgroundColor = isError ? 'rgba(220, 38, 38, 0.9)' : 'rgba(76, 175, 80, 0.9)';
         customMessageOverlay.classList.add('show');
+    };
 
-        // Remove any existing listener to prevent multiple calls
-        customMessageCloseButton.removeEventListener('click', customMessageCloseButton.__currentListener);
+    /**
+     * Hides the custom message overlay.
+     */
+    const hideCustomMessage = () => {
+        customMessageOverlay.classList.remove('show');
+    };
 
-        const listener = () => {
-            customMessageOverlay.classList.remove('show');
-            if (onCloseCallback && typeof onCloseCallback === 'function') {
-                onCloseCallback();
-            }
-        };
-        customMessageCloseButton.addEventListener('click', listener);
-        customMessageCloseButton.__currentListener = listener; // Store reference to the current listener
-    }
-}
+    // --- Login and UI State Management ---
 
-// Function to show the "Chat with Admin" specific overlay
-function showChatWithAdminOverlay(onCloseCallback = null) {
-    if (chatWithAdminOverlay && chatWithAdminOverlayOkayButton) {
-        chatWithAdminOverlay.classList.add('show');
-        chatWithAdminOverlayOkayButton.removeEventListener('click', chatWithAdminOverlayOkayButton.__currentListener);
-
-        const listener = () => {
-            chatWithAdminOverlay.classList.remove('show');
-            if (onCloseCallback && typeof onCloseCallback === 'function') {
-                onCloseCallback();
-            }
-        };
-        chatWithAdminOverlayOkayButton.addEventListener('click', listener);
-        chatWithAdminOverlayOkayButton.__currentListener = listener;
-    }
-}
-
-// Function to animate the big chat button
-function animateChatButton() {
-    if (!userChatButton) {
-        console.error("userChatButton not found for animation.");
-        return;
-    }
-
-    // Ensure the button is visible before animating
-    userChatButton.classList.remove('hidden');
-    userChatButton.classList.remove('green-glow'); // Remove any existing glow
-
-    // Store the final position and size of the userChatButton
-    // Get the current computed style to ensure accurate final dimensions
-    const computedStyle = window.getComputedStyle(userChatButton);
-    const finalWidth = parseFloat(computedStyle.width);
-    const finalHeight = parseFloat(computedStyle.height);
-    const finalTop = userChatButton.offsetTop;
-    const finalLeft = userChatButton.offsetLeft;
-
-
-    // Set initial state for animation (large, centered)
-    userChatButton.classList.add('user-chat-button-animating');
-    userChatButton.style.top = `${window.innerHeight / 2}px`;
-    userChatButton.style.left = `${window.innerWidth / 2}px`;
-    userChatButton.style.width = 'auto'; // Allow content to dictate width in initial state
-    userChatButton.style.height = 'auto'; // Allow content to dictate height in initial state
-
-
-    // Force reflow to ensure initial styles are applied before transition
-    userChatButton.offsetWidth;
-
-    // Set final state for animation (normal size, target position)
-    userChatButton.style.top = `${finalTop}px`;
-    userChatButton.style.left = `${finalLeft}px`;
-    userChatButton.style.width = `${finalWidth}px`;
-    userChatButton.style.height = `${finalHeight}px`;
-    userChatButton.style.fontSize = `calc(1rem * var(--font-scale))`; // Normal font size
-    userChatButton.style.transform = 'translate(0, 0) scale(1)'; // Normal scale
-
-    // Listen for the end of the transition
-    userChatButton.addEventListener('transitionend', function handler() {
-        userChatButton.classList.remove('user-chat-button-animating');
-        userChatButton.classList.add('green-glow'); // Re-apply glow after animation
-        userChatButton.removeEventListener('transitionend', handler); // Remove listener
-    }, { once: true }); // Ensure listener is removed after it fires
-}
-
-
-// Check if the user's chat button should be shown
-function checkAndShowUserChatButton() {
-    const currentUserAltId = localStorage.getItem('currentUserAltId');
-    // Fetch accepted accounts from Firebase to check if current user's account is accepted
-    onValue(ref(db, 'acceptedAccounts'), (snapshot) => {
-        const acceptedAccountsData = snapshot.val();
-        let isAccepted = false;
-        if (acceptedAccountsData && currentUserAltId) {
-            isAccepted = !!acceptedAccountsData[currentUserAltId];
+    /**
+     * Toggles the UI state between login and admin panel.
+     * @param {boolean} isLoggedIn - True to show admin panel, false to show login.
+     */
+    const toggleUI = (isLoggedIn) => {
+        if (isLoggedIn) {
+            loginSection.classList.add('hidden');
+            adminPanel.classList.remove('hidden');
+            altAccountDisplay.textContent = usernameInput.value;
+            localStorage.setItem('loggedInUser', usernameInput.value);
+            // On successful login, check for existing chat and scripts
+            loadScripts();
+            loadChatMessages();
+        } else {
+            loginSection.classList.remove('hidden');
+            adminPanel.classList.add('hidden');
+            altAccountDisplay.textContent = '';
+            localStorage.removeItem('loggedInUser');
         }
-
-        if (userChatButton) {
-            if (currentUserAltId && isAccepted && !currentUserIsAdmin) { // Show only if user submitted, accepted, and not currently an.
-                userChatButton.classList.remove('hidden');
+        // Update nav buttons based on login state
+        navButtons.forEach(button => {
+            if (isLoggedIn) {
+                button.classList.add('hidden');
             } else {
-                userChatButton.classList.add('hidden');
-            }
-        }
-        // Also manage visibility of the Scripts button here
-        if (scriptsButton) {
-            // Show scripts button if any alt account is linked (submitted or accepted)
-            // AND not currently an admin
-            const submittedRef = ref(db, `submittedAccounts/${currentUserAltId}`);
-            get(submittedRef).then(submittedSnapshot => { // Use get for one-time fetch
-                const isSubmitted = submittedSnapshot.exists();
-                if (currentUserAltId && (isAccepted || isSubmitted) && !currentUserIsAdmin) { 
-                    scriptsButton.classList.remove('hidden');
-                    scriptsButton.classList.add('glow'); // Add glow to scripts button
-                } else {
-                    scriptsButton.classList.add('hidden');
-                    scriptsButton.classList.remove('glow'); // Remove glow if hidden
-                }
-            }).catch(error => {
-                console.error("Error checking submitted account for scripts button:", error);
-                scriptsButton.classList.add('hidden'); // Hide if error
-            });
-        }
-    }, { onlyOnce: true }); // Only fetch once for accepted status
-}
-
-// Functions for particle effects
-function resizeCanvas() {
-    if (canvas) {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-}
-
-function createExplosion(x, y, color) {
-    for (let i = 0; i < 20; i++) {
-        particles.push(new Particle(x, y, color));
-    }
-}
-
-function Particle(x, y, color) {
-    this.x = x;
-    this.y = y;
-    this.color = color;
-    this.radius = Math.random() * 2 + 1;
-    this.velocity = {
-        x: (Math.random() - 0.5) * 5,
-        y: (Math.random() - 0.5) * 5
-    };
-    this.alpha = 1;
-    this.friction = 0.99; // Added friction
-}
-
-Particle.prototype.draw = function() {
-    if (ctx) {
-        ctx.save();
-        ctx.globalAlpha = this.alpha;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-        ctx.restore();
-    }
-};
-
-Particle.prototype.update = function() {
-    this.velocity.x *= this.friction; // Apply friction
-    this.velocity.y *= this.friction; // Apply friction
-    this.x += this.velocity.x;
-    this.y += this.velocity.y;
-    this.alpha -= 0.02;
-};
-
-function drawParticles() {
-    if (ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let i = particles.length - 1; i >= 0; i--) {
-            const p = particles[i];
-            p.update();
-            p.draw();
-            if (p.alpha <= 0.1) {
-                particles.splice(i, 1);
-            }
-        }
-    }
-    requestAnimationFrame(drawParticles);
-}
-
-
-// Functions for notifications and account decisions (made globally accessible)
-function showNotification(message, duration = 3000) {
-    const bubble = document.getElementById('notificationBubble');
-    if (bubble) {
-        bubble.textContent = message;
-        bubble.style.display = 'block';
-        setTimeout(() => {
-            bubble.style.display = 'none';
-        }, duration);
-    }
-}
-
-// Show account decision overlay to user
-function showAccountDecision(status) {
-    console.log("showAccountDecision called with status:", status);
-    const overlay = document.getElementById('accountDecisionOverlay');
-    const text = document.getElementById('accountDecisionText');
-    const button = document.getElementById('accountDecisionOkay');
-    const accountAcceptedOverlay = document.getElementById('accountAcceptedOverlay'); // Ensure this is also fetched here
-    const accountAcceptedText = document.getElementById('accountAcceptedText'); // And this
-
-    if (!overlay || !text || !button || !accountAcceptedOverlay || !accountAcceptedText) {
-        console.error("One or more elements for account decision overlay not found.");
-        return;
-    }
-
-    // Ensure the animation overlay is hidden initially when any decision overlay is shown
-    accountAcceptedOverlay.classList.remove('show');
-    accountAcceptedText.classList.add('hidden');
-
-    if (status === "accepted") {
-        text.textContent = "Your account was Accepted!";
-        overlay.classList.add('show'); // Show the generic decision overlay
-        console.log("accountDecisionOverlay should now be visible.");
-        
-        button.onclick = () => {
-            console.log("Okay button clicked on accountDecisionOverlay.");
-            overlay.classList.remove('show'); // Hide generic decision overlay
-
-            // Now, after the user clicks "Okay" on the initial message,
-            // show the "Discuss with Admin!" animation and text.
-            if (accountAcceptedOverlay && accountAcceptedText) {
-                accountAcceptedOverlay.classList.add('show');
-                accountAcceptedText.classList.remove('hidden');
-                animateChatButton(); // Trigger the chat button animation
-                console.log("accountAcceptedOverlay should now be visible and animating.");
-
-                // Optional: Hide the accountAcceptedOverlay after a few seconds
-                setTimeout(() => {
-                    console.log("Hiding accountAcceptedOverlay after timeout.");
-                    accountAcceptedOverlay.classList.remove('show');
-                    accountAcceptedText.classList.add('hidden');
-                }, 5000); // Hide after 5 seconds
-            }
-            // Do NOT navigate to chat here. The user will click the animated chat button.
-        };
-    } else {
-        text.textContent = "Your account was Denied or Removed.";
-        button.onclick = () => {
-            console.log("Okay button clicked on denied/removed overlay.");
-            overlay.classList.remove('show');
-        };
-    }
-
-    overlay.classList.add('show'); // Ensure this is called outside the if/else for both cases
-}
-
-// Function to send email notification to admin via EmailJS
-async function sendAdminNotificationEmail(username, accountId) {
-    const templateParams = {
-        username: username,
-        accountId: accountId,
-    };
-
-    try {
-        const response = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_ADMIN_NOTIFICATION_TEMPLATE_ID, templateParams);
-        console.log('Admin notification email sent successfully!', response.status, response.text);
-    }
-    catch (error) {
-        console.error('Failed to send admin notification email:', error);
-    }
-}
-
-// Function to send email to the user upon account acceptance via EmailJS
-async function sendUserAcceptanceEmail(recipientEmail, username) {
-    const templateParams = {
-        to_email: recipientEmail, // This variable name must match your EmailJS user acceptance template's 'To' field
-        username: username,
-        status: 'accepted' // Or 'denied' if you create a denial template
-    };
-
-    console.log('Attempting to send user acceptance email with params:', templateParams); // New logging
-    console.log('EmailJS Service ID:', EMAILJS_SERVICE_ID);
-    console.log('EmailJS User Acceptance Template ID:', EMAILJS_USER_ACCEPTANCE_TEMPLATE_ID);
-    console.log('EmailJS Public Key:', EMAILJS_PUBLIC_KEY);
-
-
-    try {
-        const response = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_USER_ACCEPTANCE_TEMPLATE_ID, templateParams);
-        console.log('User acceptance email sent successfully!', response.status, response.text);
-    } catch (error) {
-        console.error('Failed to send user acceptance email:', error);
-    }
-}
-
-
-window.addEventListener('DOMContentLoaded', () => {
-    // Initialize EmailJS with your Public Key (User ID)
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-
-    // Assign elements to globally declared variables
-    altUsernameInput = document.getElementById('altUsername');
-    usernameError = document.getElementById('usernameError');
-    altPasswordInput = document.getElementById('altPassword');
-    passwordError = document.getElementById('passwordError');
-    altEmailInput = document.getElementById('altEmail'); // Get the new email input
-    emailError = document.getElementById('emailError'); // Get the new email error span
-    togglePassword = document.getElementById('togglePassword');
-    eyeOpenIcon = document.getElementById('eyeOpen');
-    eyeClosedIcon = document.getElementById('eyeClosed');
-    submitButton = document.getElementById('submitButton');
-    altAccountInputFields = document.getElementById('altAccountInputFields'); // Get the new input fields container
-
-    mainButton = document.getElementById('mainButton');
-    adminButton = document.getElementById('adminButton');
-    adminPasswordModal = document.getElementById('adminPasswordModal');
-    adminPasswordInput = document.getElementById('adminPasswordInput');
-    adminPasswordError = document.getElementById('adminPasswordError');
-    confirmAdminPasswordButton = document.getElementById('confirmAdminPassword');
-    cancelAdminPasswordButton = document.getElementById('cancelAdminPassword');
-    const ADMIN_PASSWORD = "AdMIn321"; // The required admin password
-
-    mainContent = document.getElementById('mainContent');
-    adminPanelContent = document.getElementById('adminPanelContent');
-    chatPageContent = document.getElementById('chatPageContent'); 
-    submittedAccountsListDiv = document.getElementById('submittedAccountsList');
-    acceptedAccountsListDiv = document.getElementById('acceptedAccountsList');
-    noSubmittedAccountsMessage = document.getElementById('noSubmittedAccountsMessage');
-    noAcceptedAccountsMessage = document.getElementById('noAcceptedAccountsMessage');
-    logoutAdminButton = document.getElementById('logoutAdminButton'); 
-
-    customMessageOverlay = document.getElementById('customMessageOverlay');
-    customMessageContent = document.getElementById('customMessageContent'); 
-    customMessageText = document.getElementById('customMessageText');
-    customMessageCloseButton = document.getElementById('customMessageCloseButton');
-
-    userChatButton = document.getElementById('userChatButton');
-    chatHeader = document.getElementById('chatHeader');
-    chatMessagesContainer = document.getElementById('chatMessagesContainer'); 
-    chatInput = document.getElementById('chatInput');
-    sendButton = document.getElementById('sendButton');
-    closeChatButton = document.getElementById('closeChatButton'); 
-    chatGreetingBox = document.getElementById('chatGreetingBox'); // Get chat greeting box
-
-    chatWithAdminOverlay = document.getElementById('chatWithAdminOverlay');
-    chatWithAdminOverlayOkayButton = document.getElementById('chatWithAdminOverlayOkayButton');
-
-    sendMessageSound = document.getElementById('sendMessageSound'); // Get the send message sound element
-
-    // New tutorial button element
-    watchTutorialButton = document.getElementById('watchTutorialButton');
-    // New Roblox Login Button
-    robloxLoginButton = document.getElementById('robloxLoginButton');
-
-    // Account accepted animation elements
-    accountAcceptedOverlay = document.getElementById('accountAcceptedOverlay');
-    accountAcceptedText = document.getElementById('accountAcceptedText');
-
-    // Roblox Info elements
-    robloxInfoButton = document.getElementById('robloxInfoButton');
-    robloxInfoOverlay = document.getElementById('robloxInfoOverlay');
-    robloxInfoCloseButton = document.getElementById('robloxInfoCloseButton'); // Fixed: Changed 'document->getElementById' to 'document.getElementById'
-    altAccountDisplay = document.getElementById('altAccountDisplay');
-
-    // Script Executor elements
-    executorSection = document.getElementById('executorSection');
-    scriptInput = document.getElementById('scriptInput');
-    sendScriptButton = document.getElementById('sendScriptButton');
-
-    // Scripts Overlay elements
-    scriptsButton = document.getElementById('scriptsButton');
-    scriptsOverlay = document.getElementById('scriptsOverlay');
-    userSentScriptsList = document.getElementById('userSentScriptsList');
-    closeScriptsOverlayButton = document.getElementById('closeScriptsOverlayButton');
-
-
-    // Particle effect initialization
-    canvas = document.getElementById("explosionCanvas");
-    if (canvas) {
-        ctx = canvas.getContext("2d");
-        resizeCanvas(); // Initial resize
-        window.addEventListener("resize", resizeCanvas); // Listen for window resize
-        drawParticles(); // Start the animation loop
-    } else {
-        console.error("Explosion canvas not found.");
-    }
-
-    // Button click sound initialization
-    clickSound = document.getElementById("clickSound");
-    document.querySelectorAll("button").forEach(button => {
-        button.addEventListener("click", e => {
-            const rect = button.getBoundingClientRect();
-            const x = rect.left + rect.width / 2;
-            const y = rect.top + rect.height / 2;
-            const bgColor = getComputedStyle(button).backgroundColor;
-            createExplosion(x, y, bgColor);
-            if (clickSound) {
-                clickSound.currentTime = 0;
-                clickSound.play();
+                button.classList.remove('hidden');
             }
         });
+    };
+
+    /**
+     * Handles the login process.
+     */
+    loginButton.addEventListener('click', () => {
+        const username = usernameInput.value;
+        const password = passwordInput.value;
+
+        if (username === 'admin' && password === 'admin') {
+            toggleUI(true);
+            errorMessage.classList.add('hidden');
+        } else {
+            errorMessage.textContent = 'Invalid username or password.';
+            errorMessage.classList.remove('hidden');
+        }
     });
 
+    /**
+     * Handles the logout process.
+     */
+    logoutButton.addEventListener('click', () => {
+        toggleUI(false);
+        usernameInput.value = '';
+        passwordInput.value = '';
+        errorMessage.classList.add('hidden');
+    });
 
-    // --- Debugging: Log retrieved elements ---
-    console.log("Elements retrieved on DOMContentLoaded:");
-    console.log("altUsernameInput:", altUsernameInput);
-    console.log("altPasswordInput:", altPasswordInput);
-    console.log("altEmailInput:", altEmailInput); // Log new email input
-    console.log("togglePassword:", togglePassword);
-    console.log("eyeOpenIcon:", eyeOpenIcon);
-    console.log("eyeClosedIcon:", eyeClosedIcon);
-    console.log("submitButton:", submitButton);
-    console.log("mainButton:", mainButton);
-    console.log("adminButton:", adminButton);
-    console.log("userChatButton:", userChatButton); 
-    console.log("chatPageContent:", chatPageContent); 
-    console.log("closeChatButton:", closeChatButton); 
-    console.log("chatWithAdminOverlay:", chatWithAdminOverlay); 
-    console.log("chatWithAdminOverlayOkayButton:", chatWithAdminOverlayOkayButton); 
-    console.log("sendMessageSound:", sendMessageSound);
-    console.log("watchTutorialButton:", watchTutorialButton);
-    console.log("robloxLoginButton:", robloxLoginButton);
-    console.log("chatGreetingBox:", chatGreetingBox);
-    console.log("accountAcceptedOverlay:", accountAcceptedOverlay);
-    console.log("accountAcceptedText:", accountAcceptedText);
-    console.log("robloxInfoButton:", robloxInfoButton);
-    console.log("robloxInfoOverlay:", robloxInfoOverlay);
-    console.log("robloxInfoCloseButton:", robloxInfoCloseButton);
-    console.log("altAccountDisplay:", altAccountDisplay);
-    console.log("altAccountInputFields:", altAccountInputFields); // Log new input fields container
-    console.log("executorSection:", executorSection); // Log new executor section
-    console.log("scriptInput:", scriptInput); // Log new script input
-    console.log("sendScriptButton:", sendScriptButton); // Log new send script button
-    console.log("scriptsButton:", scriptsButton); // Log new scripts button
-    console.log("scriptsOverlay:", scriptsOverlay); // Log new scripts overlay
-    console.log("userSentScriptsList:", userSentScriptsList); // Log new user sent scripts list
-    console.log("closeScriptsOverlayButton:", closeScriptsOverlayButton); // Log new close scripts overlay button
-    // --- End Debugging ---
+    // Check for a logged-in user on page load
+    const storedUser = localStorage.getItem('loggedInUser');
+    if (storedUser) {
+        usernameInput.value = storedUser;
+        toggleUI(true);
+    }
 
-    // Function to handle clear button click
-    const setupClearButton = (inputElement, clearButtonElement) => {
-        if (inputElement && clearButtonElement) {
-            const toggleClearButtonVisibility = () => {
-                if (inputElement.value.length > 0) {
-                    clearButtonElement.style.display = 'flex'; // Show clear button
-                } else {
-                    clearButtonElement.style.display = 'none'; // Hide clear button
-                }
-            };
+    // --- Input Field Utilities (Clear and Password Toggle) ---
 
-            inputElement.addEventListener('input', toggleClearButtonVisibility);
-            clearButtonElement.addEventListener('click', () => {
-                inputElement.value = '';
-                toggleClearButtonVisibility(); // Hide after clearing
-                updateSubmitButtonState(); // Re-validate button state
-            });
-            // Initial check in case the input field is pre-filled
-            toggleClearButtonVisibility();
-        }
+    // Show/hide clear button on input
+    const setupClearButton = (input, button) => {
+        input.addEventListener('input', () => {
+            button.style.display = input.value ? 'flex' : 'none';
+        });
+        button.addEventListener('click', () => {
+            input.value = '';
+            input.dispatchEvent(new Event('input')); // Trigger input event
+        });
     };
-
-    // Function to validate input for spaces and minimum length
-    const validateInput = (inputElement, errorElement, fieldName, minLength = 2) => { // Added minLength parameter
-        let isValid = true;
-        if (errorElement) {
-            errorElement.style.display = 'none'; // Hide previous error
-        }
-        const inputValue = inputElement.value.trim();
-
-        if (inputValue.includes(' ')) {
-            if (errorElement) {
-                errorElement.textContent = `Invalid ${fieldName} - no spaces allowed`;
-                errorElement.style.display = 'block';
-            }
-            isValid = false;
-        } else if (inputValue.length > 0 && inputValue.length < minLength) { // Use minLength
-            if (errorElement) {
-                errorElement.textContent = `${fieldName} must be at least ${minLength} characters`;
-                errorElement.style.display = 'block';
-            }
-            isValid = false;
-        }
-        return isValid;
-    };
-
-    // Function to validate email format
-    const validateEmail = (inputElement, errorElement) => {
-        let isValid = true;
-        if (errorElement) {
-            errorElement.style.display = 'none';
-        }
-        const emailValue = inputElement.value.trim();
-        // Basic regex for email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
-
-        if (emailValue.length > 0 && !emailRegex.test(emailValue)) {
-            if (errorElement) {
-                errorElement.textContent = 'Invalid email format';
-                errorElement.style.display = 'block';
-            }
-            isValid = false;
-        } else if (emailValue.length === 0) { // Email cannot be empty
-            if (errorElement) {
-                errorElement.textContent = 'Email cannot be empty';
-                errorElement.style.display = 'block';
-            }
-            isValid = false;
-        }
-        return isValid;
-    };
-
-    // Function to update the visibility of the submit button
-    const updateSubmitButtonState = () => {
-        // Only check if input fields are visible
-        if (altAccountInputFields && altAccountInputFields.classList.contains('hidden')) {
-            submitButton.classList.add('hidden');
-            return;
-        }
-
-        // Updated minLength for username and password to 8
-        const isUsernameValid = altUsernameInput && validateInput(altUsernameInput, usernameError, 'Username', 8);
-        const isPasswordValid = altPasswordInput && validateInput(altPasswordInput, passwordError, 'Password', 8);
-        const isEmailValid = altEmailInput && validateEmail(altEmailInput, emailError); // Validate email
-
-        if (submitButton) {
-            if (isUsernameValid && isPasswordValid && isEmailValid) { // All three must be valid
-                submitButton.classList.remove('hidden');
-            } else {
-                submitButton.classList.add('hidden');
-            }
-        }
-    };
-
-    // Add event listeners to input fields for real-time validation and button state update
-    if (altUsernameInput && usernameError) {
-        altUsernameInput.addEventListener('input', () => {
-            validateInput(altUsernameInput, usernameError, 'Username', 8); // Pass 8 as minLength
-            updateSubmitButtonState();
-        });
-    }
-
-    if (altPasswordInput && passwordError) {
-        altPasswordInput.addEventListener('input', () => {
-            validateInput(altPasswordInput, passwordError, 'Password', 8); // Pass 8 as minLength
-            updateSubmitButtonState();
-        });
-    }
-
-    if (altEmailInput && emailError) { // Add event listener for email input
-        altEmailInput.addEventListener('input', () => {
-            validateEmail(altEmailInput, emailError);
-            updateSubmitButtonState();
-        });
-    }
-
-    // Setup clear buttons
-    setupClearButton(altUsernameInput, document.querySelector('[data-target="altUsername"]'));
-    setupClearButton(altPasswordInput, document.querySelector('[data-target="altPassword"]'));
-    setupClearButton(altEmailInput, document.querySelector('[data-target="altEmail"]'));
-
-
-    // Submit button click handler
-    if (submitButton && altUsernameInput && altPasswordInput && altEmailInput) { // Include altEmailInput
-        submitButton.addEventListener('click', async () => { // Made async to await email sending
-            const isUsernameValid = validateInput(altUsernameInput, usernameError, 'Username', 8); // Re-validate with 8
-            const isPasswordValid = validateInput(altPasswordInput, passwordError, 'Password', 8); // Re-validate with 8
-            const isEmailValid = validateEmail(altEmailInput, emailError); // Validate email
-
-            if (isUsernameValid && isPasswordValid && isEmailValid) { // All three must be valid
-                const newAccount = {
-                    username: altUsernameInput.value.trim(), // Store trimmed value
-                    password: altPasswordInput.value.trim(), // Store trimmed value
-                    email: altEmailInput.value.trim(), // Store trimmed email
-                    timestamp: new Date().toISOString()
-                };
-                
-                // Push to Firebase Realtime Database
-                const newAccountRef = push(ref(db, 'submittedAccounts'), newAccount);
-                const firebaseId = newAccountRef.key;
-                
-                localStorage.setItem('currentUserAltId', firebaseId); // Store the Firebase-generated ID
-                console.log("Submitting account to Firebase:", newAccount); // Debug log
-
-                showCustomOverlayMessage('Account Submitted');
-
-                // Send admin notification email using EmailJS
-                await sendAdminNotificationEmail(newAccount.username, firebaseId);
-
-                altUsernameInput.value = '';
-                altPasswordInput.value = '';
-                altEmailInput.value = ''; // Clear email input
-                altPasswordInput.setAttribute('type', 'password');
-                if (eyeOpenIcon && eyeClosedIcon) {
-                    eyeOpenIcon.classList.add('hidden');
-                    eyeClosedIcon.classList.remove('hidden');
-                }
-
-                // Hide the input fields and submit button after successful submission
-                if (altAccountInputFields) {
-                    altAccountInputFields.classList.add('hidden');
-                }
-                submitButton.classList.add('hidden'); // Hide submit button as well
-
-                updateSubmitButtonState(); // Re-evaluate state after hiding
-                checkAndShowUserChatButton(); // Check chat button visibility after submission
-                updateAltAccountDisplay(); // Update alt account display immediately after submission
-            }
-        });
-    }
-
-    // Admin button click handler
-    if (adminButton && adminPasswordInput && adminPasswordError && adminPasswordModal) {
-        adminButton.addEventListener('click', () => {
-            if (localStorage.getItem('isAdminLoggedIn') === 'true') {
-                currentUserIsAdmin = true; // Mark as admin
-                navigateToPage('admin');
-            } else {
-                adminPasswordInput.value = '';
-                adminPasswordError.classList.add('hidden');
-                adminPasswordModal.classList.add('show');
-                adminPasswordInput.focus();
-            }
-        });
-    }
-
-    // Confirm Admin Password button handler
-    if (confirmAdminPasswordButton && adminPasswordInput && adminPasswordError && adminPasswordModal) {
-        confirmAdminPasswordButton.addEventListener('click', () => {
-            if (adminPasswordInput.value === ADMIN_PASSWORD) {
-                localStorage.setItem('isAdminLoggedIn', 'true');
-                currentUserIsAdmin = true; // Mark as admin
-                adminPasswordModal.classList.remove('show');
-                navigateToPage('admin');
-            } else {
-                adminPasswordError.classList.remove('hidden');
-            }
-        });
-    }
-
-    // Cancel Admin Password button handler
-    if (cancelAdminPasswordButton && adminPasswordModal) {
-        cancelAdminPasswordButton.addEventListener('click', () => {
-            adminPasswordModal.classList.remove('show');
-        });
-    }
-
-    // Logout Admin button handler
-    if (logoutAdminButton) {
-        logoutAdminButton.addEventListener('click', () => {
-            localStorage.removeItem('isAdminLoggedIn');
-            currentUserIsAdmin = false; // Unmark as admin
-            showCustomOverlayMessage('Admin session logged out.');
-            navigateToPage('main');
-        });
-    }
+    setupClearButton(usernameInput, clearUsername);
+    setupClearButton(passwordInput, clearPassword);
 
     // Toggle password visibility
-    if (togglePassword && altPasswordInput && eyeOpenIcon && eyeClosedIcon) {
-        togglePassword.addEventListener('click', () => {
-            const type = altPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            altPasswordInput.setAttribute('type', type);
+    togglePassword.addEventListener('click', () => {
+        const isVisible = passwordInput.type === 'text';
+        passwordInput.type = isVisible ? 'password' : 'text';
+        togglePassword.innerHTML = isVisible ?
+            `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.575 3.01 9.963 7.822.039.194.039.403 0 .597C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.575-3.01-9.963-7.822z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>` :
+            `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.988 5.076A9.324 9.324 0 003 12c0 1.626.347 3.178.966 4.6l-2.9 2.92a.75.75 0 001.06 1.06l2.9-2.92A9.324 9.324 0 0012 21a9.324 9.324 0 008.012-4.924l2.92-2.9a.75.75 0 00-1.06-1.06l-2.92 2.9A9.324 9.324 0 0012 3a9.324 9.324 0 00-8.012 4.924l-2.92-2.9A.75.75 0 002.92 5.076z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>`;
+    });
 
-            if (type === 'text') {
-                eyeOpenIcon.classList.remove('hidden');
-                eyeClosedIcon.classList.add('hidden');
-            } else {
-                eyeOpenIcon.classList.add('hidden');
-                eyeClosedIcon.classList.remove('hidden');
-            }
-        });
+    // --- Custom Message Box Logic ---
+    customMessageClose.addEventListener('click', hideCustomMessage);
 
-        // Set initial state of eye icons based on default password type
-        if (altPasswordInput.getAttribute('type') === 'password') {
-            eyeOpenIcon.classList.add('hidden'); // Hide open eye
-            eyeClosedIcon.classList.remove('hidden'); // Show closed eye
-        } else {
-            eyeOpenIcon.classList.remove('hidden'); // Show open eye
-            eyeClosedIcon.classList.add('hidden'); // Hide closed eye
-        }
-    }
+    // --- Admin Panel - User Scripts and Chat (Backend-less) ---
 
-    // Event listener for the Main button
-    if (mainButton) {
-        mainButton.addEventListener('click', () => {
-            currentUserIsAdmin = false; // Ensure admin status is reset when going to main
-            navigateToPage('main');
-        });
-    }
+    // Simulated user scripts data (in a real app, this would be from a database)
+    const scriptsData = [
+        { id: 1, name: 'Script 1: Auto-moderation', content: 'This script automatically deletes spam messages.', status: 'Active' },
+        { id: 2, name: 'Script 2: Welcome message bot', content: 'Sends a welcome message to new users in the server.', status: 'Active' },
+        { id: 3, name: 'Script 3: Custom commands', content: 'Adds custom commands for users to interact with.', status: 'Inactive' },
+        { id: 4, name: 'Script 4: Moderation log', content: 'Logs all moderation actions to a private channel.', status: 'Active' },
+        { id: 5, name: 'Script 5: API Integration', content: 'Integrates with an external API to fetch data.', status: 'Inactive' },
+        { id: 6, name: 'Script 6: Role Management', content: 'Manages user roles and permissions automatically.', status: 'Active' },
+    ];
 
-    // Event listener for the User Chat button
-    if (userChatButton) {
-        userChatButton.addEventListener('click', () => {
-            userChatButton.classList.remove('green-glow'); // Remove glow when clicked
-            currentChatPartnerId = 'admin'; // Explicitly set chat partner to admin for user
-            navigateToPage('chat', 'admin'); 
-        });
-    }
+    /**
+     * Loads and displays the simulated user scripts.
+     * Includes new filtering functionality.
+     */
+    const loadScripts = (filter = '') => {
+        userSentScriptsList.innerHTML = '';
+        const filteredScripts = scriptsData.filter(script =>
+            script.name.toLowerCase().includes(filter.toLowerCase()) ||
+            script.content.toLowerCase().includes(filter.toLowerCase())
+        );
 
-    // Event listener for send button
-    if (sendButton) {
-        sendButton.addEventListener('click', sendMessage);
-    }
-
-    // Event listener for Enter key in chat input
-    if (chatInput) {
-        chatInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) { // Send on Enter, allow Shift+Enter for new line
-                event.preventDefault(); // Prevent new line
-                sendMessage();
-            }
-        });
-
-        // Event listener for chat input focus to show greeting box
-        chatInput.addEventListener('focus', () => {
-            if (chatGreetingBox) {
-                chatGreetingBox.style.display = 'block'; // Show the greeting box
-            }
-        });
-
-        // Event listener for chat input blur to hide greeting box
-        chatInput.addEventListener('blur', () => {
-            // Add a small delay to allow for click on greeting box before hiding
-            setTimeout(() => {
-                if (chatGreetingBox) {
-                    chatGreetingBox.style.display = 'none'; // Hide the greeting box
-                }
-            }, 100);
-        });
-    }
-
-    // Event listener for chat greeting box click
-    if (chatGreetingBox && chatInput) {
-        chatGreetingBox.addEventListener('click', () => {
-            chatInput.value = chatGreetingBox.textContent.trim(); // Paste text to input
-            chatInput.focus(); // Keep focus on input
-            chatGreetingBox.style.display = 'none'; // Hide greeting box after click
-        });
-    }
-
-    // Event listener for Close Chat button
-    if (closeChatButton) {
-        closeChatButton.addEventListener('click', () => {
-            if (currentUserIsAdmin) {
-                navigateToPage('admin'); // Admin goes back to admin panel
-            } else {
-                navigateToPage('main'); // User goes back to main page
-            }
-        });
-    }
-
-    // Send Script Button handler
-    if (sendScriptButton) {
-        sendScriptButton.addEventListener('click', sendScript);
-    }
-
-    // Script Input Placeholder Logic (User-side Executor)
-    if (scriptInput) {
-        scriptInput.addEventListener('focus', () => {
-            if (scriptInput.value === 'loadstringexample') {
-                scriptInput.value = '';
-            }
-        });
-        scriptInput.addEventListener('blur', () => {
-            if (scriptInput.value === '') {
-                scriptInput.value = 'loadstringexample';
-            }
-        });
-    }
-    // END NEW CHAT FUNCTIONALITY
-
-    // Event listener for the new Watch Tutorial button
-    if (watchTutorialButton) {
-        watchTutorialButton.addEventListener('click', () => {
-            // Open YouTube video in a new tab
-            window.open('https://www.youtube.com/watch?v=UMo5hDaWeEA', '_blank');
-        });
-    }
-
-    // Event listener for Roblox Login button
-    if (robloxLoginButton) {
-        robloxLoginButton.addEventListener('click', () => {
-            window.open('https://www.roblox.com/login', '_blank');
-        });
-    }
-
-    // Roblox Info Button logic
-    if (robloxInfoButton && robloxInfoOverlay && robloxInfoCloseButton) {
-        robloxInfoButton.addEventListener('click', () => {
-            robloxInfoOverlay.classList.add('show');
-        });
-
-        robloxInfoCloseButton.addEventListener('click', () => {
-            robloxInfoOverlay.classList.remove('show');
-        });
-    }
-
-    // Alt Account Display Logic
-    const updateAltAccountDisplay = () => {
-        const currentUserAltId = localStorage.getItem('currentUserAltId');
-        if (!altAccountDisplay || !currentUserAltId) {
-            if (altAccountDisplay) altAccountDisplay.textContent = '';
-            // If no user is logged in, or their ID isn't found,
-            // ensure input fields are visible and executor section and scripts button are hidden
-            if (altAccountInputFields) {
-                altAccountInputFields.classList.remove('hidden');
-                submitButton.classList.remove('hidden'); // Ensure submit button is visible too
-            }
-            if (executorSection) {
-                executorSection.classList.add('hidden'); // Hide executor section
-            }
-            if (scriptsButton) {
-                scriptsButton.classList.add('hidden'); // Hide scripts button
-            }
-            updateSubmitButtonState(); // Re-evaluate button state
+        if (filteredScripts.length === 0) {
+            userSentScriptsList.innerHTML = '<p class="text-center text-gray-400">No scripts found.</p>';
             return;
         }
 
-        // Check accepted accounts first
-        const acceptedRef = ref(db, `acceptedAccounts/${currentUserAltId}`);
-        onValue(acceptedRef, (snapshot) => {
-            const account = snapshot.val();
-            if (account) {
-                altAccountDisplay.textContent = `Alt:(${account.username})`;
-                // If account is found (accepted), hide input fields and show executor
-                if (altAccountInputFields) {
-                    altAccountInputFields.classList.add('hidden');
-                    submitButton.classList.add('hidden'); // Hide submit button as well
-                }
-                if (executorSection) {
-                    executorSection.classList.remove('hidden'); // Show executor section
-                    scriptInput.value = 'loadstringexample'; // Set example text
-                }
-                if (scriptsButton) {
-                    scriptsButton.classList.remove('hidden'); // Show scripts button
-                }
-            } else {
-                // If not in accepted, check submitted accounts
-                const submittedRef = ref(db, `submittedAccounts/${currentUserAltId}`);
-                onValue(submittedRef, (submittedSnapshot) => {
-                    const submittedAccount = submittedSnapshot.val();
-                    if (submittedAccount) {
-                        altAccountDisplay.textContent = `Alt:(${submittedAccount.username})`;
-                        // If account is found (submitted), hide input fields and hide executor
-                        if (altAccountInputFields) {
-                            altAccountInputFields.classList.add('hidden');
-                            submitButton.classList.add('hidden'); // Hide submit button as well
-                        }
-                        if (executorSection) {
-                            executorSection.classList.add('hidden'); // Hide executor section
-                        }
-                        if (scriptsButton) {
-                            scriptsButton.classList.remove('hidden'); // Show scripts button (even if submitted, they might have old scripts)
-                        }
-                    } else {
-                        altAccountDisplay.textContent = ''; // Clear if not found in either
-                        // If no account is found associated with currentUserAltId, show input fields and hide executor/scripts button
-                        if (altAccountInputFields) {
-                            altAccountInputFields.classList.remove('hidden');
-                            // Only show submit button if inputs are valid
-                            updateSubmitButtonState();
-                        }
-                        if (executorSection) {
-                            executorSection.classList.add('hidden'); // Hide executor section
-                        }
-                        if (scriptsButton) {
-                            scriptsButton.classList.add('hidden'); // Hide scripts button
-                        }
-                    }
-                }, { onlyOnce: true }); // Only need to check submitted once if not accepted
-            }
-        }); // This listener for accepted will keep it updated if status changes
+        filteredScripts.forEach(script => {
+            const scriptItem = document.createElement('div');
+            scriptItem.classList.add('script-toggle-container', 'mb-2');
+            scriptItem.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="username-text">${script.name}</span>
+                    <span class="text-xs py-1 px-2 rounded-full ${script.status === 'Active' ? 'bg-green-500' : 'bg-red-500'} text-white">${script.status}</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+            `;
+            const contentContainer = document.createElement('div');
+            contentContainer.classList.add('user-scripts-container', 'mt-2', 'p-4', 'bg-gray-800', 'rounded-lg', 'text-sm');
+            contentContainer.innerHTML = `<pre class="whitespace-pre-wrap">${script.content}</pre>`;
+
+            scriptItem.addEventListener('click', () => {
+                scriptItem.classList.toggle('active');
+                contentContainer.classList.toggle('active');
+            });
+            userSentScriptsList.appendChild(scriptItem);
+            userSentScriptsList.appendChild(contentContainer);
+        });
     };
 
-    // All `DOMContentLoaded` logic now directly within this main listener
-    // The previous `script.onload` was causing race conditions and errors.
-    // The `CryptoJS` library is now loaded via a direct <script> tag in the <head>.
+    scriptSearchInput.addEventListener('input', (e) => {
+        loadScripts(e.target.value);
+    });
 
-    // Initial state: show main page
-    navigateToPage('main');
-    updateSubmitButtonState(); // Ensure submit button state is correct on load
-    checkAndShowUserChatButton(); // Initial check for chat button visibility
-    updateAltAccountDisplay(); // Initial update of alt account display
-
-    // Automatically show decision overlay if flagged (Moved from second script block)
-    const status = localStorage.getItem('accountDecisionStatus');
-    console.log("DOMContentLoaded: accountDecisionStatus from localStorage:", status);
-    if (status) {
-        showAccountDecision(status);
-        localStorage.removeItem('accountDecisionStatus');
-        console.log("DOMContentLoaded: accountDecisionStatus removed from localStorage.");
-    }
-
-    // Hook into admin decision to set localStorage for user notification
-    // This re-assigns the handleAccountAction function to add notification logic.
-    // Ensure this runs AFTER the original handleAccountAction is fully defined.
-    const originalHandleAccountAction = handleAccountAction; 
-    handleAccountAction = async function(accountId, action, accountData = null) { // Made async here too
-        const currentUserAltId = localStorage.getItem('currentUserAltId');
-        console.log(`handleAccountAction: accountId=${accountId}, action=${action}, currentUserAltId=${currentUserAltId}`);
-        if (currentUserAltId === accountId) {
-            const decisionStatus = action === 'accept' ? 'accepted' : 'denied';
-            localStorage.setItem('accountDecisionStatus', decisionStatus);
-            console.log(`handleAccountAction: Setting localStorage accountDecisionStatus to ${decisionStatus}`);
+    /**
+     * Renders a single chat message to the UI.
+     * @param {object} message - The message object with 'sender', 'text', and 'timestamp'.
+     */
+    const renderMessage = (message) => {
+        const messageItem = document.createElement('div');
+        messageItem.classList.add('message-item');
+        if (message.sender === 'user') {
+            messageItem.classList.add('sent');
+        } else {
+            messageItem.classList.add('received');
         }
-        // Call the original function with all arguments
-        await originalHandleAccountAction(accountId, action, accountData); // Await the original function
-        // Show notification after the action is processed
-        showNotification(`Account ${action === 'accept' ? 'Accepted' : 'Denied'}.`);
-        updateAltAccountDisplay(); // Update alt account display after an action that might change status
+
+        const bubble = document.createElement('div');
+        bubble.classList.add('bubble', 'text-white', 'p-2', 'rounded-lg');
+        bubble.style.backgroundColor = message.sender === 'user' ? '#000' : '#333';
+        bubble.textContent = message.text;
+
+        const timestamp = document.createElement('div');
+        timestamp.classList.add('message-timestamp');
+        timestamp.textContent = message.timestamp;
+
+        messageItem.appendChild(bubble);
+        messageItem.appendChild(timestamp);
+        chatContainer.appendChild(messageItem);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     };
 
-    // Event listener for the new Scripts button
-    if (scriptsButton) {
-        scriptsButton.addEventListener('click', () => {
-            if (scriptsOverlay) {
-                scriptsOverlay.classList.add('show');
-                displayUserSentScripts(); // Load and display scripts when overlay is shown
-            }
+    /**
+     * Loads chat messages from local storage and renders them.
+     */
+    const loadChatMessages = () => {
+        const storedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+        chatContainer.innerHTML = ''; // Clear existing messages
+        storedMessages.forEach(renderMessage);
+    };
+
+    /**
+     * Handles sending a chat message.
+     */
+    chatSendButton.addEventListener('click', () => {
+        const messageText = chatInput.value.trim();
+        if (messageText) {
+            const currentTime = new Date().toLocaleTimeString();
+            const userMessage = {
+                sender: 'user',
+                text: messageText,
+                timestamp: currentTime
+            };
+
+            const storedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+            storedMessages.push(userMessage);
+
+            // Simulate a bot response after a short delay
+            setTimeout(() => {
+                const botResponses = [
+                    'I am an AI bot. How can I help you?',
+                    'Your request has been processed.',
+                    'Hello! Thanks for your message.',
+                    'Please contact support for more information.'
+                ];
+                const botMessage = {
+                    sender: 'bot',
+                    text: botResponses[Math.floor(Math.random() * botResponses.length)],
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                storedMessages.push(botMessage);
+                localStorage.setItem('chatMessages', JSON.stringify(storedMessages));
+                renderMessage(userMessage);
+                renderMessage(botMessage);
+            }, 1000); // 1-second delay for a more realistic feel
+
+            chatInput.value = '';
+        }
+    });
+
+    // Allow sending messages with the Enter key
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            chatSendButton.click();
+        }
+    });
+
+    // --- Photo Gallery Section ---
+
+    // Hardcoded array of image data since there is no backend
+    const galleryImages = [
+        { src: 'https://i.imgur.com/vHq4eYf.jpg', title: 'AI Bot Prototype', description: 'A sleek design for our latest AI bot model.' },
+        { src: 'https://i.imgur.com/uR6sQ4e.jpg', title: 'Data Center', description: 'Our secure and robust data center operations.' },
+        { src: 'https://i.imgur.com/K3c2o4f.jpg', title: 'User Interface Mockup', description: 'Clean and intuitive UI for easy user interaction.' },
+        { src: 'https://i.imgur.com/Q9mB2jU.jpg', title: 'Robotic Arm', description: 'Precision robotic arm used in manufacturing.' },
+        { src: 'https://i.imgur.com/w9rB4dF.jpg', title: 'Network Security', description: 'Advanced network security infrastructure.' },
+        { src: 'https://i.imgur.com/m2n9R1b.jpg', title: 'Server Room', description: 'The heart of our operations, kept cool and secure.' }
+    ];
+
+    /**
+     * Dynamically populates the gallery section with images.
+     */
+    const populateGallery = () => {
+        galleryImages.forEach(image => {
+            const galleryItem = document.createElement('div');
+            galleryItem.classList.add('gallery-item');
+            galleryItem.innerHTML = `
+                <img src="${image.src}" alt="${image.title}" class="gallery-image">
+                <div class="gallery-description">
+                    <h3>${image.title}</h3>
+                    <p class="text-sm">${image.description}</p>
+                </div>
+            `;
+            galleryGrid.appendChild(galleryItem);
         });
-    }
+    };
 
-    // Event listener for closing the Scripts overlay
-    if (closeScriptsOverlayButton) {
-        closeScriptsOverlayButton.addEventListener('click', () => {
-            if (scriptsOverlay) {
-                scriptsOverlay.classList.remove('show');
-            }
+    populateGallery();
+
+    // --- New Feature: Theme Toggle ---
+
+    /**
+     * Toggles between dark and light themes.
+     */
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light-theme');
+        const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+        localStorage.setItem('theme', theme);
+        // Adjust logo filter based on theme
+        const logo = document.querySelector('.logo');
+        if (theme === 'light') {
+            logo.style.filter = 'grayscale(0%)';
+        } else {
+            logo.style.filter = 'grayscale(100%)';
+        }
+    });
+
+    // --- New Feature: Contact Form Submission and Validation ---
+
+    /**
+     * Handles the contact form submission.
+     */
+    contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = contactForm.querySelector('input[name="name"]').value;
+        const email = contactForm.querySelector('input[name="email"]').value;
+        const message = contactForm.querySelector('textarea[name="message"]').value;
+        
+        // Basic client-side validation
+        if (!name || !email || !message) {
+            showCustomMessage('Please fill out all fields.');
+            return;
+        }
+
+        // Simulate form submission
+        showCustomMessage('Thank you for your message! We will get back to you shortly.');
+        contactForm.reset();
+    });
+
+    // --- New Feature: Simple Calculator ---
+    let calculatorExpression = '';
+    const validKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '+', '-', '*', '/', '=', 'C', 'AC'];
+
+    calculatorButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const value = button.dataset.value;
+            handleCalculatorInput(value);
         });
-    }
+    });
 
-    // Initialize the dynamic starfield
-    initializeStars();
-});
-</script>
+    // Handle keyboard input for the calculator
+    document.addEventListener('keydown', (e) => {
+        const key = e.key === 'Enter' ? '=' : e.key.toUpperCase();
+        if (validKeys.includes(key)) {
+            handleCalculatorInput(key);
+        }
+    });
 
+    /**
+     * Handles all calculator button and key inputs.
+     * @param {string} input - The value of the button or key pressed.
+     */
+    const handleCalculatorInput = (input) => {
+        if (input === 'AC') {
+            calculatorExpression = '';
+        } else if (input === 'C') {
+            calculatorExpression = calculatorExpression.slice(0, -1);
+        } else if (input === '=') {
+            try {
+                // Using eval() for a simple, client-side calculator
+                // NOTE: eval() can be a security risk with untrusted input in a real application.
+                // For this a non-backend demo, it is acceptable.
+                const result = eval(calculatorExpression);
+                calculatorExpression = result.toString();
+            } catch (error) {
+                calculatorExpression = 'Error';
+            }
+        } else {
+            calculatorExpression += input;
+        }
+        calculatorDisplay.textContent = calculatorExpression || '0';
+    };
+
+    // --- Starfield Background Animation ---
+
+    const starsContainer = document.querySelector('.stars-container');
+    const numStars = 100;
+
+    /**
+     * Creates a single star element with random size and position.
+     */
+    const createStar = () => {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        const size = Math.random() * 3 + 1; // Star size between 1px and 4px
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.left = `${Math.random() * 100}vw`; // Random horizontal position
+        star.style.top = `${Math.random() * 100}vh`;  // Random vertical position
+        star.style.opacity = Math.random(); // Random opacity for a twinkling effect
+        starsContainer.appendChild(star);
+    };
+
+    /**
+     * Initializes the starfield by creating all the stars.
+     */
+    const createStarfield = () => {
+        for (let i = 0; i < numStars; i++) {
+            createStar();
+        }
+    };
+
+    createStarfield();
+});      
+    </script>
 </body>
 </html>
